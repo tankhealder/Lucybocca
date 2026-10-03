@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rechen-Zoo</title>
+<title>MathPets</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -79,6 +79,51 @@ main{flex:1;position:relative;min-height:0}
 .scene.wueste{background:linear-gradient(#ffe7b8,#ffc27a 44%,#f7d58a 44%,#e9b45f)}
 .scene.eis{background:linear-gradient(#a9dcff,#e3f5ff 44%,#f7fcff 44%,#cfe6f7)}
 .scene.zauber{background:linear-gradient(#a98cff,#ffc4e6 46%,#ffe8f5 46%,#f3c2ff)}
+/* ---------- Haus: Zimmer (Wand = Hintergrund der Szene, Boden = .floor) ---------- */
+.scene.haus{container-type:size}
+.floor{position:absolute;left:0;right:0;top:56%;bottom:0;border-top:10px solid #fff;box-shadow:inset 0 3px 0 rgba(58,46,92,.1)}
+.roomname{position:absolute;left:12px;top:58px;z-index:3000;background:rgba(255,255,255,.92);padding:6px 14px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 3px 0 rgba(58,46,92,.12);pointer-events:none}
+.hint.low{top:100px}
+.win{position:absolute;left:64%;top:12%;width:24cqmin;aspect-ratio:1;background:linear-gradient(#8fd8ff,#d6f4ff);border:8px solid #fff;border-radius:14px;box-shadow:0 4px 0 rgba(58,46,92,.12)}
+.win::before,.win::after{content:"";position:absolute;background:#fff}
+.win::before{left:50%;top:0;bottom:0;width:6px;margin-left:-3px}
+.win::after{top:50%;left:0;right:0;height:6px;margin-top:-3px}
+/* Deckenlampe: an = leuchtet warm, aus = Nacht im Zimmer */
+.lamp{position:absolute;z-index:2850;padding:0;transform:translateX(-50%)}
+.lamp .shade{position:absolute;left:0;right:0;background:#ff9ec4;clip-path:polygon(22% 0,78% 0,100% 100%,0 100%)}
+.lamp .bulb{position:absolute;left:50%;width:4cqmin;height:4cqmin;margin-left:-2cqmin;border-radius:50%;background:#e6e1ee;transition:background .2s,box-shadow .2s}
+.lamp.on .bulb{background:#fff3b0;box-shadow:0 0 4cqmin 2cqmin rgba(255,226,130,.9),0 0 18cqmin 10cqmin rgba(255,226,130,.35)}
+.lamp.ceil{left:56%;top:0;width:12cqmin;height:22cqmin}
+.lamp.ceil::before{content:"";position:absolute;left:50%;top:0;height:13cqmin;width:3px;margin-left:-1.5px;background:#8a7f99}
+.lamp.ceil .shade{top:13cqmin;height:7cqmin}
+.lamp.ceil .bulb{top:18cqmin}
+.night{position:absolute;inset:0;background:#1d1640;opacity:0;pointer-events:none;z-index:2800;transition:opacity .4s}
+.scene.haus.dark .win{background:linear-gradient(#141c44,#33407e)}
+.rug{position:absolute;left:22%;right:22%;top:70%;height:15%;border-radius:50%}
+/* Möbel aus CSS: Esstisch, Küchenzeile, Kühlschrank – Gegenstände stehen oben drauf */
+.items{position:absolute;left:0;right:0;bottom:100%;display:flex;justify-content:space-around;align-items:flex-end;font-size:7cqmin;line-height:1;font-family:var(--emoji)}
+.table{position:absolute;transform:translate(-50%,-100%);width:46cqmin;height:15cqmin}
+.table::before{content:"";position:absolute;left:0;right:0;top:0;height:3cqmin;background:#b8763c;border-radius:1cqmin;box-shadow:0 3px 0 #8f5627}
+.table::after{content:"";position:absolute;left:9%;right:9%;top:3cqmin;bottom:0;border-left:2.2cqmin solid #9a5f2c;border-right:2.2cqmin solid #9a5f2c}
+.counter{position:absolute;top:61%;transform:translateY(-100%);height:19cqmin;z-index:610;border-top:2.6cqmin solid #c9a27c;border-radius:1cqmin 1cqmin 0 0;
+  background:repeating-linear-gradient(90deg,#fdfaf5 0 calc(25% - 3px),#d9cfc4 calc(25% - 3px) 25%);box-shadow:0 3px 0 rgba(58,46,92,.12)}
+.fridge{position:absolute;top:62%;transform:translate(-50%,-100%);width:15cqmin;height:38cqmin;z-index:620;background:#f4f7fb;border:2px solid #c9d3e0;border-radius:2cqmin}
+.fridge::before{content:"";position:absolute;left:0;right:0;top:36%;height:2px;background:#c9d3e0}
+.fridge::after{content:"";position:absolute;left:12%;top:14%;width:1.4cqmin;height:16%;border-radius:1cqmin;background:#aab6c6;box-shadow:0 13cqmin 0 #aab6c6}
+/* Außen: Häuschen-Knopf zum Haus */
+.door{position:absolute;right:12px;bottom:96px;z-index:2900;display:flex;flex-direction:column;align-items:center;font-size:46px;line-height:1.05;font-family:var(--emoji);background:rgba(255,255,255,.85);border-radius:20px;padding:6px 10px 4px;box-shadow:0 4px 0 rgba(58,46,92,.15);transition:transform .15s,background .15s}
+.door small{font-family:var(--font);font-size:12px;font-weight:600;color:var(--ink)}
+.door.hot{background:var(--yellow);transform:scale(1.18)}
+/* Innen: richtige Türen in der Wand, Farbe passend zum Zimmer dahinter; die Haustür ist größer */
+.door.in{right:auto;bottom:auto;top:56%;transform:translate(-50%,-100%);width:15cqmin;height:30cqmin;padding:0;z-index:1;
+  background:var(--dc,#c07d43);border:1.1cqmin solid #fff;border-bottom:0;border-radius:2cqmin 2cqmin 0 0;box-shadow:0 0 0 2px rgba(58,46,92,.12)}
+.door.in.out{width:19cqmin;height:38cqmin}
+.door.in::before{content:"";position:absolute;left:16%;right:16%;top:9%;bottom:12%;border-radius:1cqmin;
+  background:linear-gradient(rgba(0,0,0,.13),rgba(0,0,0,.13)) top/100% 42% no-repeat,linear-gradient(rgba(0,0,0,.13),rgba(0,0,0,.13)) bottom/100% 42% no-repeat}
+.door.in::after{content:"";position:absolute;right:11%;top:52%;width:2.4cqmin;height:2.4cqmin;border-radius:50%;background:var(--yellow);box-shadow:0 2px 0 #c99a12}
+.door .sign{position:absolute;left:50%;top:-1.1cqmin;transform:translate(-50%,-125%);background:#fff;border-radius:10px;padding:3px 8px;font-family:var(--font);font-size:clamp(10px,2.4cqmin,13px);font-weight:600;color:var(--ink);white-space:nowrap;box-shadow:0 3px 0 rgba(58,46,92,.12)}
+.door.in.hot{transform:translate(-50%,-100%) scale(1.05);box-shadow:0 0 0 6px var(--yellow);filter:brightness(1.12)}
+button.acard{font-family:inherit;color:inherit;cursor:pointer}
 .hill{position:absolute;border-radius:50%}
 .hill.a{width:80%;height:40%;left:-20%;top:34%}
 .hill.b{width:90%;height:44%;right:-30%;top:36%}
@@ -109,6 +154,62 @@ main{flex:1;position:relative;min-height:0}
 .inner{transform-origin:50% 100%;transition:transform .15s}
 .pet.held .inner{transform:scale(1.1) rotate(-5deg)}
 .pet.target .inner{transform:scale(1.14)}
+/* Vögel fliegen, solange man sie hält */
+.wing{transform-box:fill-box}
+.wl{transform-origin:100% 0}
+.wr{transform-origin:0 0}
+.pet.held.flying .inner{transform:translateY(-14%) scale(1.08)}
+.pet.flying .bob{animation:hover .5s ease-in-out infinite alternate}
+.pet.flying .wl{animation:flapL .16s ease-in-out infinite alternate}
+.pet.flying .wr{animation:flapR .16s ease-in-out infinite alternate}
+@keyframes hover{to{transform:translateY(-10px)}}
+@keyframes flapL{to{transform:rotate(70deg)}}
+@keyframes flapR{to{transform:rotate(-70deg)}}
+.pet.flying[data-move=float] .bob{animation:hover 1.2s ease-in-out infinite alternate}
+/* Glücksdrache: langer Körper schwingt sanft, beim Fliegen wellt er durch die Luft */
+.ltail{transform-box:fill-box;transform-origin:0 85%;animation:swish 3s ease-in-out infinite alternate}
+@keyframes swish{from{transform:rotate(-4deg)}to{transform:rotate(6deg)}}
+.pet.flying .ltail{animation:wave .45s ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-14deg) scaleY(.92)}to{transform:rotate(12deg) scaleY(1.06)}}
+.dwl{transform-origin:100% 80%}
+.dwr{transform-origin:0 80%}
+.pet.flying .dwl{animation:dflapL .3s ease-in-out infinite alternate}
+.pet.flying .dwr{animation:dflapR .3s ease-in-out infinite alternate}
+@keyframes dflapL{from{transform:rotate(-12deg)}to{transform:rotate(30deg)}}
+@keyframes dflapR{from{transform:rotate(12deg)}to{transform:rotate(-30deg)}}
+.pet.flying[data-move=glide] .bob{animation:glide 1s ease-in-out infinite alternate}
+@keyframes glide{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-14px) rotate(5deg)}}
+/* Alle anderen Tiere bewegen sich beim Tragen passend */
+.pet{--spd:.3s}
+.pet[data-move=slow]{--spd:.75s}
+.pet[data-move=waddle]{--spd:.26s}
+.foot,.tent{transform-box:fill-box}
+.foot{transform-origin:50% 50%}
+.tent{transform-origin:50% 0}
+.pet.held:is([data-move=walk],[data-move=slow]) .bob{animation:waddle var(--spd) ease-in-out infinite alternate}
+.pet.held:is([data-move=walk],[data-move=slow],[data-move=waddle]) .fl{animation:step var(--spd) ease-in-out infinite alternate}
+.pet.held:is([data-move=walk],[data-move=slow],[data-move=waddle]) .fr{animation:step var(--spd) ease-in-out infinite alternate-reverse}
+/* Pinguin: kräftig hin und her watscheln, Flügelchen zum Balancieren abspreizen */
+.pet.held[data-move=waddle] .bob{animation:waddleP var(--spd) ease-in-out infinite alternate}
+.pet.held[data-move=waddle] .wl{animation:balL var(--spd) ease-in-out infinite alternate}
+.pet.held[data-move=waddle] .wr{animation:balR var(--spd) ease-in-out infinite alternate}
+@keyframes waddleP{from{transform:translateX(-4px) rotate(-13deg)}to{transform:translateX(4px) rotate(13deg)}}
+@keyframes balL{from{transform:rotate(10deg)}to{transform:rotate(35deg)}}
+@keyframes balR{from{transform:rotate(-35deg)}to{transform:rotate(-10deg)}}
+@keyframes waddle{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+@keyframes step{from{transform:translate(-4px,0)}to{transform:translate(4px,-5px)}}
+.pet.held[data-move=hop] .bob{animation:hop .5s cubic-bezier(.3,.6,.4,1) infinite}
+@keyframes hop{0%,100%{transform:scale(1.1,.9)}15%{transform:none}45%{transform:translateY(-28%) scale(.94,1.08)}80%{transform:translateY(0) scale(1.06,.94)}}
+.pet.held[data-move=gallop] .bob{animation:gallop .4s ease-in-out infinite}
+@keyframes gallop{0%,100%{transform:rotate(4deg)}50%{transform:translateY(-16%) rotate(-10deg)}}
+.pet.held:is([data-move=swim],[data-move=puff]) .bob{animation:paddle .7s ease-in-out infinite}
+@keyframes paddle{0%,100%{transform:rotate(-8deg)}50%{transform:translateY(-10px) rotate(8deg)}}
+.pet.held .tent{animation:tent .35s ease-in-out infinite alternate}
+.pet.held .tent.t2{animation-direction:alternate-reverse}
+@keyframes tent{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+.pet.held[data-move=puff] .inner{transform:scale(1.35)}
+.pet.held[data-move=crab] .bob{animation:scuttle .14s linear infinite alternate}
+@keyframes scuttle{from{transform:translateX(-6px) rotate(-3deg)}to{transform:translateX(6px) rotate(3deg)}}
 .pet svg,.mascot svg,.wp svg,.ward-pet svg,.reveal-pet svg{display:block;width:100%;height:auto;overflow:visible}
 .bob{animation:bob 2.6s ease-in-out infinite;transform-origin:50% 100%}
 @keyframes bob{50%{transform:scaleY(.965) scaleX(1.025)}}
@@ -124,6 +225,18 @@ main{flex:1;position:relative;min-height:0}
 .happy .eo{display:none}
 .happy .eh{display:inline}
 .mouth{transform-box:fill-box;transform-origin:center}
+/* Auf Möbeln: sitzen (etwas gestaucht) oder liegen und schlafen */
+.es{display:none}
+.pet.sit svg{transform:scaleY(.9);transform-origin:50% 100%}
+.pet.lie svg{transform:scale(1.08,.82);transform-origin:50% 100%}
+.pet.lie .bob{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{50%{transform:scaleY(1.05)}}
+.pet.lie .eo{display:none}
+.pet.lie .es{display:inline}
+.pet.lie svg.happy .es{display:none}
+.pet.bath::after{content:"🫧";position:absolute;left:12%;top:30%;font-size:22px;font-family:var(--emoji);pointer-events:none;animation:zz 2s ease-in-out infinite}
+.pet.lie::after{content:"💤";position:absolute;right:8%;top:8%;font-size:22px;font-family:var(--emoji);pointer-events:none;animation:zz 2.6s ease-in-out infinite}
+@keyframes zz{0%{opacity:0;transform:translate(0,10px) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translate(16px,-26px) scale(1.1)}}
 .chomp .mouth{animation:chomp .14s 6 alternate}
 @keyframes chomp{to{transform:scale(1.4,2.2)}}
 .acc-e{font-family:var(--emoji)}
@@ -267,6 +380,13 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
   <div class="btns"><button class="btn alt" id="wardOff">Alles ausziehen</button><button class="btn" id="wardClose">Fertig</button></div>
 </div></div>
 
+<div class="modal" id="inviteModal"><div class="mcard wide">
+  <h2>Wen lädst du ein? 📨</h2>
+  <p>Tippe auf ein Tier, dann kommt es zu Besuch ins Haus.</p>
+  <div class="album" id="inviteGrid"></div>
+  <br><button class="btn" id="inviteClose">Fertig</button>
+</div></div>
+
 <div class="modal" id="albumModal"><div class="mcard wide">
   <h2 id="albumTitle">Sammelalbum</h2>
   <div class="stats" id="stats"></div>
@@ -282,6 +402,8 @@ const TREATS = { apfel:'🍎', karotte:'🥕', fisch:'🐟', muffin:'🧁' };
 const HABS = [
   { id:'wiese',  name:'Wiese',      e:'🌼', lvl:1,  hills:['#7fdb8e','#72d485'], sun:true, fx:'clouds',
     decos:[['🌷',12,72,34],['🌼',86,66,28],['🌳',8,52,90],['🌻',92,92,40],['🍄',70,57,26],['🌸',30,96,30],['🌳',95,50,70],['🌼',50,59,22]] },
+  // Besuchshaus: hier wohnt niemand fest, jedes Tier darf zu Besuch kommen. Die Zimmer stehen in ROOMS.
+  { id:'haus',   name:'Haus',       e:'🏠', lvl:1,  ymin:58, indoor:true, decos:[] },
   { id:'wald',   name:'Wald',       e:'🌲', lvl:3,  hills:['#5fbf78','#53b36c'], fx:'leaves',
     decos:[['🌲',6,52,100],['🌲',22,47,70],['🌲',92,53,110],['🌳',74,46,70],['🍄',14,82,34],['🍄',84,72,26],['🪵',56,56,40],['🌿',40,97,34],['🍂',66,92,24]] },
   { id:'meer',   name:'Meer',       e:'🌊', lvl:5,  ymin:30, fx:'bubbles',
@@ -294,6 +416,50 @@ const HABS = [
     decos:[['🌈',24,45,92],['🏰',74,47,62],['🍭',90,72,40],['🍄',10,82,34],['🍭',32,97,30],['💎',58,95,24]] },
 ];
 const HAB = Object.fromEntries(HABS.map(h => [h.id, h]));
+
+/* ---------- Haus: Zimmer, die per Türen verbunden sind ----------
+   doors: [Ziel, x%] – 'out' ist die Haustür (Tiere gehen nach Hause)
+   decos: [Emoji, x%, y%, Größe in % der kürzeren Raumseite, Sitzplatz?, gespiegelt?]
+   Sitzplatz: pose (sit/lie/bath), slots = Plätze (Versatz in Möbelbreite), k = Höhe der Sitzfläche im Bild (0 oben, 1 unten)
+   Plan:  Eingang ─ Wohnzimmer ─ Esszimmer ─ Küche ─ Eingang
+          Eingang ─ Bad ─ Schlafzimmer ─ Spielzimmer 2 ─ Spielzimmer 1 ─ Wohnzimmer */
+const stripes = (a, b) => `repeating-linear-gradient(90deg,${a} 0 28px,${b} 28px 56px)`;
+const tiles = (line, fill, w=40, h=40) => `linear-gradient(${line} 2px,transparent 2px) 0 0/${w}px ${h}px,linear-gradient(90deg,${line} 2px,${fill} 2px) 0 0/${w}px ${h}px`;
+const FLOORS = {
+  wood:'repeating-linear-gradient(90deg,#d9a066 0 70px,#c98f55 70px 73px)',
+  checker:'repeating-conic-gradient(#fff 0 25%,#f4b6b6 0 50%) 0 0/56px 56px',
+  tiles:'repeating-conic-gradient(#fff 0 25%,#cfe6f7 0 50%) 0 0/40px 40px',
+  carpet:'radial-gradient(#d9b1e3 2px,transparent 3px) 0 0/18px 18px,#ecd5f2',
+  mat:'repeating-linear-gradient(90deg,#ff9ec4 0 60px,#ffd166 60px 120px,#7bdff2 120px 180px,#9be89b 180px 240px)',
+};
+const SIT = (slots=[0], k=.5) => ({ pose:'sit', slots, k });
+const ROOMS = {
+  flur:   { name:'Eingang', e:'🚪', in:'in den Eingang', dc:'#c07d43', wall:stripes('#e3f2e1','#d5ebd2'), floor:'wood', rug:['#8fd19e','#b5e3bf'],
+            doors:[['out',12],['wohn',40],['kueche',63],['bad',86]],
+            decos:[['🧥',26,48,7],['☂️',27,64,8],['👢',52,66,7],['🪑',75,82,16,SIT()],['🪴',96,66,16]] },
+  wohn:   { name:'Wohnzimmer', e:'🛋️', in:'ins Wohnzimmer', dc:'#d68f4f', wall:stripes('#ffe9d8','#ffdfc8'), floor:'wood', rug:['#ffa8cb','#ffc9de'], win:[58,18],
+            doors:[['flur',9],['ess',27],['spiel1',90]],
+            decos:[['🛋️',42,60,34,SIT([-.17,0,.17], .83)],['🖼️',42,30,13],['📺',72,64,16],['🪑',14,84,17,SIT()],['🧶',60,92,6]] },
+  ess:    { name:'Esszimmer', e:'🍽️', in:'ins Esszimmer', dc:'#e8a87c', wall:stripes('#fff1d6','#ffe8c2'), floor:'wood',
+            doors:[['wohn',10],['kueche',90]], table:[50,76,'🍽️🎂🍕'],
+            decos:[['🖼️',36,30,11],['🕰️',64,26,9],['🪑',29,82,17,SIT()],['🪑',71,82,17,SIT(),true],['🪴',96,66,14]] },
+  kueche: { name:'Küche', e:'🍳', in:'in die Küche', dc:'#7cc4a4', wall:tiles('#dfe8e2','#fbfdfb',44,22), floor:'checker', win:[32,15],
+            doors:[['flur',10],['ess',90]], counter:[22,40,'🍳🫖🍞🧁'], fridge:72,
+            decos:[['🪑',40,84,15,SIT()],['🍎',60,90,6]] },
+  bad:    { name:'Badezimmer', e:'🛁', in:'ins Badezimmer', dc:'#7bb6e8', wall:tiles('#bfe0f5','#eaf6ff'), floor:'tiles', win:[28,12],
+            doors:[['flur',10],['schlaf',90]],
+            decos:[['🛁',44,80,30,{ pose:'bath', slots:[-.12,.14], k:.6 }],['🚽',74,68,15,SIT([0], .45)],['🪞',72,34,12],['🧴',60,66,6],['🦆',24,90,7],['🧼',64,92,5]] },
+  schlaf: { name:'Schlafzimmer', e:'🛏️', in:'ins Schlafzimmer', dc:'#b39ddb', wall:stripes('#efe6ff','#e4d8fb'), floor:'carpet', win:[30,16],
+            doors:[['bad',10],['spiel2',90]],
+            decos:[['🛏️',34,74,27,{ pose:'lie', slots:[-.13,.17], k:.62 }],['🛏️',67,74,27,{ pose:'lie', slots:[-.13,.17], k:.62 }],['🧸',86,92,10],['🌙',74,28,8]] },
+  spiel1: { name:'Spielzimmer 1', e:'🧸', in:'ins Spielzimmer 1', dc:'#f2b84b', wall:stripes('#fff6c9','#fff0ad'), floor:'mat',
+            doors:[['wohn',10],['spiel2',90]],
+            decos:[['🛝',42,70,28,SIT([-.13], .34)],['🧸',70,68,18],['🪁',75,30,12],['🎨',30,30,10],['⚽',58,88,8],['🧩',26,86,7],['🪀',80,86,6],['🎲',36,93,5]] },
+  spiel2: { name:'Spielzimmer 2', e:'🎵', in:'ins Spielzimmer 2', dc:'#ff8fb8', wall:stripes('#ffe6f1','#ffd8ea'), floor:'wood', rug:['#9fd8ff','#c6e8ff'],
+            doors:[['spiel1',10],['schlaf',90]],
+            decos:[['🎹',36,66,24],['🪑',36,84,13,SIT()],['🥁',66,74,16],['🎸',72,34,12],['🎤',80,70,8],['🎶',26,28,8]] },
+};
+const roomOf = p => ROOMS[p.room] ? p.room : 'wohn';
 
 /* Tiere: c = Fellfarbe, b = Bauch/Schnauze, weitere Felder steuern Ohren, Mund usw. */
 const A = {
@@ -322,6 +488,7 @@ const A = {
   fennek:   {hab:'wueste', name:'Öhrchen', label:'Fennek', g:'der', c:'#f5cf94', b:'#fff5e6', ears:'fennec', muzzle:true, nose:'dot', mouth:'w', fav:'muffin', say:'Ich höre alles!'},
   erdmann:  {hab:'wueste', name:'Luki', label:'Erdmännchen', g:'das', c:'#dcb47e', b:'#f5e1c0', ears:'small', earC:'#a67c50', patches:'#9a7048', nose:'dot', mouth:'smile', fav:'apfel', say:'Ich halte Wache!'},
   gecko:    {hab:'wueste', name:'Gecki', label:'Gecko', g:'der', c:'#8be0a0', b:'#e5fbe8', spots:'#5cc47b', tail:'gecko', bigEyes:true, mouth:'wide', fav:'apfel', say:'Kletter kletter!'},
+  loewe:    {hab:'wueste', name:'Leo', label:'Löwe', g:'der', c:'#f7c868', b:'#fff1d2', lmane:'#e0832f', ears:'round', earC:'#f0b54e', earIn:'#ffe1b0', tail:'lion', muzzle:true, nose:'dot', mouth:'w', fav:'fisch', say:'Roaaar! 🦁'},
   springmaus:{hab:'wueste', name:'Hopsi', label:'Springmaus', g:'die', c:'#f0d0a0', b:'#fff5e6', ears:'jerboa', tail:'jerboa', nose:'tri', mouth:'w', fav:'karotte', say:'Hüpf hüpf!'},
   // Eisland
   pinguin:  {hab:'eis', name:'Pingo', label:'Pinguin', g:'der', c:'#4f5f96', b:'#ffffff', mask:true, mouth:'beak', feet:'#ffa94d', arms:'wing', fav:'fisch', say:'Watschel!'},
@@ -331,11 +498,22 @@ const A = {
   narwal:   {hab:'eis', name:'Nori', label:'Narwal', g:'der', c:'#9ab8e0', b:'#e6f0fb', body:'blob', belly:true, narhorn:true, spots:'#7f9fcc', mouth:'smile', fav:'fisch', say:'Tröt!'},
   // Zauberland
   einhorn:  {hab:'zauber', name:'Glitzer', label:'Einhorn', g:'das', c:'#ffffff', b:'#ffe8f5', ears:'cat', inner:'#ffc7e0', mane:true, horn:true, mouth:'smile', fav:'muffin', say:'Glitzer-Hallo! ✨'},
-  drache:   {hab:'zauber', name:'Funki', label:'Drache', g:'der', c:'#8fe3c0', b:'#fff2c2', dragon:true, nose:'nostrils', mouth:'smile', fang:true, fav:'muffin', say:'Rawr! 🔥'},
+  // Kuscheldrache nach Lucys Plüschtier: cremeweiß, Pfirsich-Zacken, Glitzerflügel, Seitenohren
+  drache:   {hab:'zauber', name:'Funki', label:'Glücksdrache', g:'der', c:'#fff8f1', b:'#fffdfa', luck:'#f4cdbd', feet:'#f4cdbd', nose:'nostrils', mouth:'smile', fav:'muffin', say:'Nie aufgeben! ✨'},
   schaf:    {hab:'zauber', name:'Wolke', label:'Wolkenschaf', g:'das', c:'#fff1e3', b:'#ffffff', bodyC:'#ffffff', wool:true, ears:'sheep', earC:'#f0d4bf', mouth:'w', fav:'karotte', say:'Mäh-gisch!'},
   mondkatze:{hab:'zauber', name:'Luna', label:'Mondkatze', g:'die', c:'#7478e0', b:'#c3c5ff', ears:'cat', inner:'#ffc7e8', moon:true, nose:'tri', mouth:'w', fav:'fisch', say:'Miau im Mondschein!'},
 };
 const ORDER = Object.keys(A);
+
+/* Wie sich ein Tier bewegt, wenn man es trägt (alle anderen laufen) */
+const MOVE = {
+  kueken:'fly', eule:'fly', drache:'glide', schaf:'float',
+  pinguin:'waddle', // Pinguine können nicht fliegen! (sagt Lucy)
+  hase:'hop', frosch:'hop', springmaus:'hop', eichhorn:'hop',
+  einhorn:'gallop', schildi:'slow',
+  oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
+};
+const moveOf = type => MOVE[type] || 'walk';
 
 const ACC = [
   {id:'schleife',      e:'🎀', name:'Schleife',      slot:'side', lvl:1},
@@ -360,17 +538,37 @@ const PRAISE = ['Super! 🎉','Klasse! ⭐','Richtig! 👏','Wow, toll! 🌟','S
 const HELLO = ['Du rechnest super!','Hihi, das kitzelt!','Noch eine Aufgabe?','Ich hab dich lieb! 💕','Juhu!','Spielen wir?','Kuschel? 🥰'];
 
 /* ================= Spielstand ================= */
-const KEY = 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
+// Testmodus (index.html?test): alles freigeschaltet, eigener Spielstand – Lucys echter bleibt unberührt
+const TEST = new URLSearchParams(location.search).has('test');
+// Speicher-Schlüssel tragen noch den alten Namen „Rechen-Zoo“ – nicht ändern, sonst ist der Spielstand weg
+const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
   treats:{apfel:2, karotte:1, fisch:1, muffin:1}, pets:[], range:10, ops:['+','-'],
-  sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null };
+  sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{} };
 let S;
 function load(){
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
-  if (!saved){ try { saved = JSON.parse(localStorage.getItem(OLD_KEY)); } catch(e){} }
+  if (!saved && !TEST){ try { saved = JSON.parse(localStorage.getItem(OLD_KEY)); } catch(e){} }
   S = Object.assign(JSON.parse(JSON.stringify(DEFAULT)), saved && typeof saved === 'object' ? saved : {});
+  if (TEST && !saved){
+    S.xp = xpFor(15); // Level 15: alle Welten und Accessoires
+    S.treats = { apfel:99, karotte:99, fisch:99, muffin:99 };
+  }
+  // Im Test immer alle Tiere da – auch neu eingebaute
+  if (TEST) ORDER.forEach(type => { if (!(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); });
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
+  // Lampen gibt es jetzt pro Zimmer (alte Einträge ceil/wall verwerfen)
+  if (!S.lamps || 'ceil' in S.lamps) S.lamps = {};
+  if (!ROOMS[S.room]) S.room = 'flur';
+  // Hausbesuch aus der Zeit vor den Zimmern: die saßen im Wohnzimmer, Sitzplätze passen nicht mehr
+  (S.pets || []).forEach(p => { if (p.at && !p.room){ p.room = 'wohn'; delete p.seat; } });
+  // Neue XP-Kurve: alte Spielstände einmalig umrechnen – gleiches Level, gleicher Fortschritt im Balken
+  if (saved && !saved.xpv){
+    const o = oldLevelInfo(S.xp);
+    S.xp = xpFor(o.l) + Math.floor(o.cur / o.need * needXP(o.l));
+  }
+  S.xpv = 2;
   // Tiere aus alten Versionen übernehmen, unbekannte gegen Leckerlis tauschen
   S.pets = (S.pets || []).filter(p => { if (A[p.type]) return true; S.treats.muffin += 3; return false; });
   S.pets.forEach(p => { p.acc = p.acc || {}; });
@@ -388,13 +586,24 @@ const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const $ = s => document.querySelector(s);
 
+// XP-Kurve wie bei WoW: jedes Level braucht etwas mehr, und der Zuwachs wächst langsam mit
+// (Level 1→2: 60, 2→3: 85, 3→4: 115, 5→6: 205, 10→11: 565, 14→15: 995)
+function needXP(l){ const n = l - 1; return Math.round((60 + 20*n + 4*n*n) / 5) * 5; }
+function xpFor(l){ let s = 0; for (let i = 1; i < l; i++) s += needXP(i); return s; } // XP bis Level l
 function levelInfo(xp){
+  let l = 1;
+  while (xp >= needXP(l)){ xp -= needXP(l); l++; }
+  return { l, cur:xp, need:needXP(l) };
+}
+// Alte Kurve (bis Okt. 2026: +20 je Level) – nur zum Umrechnen alter Spielstände
+function oldLevelInfo(xp){
   let l = 1, need = 60;
   while (xp >= need){ xp -= need; l++; need = 60 + (l-1)*20; }
   return { l, cur:xp, need };
 }
 const level = () => levelInfo(S.xp).l;
 const habOpen = h => level() >= h.lvl || S.pets.some(p => A[p.type].hab === h.id);
+const where = p => p.at || A[p.type].hab; // p.at = 'haus', solange das Tier zu Besuch ist
 const accOpen = a => level() >= a.lvl;
 
 /* ================= Sound ================= */
@@ -421,6 +630,18 @@ const SFX = {
   level: () => [523,659,784,1047,1319,1568].forEach((f,i) => tone(f, .2, 'triangle', i*.09, .12)),
   gift:  () => { tone(400, .5, 'sine', 0, .15, 1600); [1047,1319,1568].forEach((f,i) => tone(f, .3, 'triangle', .3 + i*.1)); },
   dress: () => [988,1319].forEach((f,i) => tone(f, .12, 'sine', i*.06, .1)),
+  flap:  () => tone(420, .07, 'triangle', 0, .04, 260),
+  step:  () => tone(200 + Math.random()*40, .05, 'triangle', 0, .05),
+  hop:   () => tone(260, .18, 'sine', 0, .08, 620),
+  clop:  () => { tone(900, .04, 'square', 0, .03); tone(700, .04, 'square', .12, .03); },
+  blub:  () => tone(500, .1, 'sine', 0, .06, 1100),
+  click: () => tone(1400, .03, 'square', 0, .025),
+  twinkle: () => tone(1568, .15, 'sine', 0, .04),
+};
+/* Geräusch-Takt und Glitzer beim Tragen: [ms, Sound, Partikel] */
+const STEP = {
+  fly:[320, SFX.flap], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
+  hop:[500, SFX.hop], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
 
 /* ================= Kawaii-Tiergrafik (SVG) ================= */
@@ -460,18 +681,39 @@ function petSVG(type, acc = {}){
   /* --- hinter dem Kopf --- */
   if (t.mane) back += E(38,20,12,12,'#c7a8ff') + E(54,12,12,12,'#ffa8d6') + E(72,14,11,11,'#8fd8ff') + E(86,25,9,9,'#fff0a0');
   if (t.wool) for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; back += E((60 + 45*Math.cos(a)).toFixed(1), (hy + 39*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+  if (t.lmane){ // Löwenmähne: Kranz aus Locken um den Kopf, außen dunkler
+    for (let i=0; i<16; i++){ const a = i/16*Math.PI*2; back += E((60 + 46*Math.cos(a)).toFixed(1), (hy + 40*Math.sin(a)).toFixed(1), 14, 14, t.lmane); }
+    for (let i=0; i<16; i++){ const a = (i+.5)/16*Math.PI*2; back += E((60 + 38*Math.cos(a)).toFixed(1), (hy + 33*Math.sin(a)).toFixed(1), 12, 12, mix(t.lmane,'#ffd166',.35), 0, true); }
+  }
   if (t.spikes) back += spikes(60, hy, 40, 34, 14, 12, 150, 390, t.spikes);
   if (t.pspikes) back += spikes(60, hy, 44, 38, 8, 18, 0, 360, mix(c, '#ff9f43', .35));
-  if (t.dragon) back += Pp('M38 94 C12 90 2 66 12 54 C18 64 24 66 30 64 C28 74 32 84 40 86Z', '#c7a8ff');
+  if (t.luck){ // Kuscheldrache nach Lucys Plüschtier
+    const pk = t.luck;
+    // kleine Glitzerflügel mit gewelltem Rand (wie Finger), links gebaut und gespiegelt
+    const wing = s => {
+      const X = x => s < 0 ? x : 120 - x;
+      return [[2,64,6,11,-50],[9,55,6,11,-30],[19,51,6,11,-10],[29,54,5.5,10,10]].map(([x,y,rx,ry,r]) => E(X(x),y,rx,ry,pk,s*-r)).join('')
+        + E(X(23),77,17,12,pk,-s*35)
+        + [[16,72],[25,68],[22,82],[11,64]].map(([x,y]) => `<circle cx="${X(x)}" cy="${y}" r="1.3" fill="#ffffff"/>`).join('');
+    };
+    back += `<g class="wing dwl">${wing(-1)}</g><g class="wing dwr">${wing(1)}</g>`;
+    // große, seitlich abstehende Ohren
+    back += Ep(12,44,19,10,c,-12) + Ep(13,44,11,5,pk,-12,true);
+    // zwei Hörner neben den Ohren, leicht nach außen gebogen
+    back += Pp('M31 34 C26 24 23 14 25 4 C32 9 38 19 42 30Z', pk) + Pp('M28 12 C30 14 32 16 33 18', mix(pk,'#ffffff',.5), true);
+    // kurzer, dicker Schwanz mit Zacke
+    back += `<g class="ltail">${E(96,114,17,8,c,-25)}${E(106,104,3.5,4.5,pk)}</g>`;
+  }
   if (t.hump) back += E(90,90,16,15,c);
   switch (t.tail){
     case 'squirrel': back += P('M80 118 C118 118 124 70 104 44 C94 32 74 40 84 56 C92 70 90 92 76 100Z', c) + P('M86 104 C108 100 112 74 100 58', mix(c,'#ffffff',.5), true); break;
     case 'gecko':    back += P('M76 116 C100 126 114 108 104 94 C98 88 90 94 96 100 C100 108 90 112 78 108Z', c); break;
     case 'jerboa':   back += S_('M80 116 C106 120 108 94 112 76', line(c), 3) + E(112,72,6,8,'#ffffff'); break;
+    case 'lion':     back += S_('M80 112 C104 118 112 100 106 82', line(c), 5) + S_('M80 112 C104 118 112 100 106 82', c, 3) + E(106,78,7,9,t.lmane); break;
     case 'fish':     back += P('M98 80 L119 62 L115 96Z', mix(c,'#ff9f43',.35)); break;
     case 'whale':    back += P('M96 98 C106 92 108 80 119 70 C121 86 117 100 104 106Z', c); break;
   }
-  if (t.tentacles) [24,42,60,78,96].forEach((x,i) => back += E(x, 104 + (i%2)*3, 9, 14, c, (x-60)/3));
+  if (t.tentacles) [24,42,60,78,96].forEach((x,i) => back += `<g class="tent${i%2 ? ' t2' : ''}">${E(x, 104 + (i%2)*3, 9, 14, c, (x-60)/3)}</g>`);
   if (t.fins) back += Ep(12,86,10,6,mix(c,'#ff9f43',.35),25);
   if (t.flippers) back += Ep(16,104,13,7,c,35);
   if (t.crab){
@@ -496,7 +738,7 @@ function petSVG(type, acc = {}){
   /* --- Körper (stehende Tiere) --- */
   if (!blob){
     const bc = t.bodyC || c;
-    body += Ep(47,119,9,6,feet);
+    body += `<g class="foot fl">${E(47,119,9,6,feet)}</g><g class="foot fr">${E(73,119,9,6,feet)}</g>`;
     if (t.wool) [[44,96],[60,92],[76,96],[42,108],[78,108],[60,114]].forEach(([x,y]) => body += E(x,y,11,11,bc));
     body += E(60,100,25,20,bc);
     if (t.shell){
@@ -505,9 +747,10 @@ function petSVG(type, acc = {}){
       body += E(60,99,8,6,s,0,true) + Ep(45,96,5,4,s,0,true) + Ep(48,109,5,4,s,0,true);
     } else if (!t.wool) {
       body += E(60,104,15,12,b,0,true);
-      if (t.dragon) body += S_('M50 100 L70 100 M52 107 L68 107', line(b), 2);
     }
-    body += t.arms === 'wing' ? Ep(35,98,6,11,limb,35) : Ep(37,98,6,8,limb,30);
+    body += t.arms === 'wing'
+      ? `<g class="wing wl">${E(35,98,6,11,limb,35)}</g><g class="wing wr">${E(85,98,6,11,limb,-35)}</g>`
+      : Ep(37,98,6,8,limb,30);
   }
 
   /* --- Kopf / Hauptform --- */
@@ -518,6 +761,7 @@ function petSVG(type, acc = {}){
   /* --- Gesicht --- */
   if (t.mask) face += P('M60 30 C46 18 22 28 24 54 C26 76 44 86 60 86 C76 86 94 76 96 54 C98 28 74 18 60 30Z', '#ffffff', true);
   if (t.muzzle) face += E(60, fy+8, 13, 9, b, 0, true);
+  if (t.luck) face += E(60, eyY-9, 4, 8, t.luck, 0, true) + E(60, fy+9, 18, 12, b); // Stirnfleck + breite Schnauze
   if (t.patches) face += Ep(60-eyX, eyY, 10, 11, t.patches, 15, true);
   if (t.spots) face += E(88, hy-14, 5, 4, t.spots, 0, true) + E(94, hy-2, 3.5, 3, t.spots, 0, true) + E(30, hy-20, 4, 3, t.spots, 0, true);
   if (t.stripes) face += S_('M54 24 L55 31 M60 22 L60 30 M66 24 L65 31', line(c), 2.4);
@@ -528,6 +772,7 @@ function petSVG(type, acc = {}){
     `<ellipse cx="${x}" cy="${eyY}" rx="${er[0]}" ry="${er[1]}" fill="${INK}"/><circle cx="${x+2.3}" cy="${eyY-3}" r="${(er[0]*.42).toFixed(1)}" fill="#fff"/><circle cx="${x-2.2}" cy="${eyY+3.2}" r="${(er[0]*.2).toFixed(1)}" fill="#fff"/>`
   ).join('') + `</g>`;
   face += `<g class="eh">` + ex.map(x => S_(`M${x-6} ${eyY+1} Q${x} ${eyY-6} ${x+6} ${eyY+1}`, INK, 3)).join('') + `</g>`;
+  face += `<g class="es">` + ex.map(x => S_(`M${x-6} ${eyY} Q${x} ${eyY+5} ${x+6} ${eyY}`, INK, 3)).join('') + `</g>`; // Schlafaugen
   face += `<g opacity=".6">` + Ep(60-eyX-12, fy+9, 7, 4.5, '#ff8fb8', 0, true) + `</g>`;
   if (t.whiskers) face += `<g fill="${line(b)}">` + [[50,fy+9],[46,fy+12],[70,fy+9],[74,fy+12]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('') + `</g>`;
 
@@ -554,7 +799,6 @@ function petSVG(type, acc = {}){
     case 'sheep':  front += Ep(17,50,11,6,ec,28); break;
   }
   if (t.horn) front += P('M55 24 L60 -8 L65 24Z', '#ffd966') + S_('M56.5 15 L63.5 12 M58 5 L62 3', '#e0a800', 2);
-  if (t.dragon) front += Pp('M40 26 L35 5 L51 21Z', '#fff2c2');
   if (t.hair) front += E(53,22,7,7,t.hair) + E(61,18,8,8,t.hair) + E(69,22,6,6,t.hair);
   if (t.narhorn) front += P(`M57 ${top+4} L60 ${top-34} L63 ${top+4}Z`, '#fff3d6') + S_(`M57.8 ${top-6} L62.2 ${top-9} M58.6 ${top-18} L61.4 ${top-20}`, '#d8c39a', 1.6);
   if (t.spout) front += S_(`M60 ${top+2} C60 ${top-8} 52 ${top-12} 47 ${top-18} M60 ${top+2} C60 ${top-8} 68 ${top-12} 73 ${top-18}`, '#bfe9ff', 4) + `<circle cx="45" cy="${top-22}" r="3" fill="#bfe9ff"/><circle cx="75" cy="${top-22}" r="3" fill="#bfe9ff"/>`;
@@ -678,6 +922,7 @@ $('#infoBtns').addEventListener('click', e => {
 /* ================= Rechnen ================= */
 let task = null, input = '', tries = 0, locked = false, lastText = '';
 const OPS = { '+':'+', '-':'−', '*':'×', '/':'÷' };
+const XP_OP = { '+':10, '-':10, '*':20, '/':30 };
 
 function makeTask(){
   const op = pick(S.ops), R = S.range;
@@ -726,7 +971,9 @@ function submit(){
     const first = tries === 0;
     S.total++;
     if (first){ S.streak++; S.best = Math.max(S.best, S.streak); }
-    const gain = first ? 10 + Math.min(S.streak - 1, 10) : 5;
+    // XP je Rechenart; Serienbonus bleibt, im zweiten Versuch gibt es die Hälfte
+    const base = XP_OP[task.op];
+    const gain = first ? base + Math.min(S.streak - 1, 10) : base / 2;
     const tk = pick(Object.keys(TREATS)); S.treats[tk]++;
     S.sinceGift++;
     card.className = 'card good';
@@ -826,8 +1073,9 @@ $('#giftBtns').addEventListener('click', e => {
 /* ================= Welt ================= */
 const scene = $('#scene');
 function renderScene(){
-  const h = HAB[S.hab];
+  const h = HAB[S.hab], R = h.indoor ? ROOMS[S.room] : null;
   scene.className = 'scene ' + h.id;
+  scene.style.background = R ? R.wall : '';
   let html = '';
   if (h.hills) html += `<div class="hill a" style="background:${h.hills[0]}"></div><div class="hill b" style="background:${h.hills[1]}"></div>`;
   if (h.sun) html += `<div class="sun"></div>`;
@@ -836,12 +1084,133 @@ function renderScene(){
   if (h.fx === 'snow') for (let i=0; i<22; i++) html += `<div class="fx snow" style="left:${rnd(0,96)}%;font-size:${rnd(10,20)}px;animation-duration:${rnd(8,16)}s;animation-delay:-${rnd(0,16)}s">❄</div>`;
   if (h.fx === 'leaves') for (let i=0; i<7; i++) html += `<div class="fx leaf" style="left:${rnd(0,90)}%;font-size:${rnd(16,24)}px;animation-duration:${rnd(12,20)}s;animation-delay:-${rnd(0,20)}s">${pick(['🍃','🍂'])}</div>`;
   if (h.fx === 'sparkle') for (let i=0; i<14; i++) html += `<div class="fx spark" style="left:${rnd(2,96)}%;top:${rnd(12,44)}%;font-size:${rnd(12,22)}px;animation-delay:-${(Math.random()*2.2).toFixed(1)}s">✨</div>`;
-  html += h.decos.map(([e,x,y,s]) => (y = Math.min(y, 86), `<div class="deco" style="left:${x}%;top:${y}%;font-size:${s}px;z-index:${Math.round(y*10)}">${e}</div>`)).join('');
+  if (R){
+    html += `<div class="floor" style="background:${FLOORS[R.floor]}"></div>`;
+    if (R.win) html += `<div class="win" style="left:${R.win[0]}%;width:${R.win[1]}cqmin"></div>`;
+    if (R.rug) html += `<div class="rug" style="background:${R.rug[0]};box-shadow:inset 0 0 0 9px ${R.rug[1]}"></div>`;
+    if (R.table){ const [x, y, items] = R.table; html += `<div class="table" style="left:${x}%;top:${y}%;z-index:${y*10}"><div class="items">${items}</div></div>`; }
+    if (R.counter){ const [x, w, items] = R.counter; html += `<div class="counter" style="left:${x}%;width:${w}%"><div class="items">${items}</div></div>`; }
+    if (R.fridge) html += `<div class="fridge" style="left:${R.fridge}%"></div>`;
+    html += `<div class="night"></div><button class="lamp ceil" data-lamp="${S.room}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`;
+    html += `<div class="roomname">${R.e} ${R.name}</div>`;
+  }
+  html += (R ? R.decos : h.decos).map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
+    `<div class="deco"${seat ? ` data-i="${i}"` : ''} style="left:${x}%;top:${y}%;font-size:${s}${R ? 'cqmin' : 'px'};z-index:${Math.round(y*10)}${flip ? ';transform:translate(-50%,-100%) scaleX(-1)' : ''}">${e}</div>`)).join('');
+  // Türen: draußen ein Häuschen (Tier draufziehen = zu Besuch), drinnen Zimmertüren und die Haustür (= nach Hause)
+  html += R
+    ? R.doors.map(([to, x]) => to === 'out'
+        ? `<button class="door in out" data-to="out" style="left:${x}%" aria-label="Haustür nach draußen"><span class="sign">Nach Hause</span></button>`
+        : `<button class="door in" data-to="${to}" style="left:${x}%;--dc:${ROOMS[to].dc}" aria-label="Tür ${ROOMS[to].in}"><span class="sign">${ROOMS[to].e} ${ROOMS[to].name}</span></button>`).join('')
+    : `<button class="door" data-to="haus" aria-label="Zum Haus">🏠<small>Haus</small></button>`;
   $('#bg').innerHTML = html;
+  updateLight();
 }
+// Deckenlampe pro Zimmer: aus = Nacht im Zimmer (Fenster dunkel)
+const lampOn = () => S.lamps[S.room] !== false;
+function updateLight(){
+  if (!HAB[S.hab].indoor) return;
+  scene.querySelector('.lamp').classList.toggle('on', lampOn());
+  scene.querySelector('.night').style.opacity = lampOn() ? 0 : .55;
+  scene.classList.toggle('dark', !lampOn());
+}
+function goRoom(to){
+  S.room = to; save();
+  tone(520, .08, 'triangle', 0, .08, 380); tone(380, .1, 'triangle', .1, .08, 300); // Tür auf, Tür zu
+  renderWorld();
+  scene.animate([{ opacity:.3 }, { opacity:1 }], { duration:250, easing:'ease-out' });
+}
+scene.addEventListener('click', e => {
+  if (e.target.closest('.lamp')){
+    S.lamps[S.room] = !lampOn();
+    tone(lampOn() ? 1200 : 700, .05, 'square', 0, .05);
+    save(); updateLight();
+    return;
+  }
+  const door = e.target.closest('.door'); if (!door) return;
+  const to = door.dataset.to;
+  if (to === 'out'){ SFX.tap(); toast('Zieh ein Tier auf die Haustür, dann geht es nach Hause! 🚪'); }
+  else if (to === 'haus'){ SFX.boing(); S.hab = 'haus'; S.room = 'flur'; save(); renderWorld(); }
+  else goRoom(to);
+});
+const doorAt = ev => ev && ev.clientX != null ? document.elementsFromPoint(ev.clientX, ev.clientY).find(n => n.classList?.contains('door')) : null;
+const floorSpot = p => { p.x = rnd(14, 86); p.y = rnd(64, 80); };
+// Tier geht durch eine Tür: ins Haus, in ein anderes Zimmer oder zurück in seine Welt
+function goThroughDoor(el, p, door){
+  const t = A[p.type], to = door.dataset.to;
+  delete p.seat;
+  if (to === 'out'){ delete p.at; delete p.room; const q = newPet(p.type); p.x = q.x; p.y = q.y; toast(`${t.name} geht zurück in die Welt „${HAB[t.hab].name}“ ${HAB[t.hab].e}`); }
+  else if (to === 'haus'){ p.at = 'haus'; p.room = 'flur'; floorSpot(p); toast(`${t.name} kommt zu Besuch ins Haus! 🏠`); }
+  else { p.room = to; floorSpot(p); toast(`${t.name} geht ${ROOMS[to].in} ${ROOMS[to].e}`); }
+  SFX.pop(); SFX.love();
+  el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
+  save();
+  setTimeout(renderWorld, 400);
+}
+/* Möbel: Tiere setzen oder legen sich hin */
+const curDecos = () => HAB[S.hab].indoor ? ROOMS[S.room].decos : HAB[S.hab].decos;
+const seatEls = () => [...scene.querySelectorAll('.deco[data-i]')];
+const seatOf = d => curDecos()[+d.dataset.i][4];
+function seatAt(ev){
+  if (!HAB[S.hab].indoor || !ev || ev.clientX == null) return null;
+  return seatEls().find(d => { const r = d.getBoundingClientRect(); return ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom; });
+}
+function seatPos(d, slot){
+  const r = d.getBoundingClientRect(), sr = scene.getBoundingClientRect(), s = seatOf(d);
+  return [(r.left + r.width * (.5 + s.slots[slot]) - sr.left) / sr.width * 100, (r.top + r.height * s.k - sr.top) / sr.height * 100];
+}
+// Tier auf seinen Platz setzen (auch nach Neuaufbau der Szene, Möbel wachsen mit dem Bildschirm)
+function applySeat(el, p){
+  const d = scene.querySelector(`.deco[data-i="${p.seat?.i}"]`);
+  if (!d){ delete p.seat; return false; }
+  [p.x, p.y] = seatPos(d, p.seat.slot);
+  placePet(el, p);
+  // Größe nach dem Standort des Möbels auf dem Boden, nicht nach der Sitzhöhe – sonst wirken Tiere auf dem Sofa zu klein
+  const floorY = Math.min(curDecos()[p.seat.i][2], 86);
+  el.style.setProperty('--s', clamp(.78 + (floorY - 50) / 40 * .35, .7, 1.15).toFixed(3));
+  const pose = seatOf(d).pose;
+  // in der Badewanne steckt das Tier hinter dem Wannenrand, sonst sitzt/liegt es vorne drauf
+  el.style.zIndex = +d.style.zIndex + (pose === 'bath' ? -1 : 1 + p.seat.slot);
+  el.classList.add(pose);
+  return true;
+}
+function standUp(el, p){ delete p.seat; el.classList.remove('sit', 'lie', 'bath'); }
+function trySeat(el, p, d, ev){
+  const s = seatOf(d), i = +d.dataset.i, sr = scene.getBoundingClientRect(), r = d.getBoundingClientRect();
+  const taken = S.pets.filter(q => q !== p && where(q) === S.hab && roomOf(q) === S.room && q.seat?.i === i).map(q => q.seat.slot);
+  const free = s.slots.map((o, k) => k).filter(k => !taken.includes(k));
+  if (!free.length){ bubble(el, 'Hier ist kein Platz mehr!'); return false; }
+  const want = (ev.clientX - r.left) / r.width - .5;
+  const slot = free.sort((a, b) => Math.abs(s.slots[a] - want) - Math.abs(s.slots[b] - want))[0];
+  p.seat = { i, slot };
+  applySeat(el, p);
+  SFX.pop();
+  bubble(el, s.pose === 'lie' ? pick(['Gute Nacht! 😴','Zeit für ein Nickerchen 💤','Sooo müde…'])
+    : s.pose === 'bath' ? pick(['Blubb, ein Schaumbad! 🫧','Plitsch platsch!','Rubbel mir den Rücken! 🧼'])
+    : pick(['Gemütlich! 🥰','Hier sitz ich gern!','Ahh, bequem!']));
+  return true;
+}
+function invite(id){
+  const p = S.pets.find(x => x.id === id); if (!p || p.at) return;
+  p.at = 'haus'; p.room = S.room; floorSpot(p); // kommt in das Zimmer, in dem man gerade ist
+  SFX.dress(); save();
+}
+function openInvite(){ $('#inviteModal').classList.add('open'); renderInvite(); }
+function renderInvite(){
+  const out = S.pets.filter(p => !p.at);
+  $('#inviteGrid').innerHTML = out.length
+    ? out.map(p => `<button class="acard" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${A[p.type].name}</b><span>${HAB[A[p.type].hab].e} ${HAB[A[p.type].hab].name}</span></button>`).join('')
+    : `<div class="habLocked">Alle Tiere sind schon im Haus! 🥳</div>`;
+}
+$('#inviteGrid').addEventListener('click', e => {
+  const b = e.target.closest('.acard'); if (!b) return;
+  const p = S.pets.find(x => x.id === b.dataset.id);
+  invite(p.id); toast(`${A[p.type].name} kommt zu Besuch! 🏠`);
+  renderInvite(); renderWorld();
+});
+$('#inviteClose').addEventListener('click', () => $('#inviteModal').classList.remove('open'));
 function renderHabs(){
   $('#habs').innerHTML = HABS.map(h => {
-    const open = habOpen(h), n = S.pets.filter(p => A[p.type].hab === h.id).length;
+    const open = habOpen(h), n = S.pets.filter(p => where(p) === h.id).length;
     return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : ` · Lv ${h.lvl}`}</button>`;
   }).join('');
   $('#habs .hchip.on')?.scrollIntoView({ inline:'center', block:'nearest' });
@@ -856,21 +1225,30 @@ function placePet(el, p){
   el.style.left = p.x + '%'; el.style.top = p.y + '%';
   const water = (HAB[A[p.type].hab].ymin || 50) < 50;
   el.style.setProperty('--s', (water ? .82 + (p.y - 30) / 60 * .3 : clamp(.78 + (p.y - 50) / 40 * .35, .7, 1.15)).toFixed(3));
-  el.style.zIndex = Math.round(p.y * 10);
+  el.style.zIndex = el.classList.contains('held') ? 2950 : Math.round(p.y * 10); // in der Hand: über allem (auch über der Tür)
 }
 function renderWorld(){
   if (!habOpen(HAB[S.hab])) S.hab = 'wiese';
   renderScene(); renderHabs();
   const wrap = $('#pets'); wrap.innerHTML = '';
-  const here = S.pets.filter(p => A[p.type].hab === S.hab);
+  const indoor = HAB[S.hab].indoor;
+  const here = S.pets.filter(p => where(p) === S.hab && (!indoor || roomOf(p) === S.room));
   here.forEach(p => {
     const el = document.createElement('div');
     el.className = 'pet'; el.dataset.id = p.id;
     el.innerHTML = petNode(p);
     placePet(el, p); attachPet(el, p); wrap.appendChild(el);
+    if (p.seat) applySeat(el, p);
   });
   const hint = $('#hint');
-  if (!here.length){ hint.textContent = `Hier wohnt noch niemand. Rechne weiter – im nächsten Geschenk steckt vielleicht ein Tier aus der Welt „${HAB[S.hab].name}“!`; hint.style.opacity = 1; }
+  hint.classList.toggle('low', indoor);
+  if (indoor){
+    hint.textContent = here.length
+      ? 'Tippe auf eine Tür, um ins nächste Zimmer zu gehen. Zieh ein Tier auf eine Tür, dann geht es dorthin!'
+      : 'Hier ist gerade niemand. Tippe auf 📨 und lade Tiere ein!';
+    hint.style.opacity = here.length && S.roomsSeen ? 0 : 1;
+  }
+  else if (!here.length){ hint.textContent = `Hier wohnt noch niemand. Rechne weiter – im nächsten Geschenk steckt vielleicht ein Tier aus der Welt „${HAB[S.hab].name}“!`; hint.style.opacity = 1; }
   else { hint.textContent = 'Tippe die Tiere an, schieb sie herum, füttere sie – und zieh sie an! 👗'; hint.style.opacity = S.hintSeen ? 0 : 1; }
   renderTreats();
   if (S.newPet){
@@ -888,7 +1266,10 @@ function bubble(el, text){
   el.appendChild(b);
   setTimeout(() => b.remove(), 1700);
 }
-function hideHint(){ if (!S.hintSeen){ S.hintSeen = true; save(); $('#hint').style.opacity = 0; } }
+function hideHint(){
+  if (HAB[S.hab].indoor){ if (!S.roomsSeen){ S.roomsSeen = true; save(); $('#hint').style.opacity = 0; } return; }
+  if (!S.hintSeen){ S.hintSeen = true; save(); $('#hint').style.opacity = 0; }
+}
 function limitsY(){ const r = scene.getBoundingClientRect(); return [HAB[S.hab].ymin || 50, (r.height - 90) / r.height * 100]; }
 
 function attachPet(el, p){
@@ -898,32 +1279,74 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    let moved = false;
+    const mode = moveOf(p.type), airy = ['fly','float','glide'].includes(mode);
+    let moved = false, stepper = null;
     const move = ev => {
-      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){ moved = true; el.classList.add('held'); SFX.tap(); }
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
+        moved = true; el.dataset.move = mode; el.classList.add('held');
+        if (p.seat) standUp(el, p); // hochgenommen = aufgestanden
+        if (airy){ clearTimeout(el._land); el.style.transition = ''; el.classList.add('flying'); }
+        if (mode === 'puff') SFX.boing();
+        const [ms, snd, fx] = STEP[mode];
+        snd(); stepper = setInterval(() => {
+          // Sicherheitsnetz: Tier nicht mehr in der Hand oder nicht mehr da → Ruhe
+          if (!el.isConnected || !el.classList.contains('held')) return up();
+          snd(); if (fx) sprinkle(el, fx, 1);
+        }, ms);
+      }
+      if (ev.buttons === 0 && ev.pointerType === 'mouse') return up(); // Maus woanders losgelassen
       if (!moved) return;
       p.x = clamp((ev.clientX + offX - r.left) / r.width * 100, 7, 93);
-      p.y = clamp((ev.clientY + offY - r.top) / r.height * 100, ymin, ymax);
+      // Fliegende Tiere dürfen auch in den Himmel
+      p.y = clamp((ev.clientY + offY - r.top) / r.height * 100, airy ? 24 : ymin, ymax);
       placePet(el, p);
+      const dh = doorAt(ev);
+      scene.querySelectorAll('.door').forEach(d => d.classList.toggle('hot', d === dh));
     };
-    const up = () => {
+    let done = false;
+    const up = ev => {
+      clearInterval(stepper);
+      if (done) return; done = true;
       el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
-      el.classList.remove('held');
+      el.removeEventListener('lostpointercapture', up); removeEventListener('blur', up);
+      el.classList.remove('held'); if (!p.seat) el.style.zIndex = Math.round(p.y * 10);
       hideHint();
       S.sel = p.id; renderMascot();
+      scene.querySelectorAll('.door.hot').forEach(d => d.classList.remove('hot'));
+      const door = moved && doorAt(ev);
+      if (door){ el.classList.remove('flying'); goThroughDoor(el, p, door); return; }
+      const seat = moved && seatAt(ev);
+      if (seat){
+        clearTimeout(el._land); el.classList.remove('flying'); el.style.transition = '';
+        if (trySeat(el, p, seat, ev)){ save(); return; }
+      }
+      if (moved && airy){
+        // sanft zurück auf den Boden gleiten, dann landen
+        const glide = p.y < ymin;
+        if (glide){ el.style.transition = 'top .9s ease-in, transform .9s ease-in'; p.y = ymin + 2; placePet(el, p); }
+        el._land = setTimeout(() => {
+          el.classList.remove('flying'); el.style.transition = '';
+          retrigger(el.querySelector('.inner'), 'jump'); SFX.pop();
+          if (Math.random() < .4) bubble(el, mode === 'float' ? 'Ich schwebe wie ein Wölkchen! ☁️' : mode === 'glide' ? 'Glück gehabt! 🍀' : 'Ich kann fliegen! 🪽');
+        }, glide ? 900 : 150);
+        save();
+        return;
+      }
       retrigger(el.querySelector('.inner'), 'jump');
-      if (moved){ SFX.pop(); }
+      if (moved){ SFX.pop(); if (mode === 'puff') bubble(el, 'Pfffff! 💨'); }
       else { SFX.boing(); happy(el); bubble(el, Math.random() < .5 ? A[p.type].say : pick(HELLO)); sprinkle(el, ['✨','💫','💖'], 2); }
       save();
     };
     el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+    // Loslassen außerhalb des Fensters kommt nicht als pointerup an – dann eben so
+    el.addEventListener('lostpointercapture', up); addEventListener('blur', up);
   });
 }
 
 function renderTreats(){
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
-  ).join('') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
+  ).join('') + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
 }
 $('#tray').addEventListener('pointerdown', e => {
   const btn = e.target.closest('.treat'); if (!btn || btn.classList.contains('tool')) return;
@@ -956,6 +1379,7 @@ $('#tray').addEventListener('pointerdown', e => {
 $('#tray').addEventListener('click', e => {
   if (e.target.closest('#albumBtn')){ SFX.tap(); openAlbum(); }
   if (e.target.closest('#wardBtn')){ SFX.tap(); openWard(); }
+  if (e.target.closest('#inviteBtn')){ SFX.tap(); openInvite(); }
 });
 
 function feed(el, k){
@@ -976,7 +1400,7 @@ function feed(el, k){
 }
 
 /* ================= Anziehen ================= */
-function wardSel(){ return S.pets.find(p => p.id === S.sel) || S.pets.find(p => A[p.type].hab === S.hab) || S.pets[0]; }
+function wardSel(){ return S.pets.find(p => p.id === S.sel) || S.pets.find(p => where(p) === S.hab) || S.pets[0]; }
 function openWard(){ $('#wardModal').classList.add('open'); renderWard(); }
 function renderWard(){
   const p = wardSel();
@@ -1013,7 +1437,7 @@ function openAlbum(){
   const owned = Object.fromEntries(S.pets.map(p => [p.type, p]));
   $('#albumTitle').textContent = `Sammelalbum ${Object.keys(owned).length} / ${ORDER.length}`;
   $('#stats').innerHTML = `<div>✅ ${S.total} gerechnet</div><div>🔥 Beste Serie: ${S.best}</div><div>⭐ ${S.xp} XP</div><div>👗 ${ACC.filter(accOpen).length} / ${ACC.length}</div>`;
-  $('#album').innerHTML = HABS.map(h => {
+  $('#album').innerHTML = HABS.filter(h => !h.indoor).map(h => {
     const types = ORDER.filter(t => A[t].hab === h.id), have = types.filter(t => owned[t]).length;
     if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>ab Level ${h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
@@ -1036,7 +1460,7 @@ $('#resetBtn').addEventListener('click', () => {
     return;
   }
   clearTimeout(resetArmed); resetArmed = null;
-  try { localStorage.removeItem(KEY); localStorage.removeItem(OLD_KEY); } catch(e){}
+  try { localStorage.removeItem(KEY); if (!TEST) localStorage.removeItem(OLD_KEY); } catch(e){}
   location.reload();
 });
 
@@ -1068,6 +1492,7 @@ document.addEventListener('keydown', e => {
 
 /* ================= Start ================= */
 load(); save();
+if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
 buildChips(); buildPad(); renderMascot(); renderHUD(); newTask();
 if (S.sinceGift >= 5) queueModal(openGift);
 </script>
