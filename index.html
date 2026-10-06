@@ -79,6 +79,8 @@ main{flex:1;position:relative;min-height:0}
 .scene.wueste{background:linear-gradient(#ffe7b8,#ffc27a 44%,#f7d58a 44%,#e9b45f)}
 .scene.eis{background:linear-gradient(#a9dcff,#e3f5ff 44%,#f7fcff 44%,#cfe6f7)}
 .scene.zauber{background:linear-gradient(#a98cff,#ffc4e6 46%,#ffe8f5 46%,#f3c2ff)}
+.scene.urzeit{background:linear-gradient(#ffb47a,#ffe0b5 44%,#a8cf6e 44%,#7fb24f)}
+.fx.ash{top:-20px;width:7px;height:7px;border-radius:50%;background:rgba(120,90,80,.45);animation:fall linear infinite}
 /* ---------- Haus: Zimmer (Wand = Hintergrund der Szene, Boden = .floor) ---------- */
 .scene.haus{container-type:size}
 .floor{position:absolute;left:0;right:0;top:56%;bottom:0;border-top:10px solid #fff;box-shadow:inset 0 3px 0 rgba(58,46,92,.1)}
@@ -151,7 +153,8 @@ button.acard{font-family:inherit;color:inherit;cursor:pointer}
 
 .pet{position:absolute;width:clamp(96px,19vw,150px);transform:translate(-50%,-100%) scale(var(--s,1));transform-origin:50% 100%;touch-action:none;cursor:grab}
 .pet.held{cursor:grabbing}
-.inner{transform-origin:50% 100%;transition:transform .15s}
+.inner{transform-origin:50% 100%;transition:transform .15s,scale .8s cubic-bezier(.3,1.6,.5,1)}
+.pet.big .inner{scale:1.55} /* Lieblingsessen: 10 Sekunden groß */
 .pet.held .inner{transform:scale(1.1) rotate(-5deg)}
 .pet.target .inner{transform:scale(1.14)}
 /* Vögel fliegen, solange man sie hält */
@@ -183,6 +186,12 @@ button.acard{font-family:inherit;color:inherit;cursor:pointer}
 .pet{--spd:.3s}
 .pet[data-move=slow]{--spd:.75s}
 .pet[data-move=waddle]{--spd:.26s}
+.pet[data-move=stomp]{--spd:.5s}
+/* Dinos stampfen: schwer von einer Seite auf die andere, bei jedem Schritt ein Rums */
+.pet.held[data-move=stomp] .bob{animation:stomp .5s ease-in-out infinite}
+.pet.held[data-move=stomp] .fl{animation:step .25s ease-in-out infinite alternate}
+.pet.held[data-move=stomp] .fr{animation:step .25s ease-in-out infinite alternate-reverse}
+@keyframes stomp{0%,100%{transform:rotate(-5deg) scaleY(.96)}25%{transform:translateY(-7%) rotate(0)}50%{transform:rotate(5deg) scaleY(.96)}75%{transform:translateY(-7%) rotate(0)}}
 .foot,.tent{transform-box:fill-box}
 .foot{transform-origin:50% 50%}
 .tent{transform-origin:50% 0}
@@ -249,6 +258,29 @@ button.acard{font-family:inherit;color:inherit;cursor:pointer}
 .treat .n{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 5px;font-family:var(--font)}
 .treat.empty{filter:grayscale(1);opacity:.5}
 .treat.tool{background:#efe6ff}
+/* Einrichten-Modus */
+.tray[hidden]{display:none}
+.scene.build .deco[data-i]{pointer-events:auto;cursor:grab;outline:2px dashed rgba(155,93,229,.65);outline-offset:3px;border-radius:12px;touch-action:none}
+.scene.build .deco.sel{outline:3px solid var(--purple);background:rgba(255,255,255,.35)}
+.scene.build .pet{pointer-events:none;opacity:.5}
+.ftools{position:absolute;transform:translate(-50%,-100%);z-index:3050;display:flex;gap:4px;background:#fff;padding:5px;border-radius:16px;box-shadow:0 4px 0 rgba(58,46,92,.15)}
+.ftools button{width:40px;height:40px;border-radius:12px;background:#f1edfa;font-size:20px;font-family:var(--emoji)}
+.buildbar{position:absolute;left:8px;right:8px;bottom:10px;z-index:3000;background:rgba(255,255,255,.95);border-radius:22px;padding:8px;box-shadow:0 5px 0 rgba(58,46,92,.12);display:flex;gap:8px;align-items:center}
+.buildbar[hidden]{display:none}
+.buildbar .btn{padding:10px 14px;font-size:16px;flex:none}
+.fcat{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.fcat::-webkit-scrollbar{display:none}
+.fitem{flex:none;width:60px;border-radius:14px;background:#fff6e5;padding:4px 2px;display:flex;flex-direction:column;align-items:center}
+.fitem .e{font-size:30px;font-family:var(--emoji);line-height:1.15}
+.fitem small{font-size:10px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px}
+.fitem.locked .e{filter:grayscale(1);opacity:.35}
+.pet .bob{position:relative}
+.rider{position:absolute;left:15%;width:70%;pointer-events:none}
+.rider svg{display:block;width:100%;height:auto;overflow:visible}
+.treat.ride{padding:3px}
+.treat.ride svg{width:100%;height:100%;border-radius:50%;display:block}
+.ghost.rideghost{width:64px;height:64px}
+.ghost.rideghost svg{width:100%;height:100%;display:block}
 .ghost{position:fixed;font-size:48px;pointer-events:none;z-index:5000;transform:translate(-50%,-60%);font-family:var(--emoji)}
 .fly{position:absolute;pointer-events:none;z-index:4000;font-size:26px}
 
@@ -294,6 +326,32 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
 .stats div{background:var(--cream);padding:6px 12px;border-radius:12px}
 .reset{color:var(--ink-soft);text-decoration:underline;font-size:13px;margin-top:14px}
 .ward-pet{width:150px;margin:0 auto 4px}
+/* Eigener Avatar: Knopf oben links, Editor mit Reitern */
+.avbtn{width:48px;height:48px;border-radius:50%;background:#f1edfa;flex:none;padding:0;overflow:visible;position:relative;box-shadow:0 3px 0 #d6cdee}
+.avbtn svg{width:100%;height:100%;display:block;border-radius:50%;overflow:hidden}
+.avbtn .badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--red);display:none;animation:pulse 1s infinite alternate;z-index:1}
+.avbtn .badge.show{display:block}
+#avCoach{width:70px}
+.av-big{width:150px;margin:0 auto 6px}
+.av-big svg{display:block;width:100%;height:auto;overflow:visible}
+.avtabs{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.avtabs::-webkit-scrollbar{display:none}
+.avtab{flex:none;padding:8px 12px;border-radius:999px;background:#f1edfa;font-weight:600;font-size:15px}
+.avtab.on{background:var(--purple);color:#fff;box-shadow:0 3px 0 #6d35b5}
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:6px 0 10px}
+.avopt{border-radius:16px;background:var(--soft);padding:6px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.avopt svg{width:70px;height:auto;display:block;overflow:hidden}
+.avopt small{font-size:12px;font-weight:600;color:var(--ink-soft);line-height:1.15}
+.avopt.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
+.avopt.locked svg{filter:grayscale(1);opacity:.35}
+.swrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 10px}
+.sw{width:40px;height:40px;border-radius:50%;box-shadow:inset 0 0 0 3px rgba(58,46,92,.15)}
+.sw.on{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--purple)}
+.avnote{background:var(--cream);border-radius:14px;padding:8px 12px;font-size:15px!important}
+/* Namensfeld zum Umbenennen der Tiere */
+.namebox{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:17px;margin:2px 0 10px}
+.namebox input{font:inherit;font-weight:700;color:var(--ink);width:min(220px,60vw);padding:8px 12px;border-radius:14px;border:3px solid #e6dbff;background:var(--soft);text-align:center;user-select:text;-webkit-user-select:text}
+.namebox input:focus{outline:none;border-color:var(--purple);background:#fff}
 .ward-pets{display:flex;gap:8px;overflow-x:auto;padding:6px 4px 10px;margin:4px 0}
 .wp{flex:none;width:62px;border-radius:16px;background:var(--soft);padding:4px 6px}
 .wp.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
@@ -308,6 +366,8 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
 .toast{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:var(--yellow);color:var(--ink);padding:12px 22px;border-radius:20px;font-weight:700;font-size:18px;box-shadow:0 5px 0 #d9ab1c;z-index:7000;animation:toast 2.6s forwards;max-width:calc(100% - 32px);text-align:center}
 @keyframes toast{0%{transform:translate(-50%,-140px)}12%,85%{transform:translate(-50%,0)}100%{transform:translate(-50%,-180px)}}
 .confetti{position:fixed;width:10px;height:14px;pointer-events:none;z-index:6500;border-radius:3px}
+/* Feuerwerk (Lieblingsessen) */
+.fw{position:fixed;width:11px;height:11px;border-radius:50%;pointer-events:none;z-index:6400;box-shadow:0 0 8px 2px currentColor}
 .floatxp{position:fixed;font-weight:700;font-size:22px;color:var(--purple);pointer-events:none;z-index:6500;white-space:nowrap;text-shadow:0 2px 0 #fff}
 
 @media (max-height:640px){.coach{min-height:66px}.mascot{width:58px}.speech{font-size:15px;margin-bottom:18px}.task{font-size:44px}.card{padding:12px}}
@@ -318,6 +378,7 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
 <body>
 <div id="app">
   <header>
+    <button class="avbtn" id="avBtn" aria-label="Mein Avatar"><span class="badge" id="avBadge"></span></button>
     <div class="lvl" title="Level"><div><small>LEVEL</small><span id="lvl">1</span></div></div>
     <div class="xpwrap">
       <div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
@@ -331,6 +392,7 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
     <section class="screen active" id="quiz">
       <div class="chips" id="chips"></div>
       <div class="coach">
+        <div class="mascot" id="avCoach"></div>
         <div class="mascot" id="mascot"></div>
         <div class="speech" id="speech">Los geht's!</div>
       </div>
@@ -349,6 +411,11 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
       </div>
       <div class="habs" id="habs"></div>
       <div class="tray" id="tray"></div>
+      <div class="buildbar" id="buildbar" hidden>
+        <button class="btn alt" id="buildReset" aria-label="Zimmer zurücksetzen">↺</button>
+        <div class="fcat" id="fcat"></div>
+        <button class="btn" id="buildDone">Fertig ✔</button>
+      </div>
     </section>
   </main>
 
@@ -375,9 +442,18 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
 <div class="modal" id="wardModal"><div class="mcard wide">
   <h2>Anziehen 👗</h2>
   <div class="ward-pet" id="wardPet"></div>
+  <label class="namebox">✏️ Name: <input id="petName" maxlength="16" autocomplete="off"></label>
   <div class="ward-pets" id="wardPets"></div>
   <div class="ward-grid" id="wardGrid"></div>
   <div class="btns"><button class="btn alt" id="wardOff">Alles ausziehen</button><button class="btn" id="wardClose">Fertig</button></div>
+</div></div>
+
+<div class="modal" id="avModal"><div class="mcard wide">
+  <h2>Mein Avatar ✨</h2>
+  <div class="av-big" id="avBig"></div>
+  <div class="avtabs" id="avTabs"></div>
+  <div id="avGrid"></div>
+  <br><button class="btn" id="avClose">Fertig</button>
 </div></div>
 
 <div class="modal" id="inviteModal"><div class="mcard wide">
@@ -414,15 +490,17 @@ const HABS = [
     decos:[['🏔️',14,47,96],['🏔️',84,47,74],['⛄',90,82,50],['🧊',18,88,34],['🧊',60,56,22]] },
   { id:'zauber', name:'Zauberland', e:'🌈', lvl:13, hills:['#ffd6f0','#f4c9ff'], fx:'sparkle',
     decos:[['🌈',24,45,92],['🏰',74,47,62],['🍭',90,72,40],['🍄',10,82,34],['🍭',32,97,30],['💎',58,95,24]] },
+  { id:'urzeit', name:'Urzeit',     e:'🦕', lvl:16, hills:['#9bc46a','#88b55a'], fx:'ash',
+    decos:[['🌋',78,46,110],['🌴',8,54,96],['🌴',94,58,70],['🌿',20,90,40],['🦴',64,94,30],['🥚',36,84,26],['🥚',40,86,20],['🪨',86,88,34],['🌿',50,58,28]] },
 ];
 const HAB = Object.fromEntries(HABS.map(h => [h.id, h]));
 
 /* ---------- Haus: Zimmer, die per Türen verbunden sind ----------
    doors: [Ziel, x%] – 'out' ist die Haustür (Tiere gehen nach Hause)
-   decos: [Emoji, x%, y%, Größe in % der kürzeren Raumseite, Sitzplatz?, gespiegelt?]
-   Sitzplatz: pose (sit/lie/bath), slots = Plätze (Versatz in Möbelbreite), k = Höhe der Sitzfläche im Bild (0 oben, 1 unten)
+   decos: Start-Einrichtung aus dem Möbel-Katalog (FURN). Was die Kinder umräumen, steht in S.furn[Zimmer].
+   Sitzplatz (seat): pose (sit/lie/bath), slots = Plätze (Versatz in Möbelbreite), k = Höhe der Sitzfläche im Bild (0 oben, 1 unten)
    Plan:  Eingang ─ Wohnzimmer ─ Esszimmer ─ Küche ─ Eingang
-          Eingang ─ Bad ─ Schlafzimmer ─ Spielzimmer 2 ─ Spielzimmer 1 ─ Wohnzimmer */
+          Eingang ─ Bad ─ Schlafzimmer ─ Löwenzimmer ─ Drachenzimmer ─ Wohnzimmer */
 const stripes = (a, b) => `repeating-linear-gradient(90deg,${a} 0 28px,${b} 28px 56px)`;
 const tiles = (line, fill, w=40, h=40) => `linear-gradient(${line} 2px,transparent 2px) 0 0/${w}px ${h}px,linear-gradient(90deg,${line} 2px,${fill} 2px) 0 0/${w}px ${h}px`;
 const FLOORS = {
@@ -433,33 +511,107 @@ const FLOORS = {
   mat:'repeating-linear-gradient(90deg,#ff9ec4 0 60px,#ffd166 60px 120px,#7bdff2 120px 180px,#9be89b 180px 240px)',
 };
 const SIT = (slots=[0], k=.5) => ({ pose:'sit', slots, k });
+const LIE = (slots=[-.13,.17], k=.62) => ({ pose:'lie', slots, k });
+/* Möbel-Katalog zum Selbst-Einrichten: s = Größe (% der kürzeren Raumseite), wall = hängt an der Wand,
+   seat = Tiere können darauf sitzen/liegen, lvl = ab Level frei, gift = steckt in Überraschungsgeschenken */
+const FURN_LIST = [
+  // Grundausstattung
+  {id:'sofa', e:'🛋️', name:'Sofa', s:34, lvl:1, seat:SIT([-.17,0,.17], .83)},
+  {id:'bett', e:'🛏️', name:'Bett', s:27, lvl:1, seat:LIE()},
+  {id:'stuhl', e:'🪑', name:'Stuhl', s:16, lvl:1, seat:SIT()},
+  {id:'wanne', e:'🛁', name:'Badewanne', s:30, lvl:1, seat:{ pose:'bath', slots:[-.12,.14], k:.6 }},
+  {id:'klo', e:'🚽', name:'Toilette', s:15, lvl:1, seat:SIT([0], .45)},
+  {id:'tv', e:'📺', name:'Fernseher', s:16, lvl:1},
+  {id:'pflanze', e:'🪴', name:'Pflanze', s:18, lvl:1},
+  {id:'teddy', e:'🧸', name:'Teddy', s:11, lvl:1},
+  {id:'wolle', e:'🧶', name:'Wollknäuel', s:6, lvl:1},
+  {id:'ball', e:'⚽', name:'Ball', s:8, lvl:1},
+  {id:'puzzle', e:'🧩', name:'Puzzle', s:7, lvl:1},
+  {id:'jojo', e:'🪀', name:'Jojo', s:6, lvl:1},
+  {id:'wuerfel', e:'🎲', name:'Würfel', s:5, lvl:1},
+  {id:'schirm', e:'☂️', name:'Schirm', s:8, lvl:1},
+  {id:'stiefel', e:'👢', name:'Stiefel', s:7, lvl:1},
+  {id:'apfel', e:'🍎', name:'Apfel', s:6, lvl:1},
+  {id:'ente', e:'🦆', name:'Quietscheente', s:7, lvl:1},
+  {id:'seife', e:'🧼', name:'Seife', s:5, lvl:1},
+  {id:'lotion', e:'🧴', name:'Lotion', s:6, lvl:1},
+  {id:'bild', e:'🖼️', name:'Bild', s:12, lvl:1, wall:true},
+  {id:'uhr', e:'🕰️', name:'Uhr', s:9, lvl:1, wall:true},
+  {id:'spiegel', e:'🪞', name:'Spiegel', s:12, lvl:1, wall:true},
+  {id:'jacke', e:'🧥', name:'Jacke', s:7, lvl:1, wall:true},
+  {id:'mond', e:'🌙', name:'Mond', s:8, lvl:1, wall:true},
+  {id:'stern', e:'⭐', name:'Stern', s:6, lvl:1, wall:true},
+  {id:'sonne', e:'☀️', name:'Sonne', s:8, lvl:1, wall:true},
+  {id:'ballon', e:'🎈', name:'Luftballon', s:7, lvl:1, wall:true},
+  // Coolere Sachen zum Freischalten
+  {id:'palme', e:'🌴', name:'Palme', s:16, lvl:3},
+  {id:'gitarre', e:'🎸', name:'Gitarre', s:12, lvl:4, wall:true},
+  {id:'drachen', e:'🪁', name:'Drachen', s:12, lvl:4, wall:true},
+  {id:'klavier', e:'🎹', name:'Klavier', s:24, lvl:5},
+  {id:'trommel', e:'🥁', name:'Trommel', s:16, lvl:5},
+  {id:'mikro', e:'🎤', name:'Mikrofon', s:8, lvl:5},
+  {id:'rutsche', e:'🛝', name:'Rutsche', s:26, lvl:6, seat:SIT([-.13], .34)},
+  {id:'palette', e:'🎨', name:'Malpalette', s:10, lvl:6, wall:true},
+  {id:'burg', e:'🏰', name:'Burg', s:14, lvl:7},
+  {id:'drachenbild', e:'🐉', name:'Drachenbild', s:14, lvl:8, wall:true},
+  {id:'loewenbild', e:'🦁', name:'Löwenbild', s:14, lvl:8, wall:true},
+  {id:'krone', e:'👑', name:'Krone', s:8, lvl:9},
+  {id:'diamant', e:'💎', name:'Diamant', s:7, lvl:9},
+  {id:'muenze', e:'🪙', name:'Goldmünze', s:5, lvl:9},
+  {id:'karussell', e:'🎠', name:'Karussell', s:26, lvl:10, seat:SIT([0], .42)},
+  {id:'disco', e:'🪩', name:'Discokugel', s:10, lvl:11, wall:true},
+  {id:'brunnen', e:'⛲', name:'Springbrunnen', s:24, lvl:12},
+  {id:'zelt', e:'⛺', name:'Zelt', s:26, lvl:13, seat:LIE([0], .8)},
+  {id:'noten', e:'🎶', name:'Musiknoten', s:8, lvl:13, wall:true},
+  {id:'riesenrad', e:'🎡', name:'Riesenrad', s:34, lvl:15},
+  {id:'pokal', e:'🏆', name:'Pokal', s:12, lvl:16},
+  {id:'rakete', e:'🚀', name:'Rakete', s:28, lvl:17, seat:SIT([0], .5)},
+  {id:'planet', e:'🪐', name:'Planet', s:12, lvl:18, wall:true},
+  {id:'regenbogen', e:'🌈', name:'Regenbogen', s:22, lvl:20, wall:true},
+  // Nur als Überraschung
+  {id:'tannenbaum', e:'🎄', name:'Weihnachtsbaum', s:26, gift:true},
+  {id:'pinata', e:'🪅', name:'Piñata', s:14, gift:true, wall:true},
+  {id:'zirkus', e:'🎪', name:'Zirkuszelt', s:30, gift:true, seat:SIT([0], .7)},
+  {id:'ufo', e:'🛸', name:'UFO', s:16, gift:true, wall:true},
+  {id:'schneemann', e:'⛄', name:'Schneemann', s:18, gift:true},
+];
+const FURN = Object.fromEntries(FURN_LIST.map(f => [f.id, f]));
+// Einrichtung, mit der jedes Zimmer startet: [Möbel-id, x%, y%, Größe?, gespiegelt?]
 const ROOMS = {
   flur:   { name:'Eingang', e:'🚪', in:'in den Eingang', dc:'#c07d43', wall:stripes('#e3f2e1','#d5ebd2'), floor:'wood', rug:['#8fd19e','#b5e3bf'],
             doors:[['out',12],['wohn',40],['kueche',63],['bad',86]],
-            decos:[['🧥',26,48,7],['☂️',27,64,8],['👢',52,66,7],['🪑',75,82,16,SIT()],['🪴',96,66,16]] },
+            decos:[['jacke',26,48],['schirm',27,64],['stiefel',52,66],['stuhl',75,82],['pflanze',96,66,16]] },
   wohn:   { name:'Wohnzimmer', e:'🛋️', in:'ins Wohnzimmer', dc:'#d68f4f', wall:stripes('#ffe9d8','#ffdfc8'), floor:'wood', rug:['#ffa8cb','#ffc9de'], win:[58,18],
             doors:[['flur',9],['ess',27],['spiel1',90]],
-            decos:[['🛋️',42,60,34,SIT([-.17,0,.17], .83)],['🖼️',42,30,13],['📺',72,64,16],['🪑',14,84,17,SIT()],['🧶',60,92,6]] },
+            decos:[['sofa',42,60],['bild',42,30,13],['tv',72,64],['stuhl',14,84,17],['wolle',60,92]] },
   ess:    { name:'Esszimmer', e:'🍽️', in:'ins Esszimmer', dc:'#e8a87c', wall:stripes('#fff1d6','#ffe8c2'), floor:'wood',
             doors:[['wohn',10],['kueche',90]], table:[50,76,'🍽️🎂🍕'],
-            decos:[['🖼️',36,30,11],['🕰️',64,26,9],['🪑',29,82,17,SIT()],['🪑',71,82,17,SIT(),true],['🪴',96,66,14]] },
+            decos:[['bild',36,30,11],['uhr',64,26],['stuhl',29,82,17],['stuhl',71,82,17,true],['pflanze',96,66,14]] },
   kueche: { name:'Küche', e:'🍳', in:'in die Küche', dc:'#7cc4a4', wall:tiles('#dfe8e2','#fbfdfb',44,22), floor:'checker', win:[32,15],
             doors:[['flur',10],['ess',90]], counter:[22,40,'🍳🫖🍞🧁'], fridge:72,
-            decos:[['🪑',40,84,15,SIT()],['🍎',60,90,6]] },
+            decos:[['stuhl',40,84,15],['apfel',60,90]] },
   bad:    { name:'Badezimmer', e:'🛁', in:'ins Badezimmer', dc:'#7bb6e8', wall:tiles('#bfe0f5','#eaf6ff'), floor:'tiles', win:[28,12],
             doors:[['flur',10],['schlaf',90]],
-            decos:[['🛁',44,80,30,{ pose:'bath', slots:[-.12,.14], k:.6 }],['🚽',74,68,15,SIT([0], .45)],['🪞',72,34,12],['🧴',60,66,6],['🦆',24,90,7],['🧼',64,92,5]] },
+            decos:[['wanne',44,80],['klo',74,68],['spiegel',72,34],['lotion',60,66],['ente',24,90],['seife',64,92]] },
   schlaf: { name:'Schlafzimmer', e:'🛏️', in:'ins Schlafzimmer', dc:'#b39ddb', wall:stripes('#efe6ff','#e4d8fb'), floor:'carpet', win:[30,16],
             doors:[['bad',10],['spiel2',90]],
-            decos:[['🛏️',34,74,27,{ pose:'lie', slots:[-.13,.17], k:.62 }],['🛏️',67,74,27,{ pose:'lie', slots:[-.13,.17], k:.62 }],['🧸',86,92,10],['🌙',74,28,8]] },
-  spiel1: { name:'Spielzimmer 1', e:'🧸', in:'ins Spielzimmer 1', dc:'#f2b84b', wall:stripes('#fff6c9','#fff0ad'), floor:'mat',
+            decos:[['bett',34,74],['bett',67,74],['teddy',86,92,10],['mond',74,28]] },
+  // Zwei Kinderzimmer (Lucys Wunsch): eins für einen Drachen, eins für einen Löwen. Die ids bleiben spiel1/spiel2 wegen alter Spielstände.
+  spiel1: { name:'Drachenzimmer', e:'🐉', in:'ins Drachenzimmer', dc:'#7cc9a8', wall:stripes('#e2f7ee','#d0f0e2'), floor:'carpet', rug:['#b9a3f0','#d6c8fa'],
             doors:[['wohn',10],['spiel2',90]],
-            decos:[['🛝',42,70,28,SIT([-.13], .34)],['🧸',70,68,18],['🪁',75,30,12],['🎨',30,30,10],['⚽',58,88,8],['🧩',26,86,7],['🪀',80,86,6],['🎲',36,93,5]] },
-  spiel2: { name:'Spielzimmer 2', e:'🎵', in:'ins Spielzimmer 2', dc:'#ff8fb8', wall:stripes('#ffe6f1','#ffd8ea'), floor:'wood', rug:['#9fd8ff','#c6e8ff'],
+            decos:[['bett',33,74],['rutsche',68,70,24],['drachenbild',38,30],['stern',24,20,5],['stern',62,22],['burg',84,90,12],['diamant',18,90],['muenze',24,93]] },
+  spiel2: { name:'Löwenzimmer', e:'🦁', in:'ins Löwenzimmer', dc:'#f2b84b', wall:stripes('#fff0cf','#ffe4b0'), floor:'wood', rug:['#e8b46a','#f5d39c'],
             doors:[['spiel1',10],['schlaf',90]],
-            decos:[['🎹',36,66,24],['🪑',36,84,13,SIT()],['🥁',66,74,16],['🎸',72,34,12],['🎤',80,70,8],['🎶',26,28,8]] },
+            decos:[['bett',36,74],['loewenbild',38,30],['sonne',72,22],['palme',70,64],['teddy',68,90,10],['ballon',23,44],['krone',84,90]] },
 };
 const roomOf = p => ROOMS[p.room] ? p.room : 'wohn';
+// Möbel eines Zimmers (selbst eingerichtet oder die Start-Einrichtung): [{id, x, y, s?, f?}]
+function furnOf(room){
+  S.furn = S.furn || {};
+  if (!S.furn[room]) S.furn[room] = ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
+  return S.furn[room];
+}
+const furnOpen = f => f.lvl ? level() >= f.lvl : (S.furnOwned || []).includes(f.id);
 
 /* Tiere: c = Fellfarbe, b = Bauch/Schnauze, weitere Felder steuern Ohren, Mund usw. */
 const A = {
@@ -470,6 +622,8 @@ const A = {
   hund:     {hab:'wiese', name:'Bello', label:'Hund', g:'der', c:'#f2c48d', b:'#fff4e3', ears:'floppy', earC:'#c58f5c', nose:'dot', mouth:'smile', muzzle:true, fav:'muffin', say:'Wuff wuff!'},
   schwein:  {hab:'wiese', name:'Rosi', label:'Schwein', g:'das', c:'#ffc2d9', b:'#ffe0ec', ears:'pig', nose:'snout', mouth:'smile', fav:'karotte', say:'Oink oink!'},
   maus:     {hab:'wiese', name:'Krümel', label:'Maus', g:'die', c:'#cdd3de', b:'#f3f5f9', ears:'mouse', nose:'tri', mouth:'w', fav:'apfel', say:'Fiep fiep!'},
+  pferd:    {hab:'wiese', name:'Fanny', label:'Pferd', g:'das', c:'#c8875a', b:'#f2d9c2', ears:'cat', earC:'#b97a4f', inner:'#f2d9c2', hair:'#6b4226', tail:'horse', muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'Wiehern! 🐴'},
+  papillon: {hab:'wiese', name:'Fifi', label:'Papillon', g:'der', c:'#ffffff', b:'#ffffff', ears:'butterfly', earC:'#3b2b27', inner:'#8a5a42', fringe:'#4d3a33', pmask:'#4a332c', tanC:'#a8643a', fluffy:true, tail:'plume', muzzle:true, nose:'dot', mouth:'tongue', fav:'muffin', say:'Wuff! Ich hab Schmetterlingsohren! 🦋'},
   // Wald
   fuchs:    {hab:'wald', name:'Flinki', label:'Fuchs', g:'der', c:'#ff9147', b:'#ffffff', ears:'cat', inner:'#fff3e8', muzzle:true, nose:'dot', mouth:'w', fav:'apfel', say:'Hihi!'},
   baer:     {hab:'wald', name:'Brummi', label:'Bär', g:'der', c:'#c08b5c', b:'#f0d6b8', ears:'round', muzzle:true, nose:'dot', mouth:'smile', fav:'muffin', say:'Brumm!'},
@@ -501,8 +655,25 @@ const A = {
   // Kuscheldrache nach Lucys Plüschtier: cremeweiß, Pfirsich-Zacken, Glitzerflügel, Seitenohren
   drache:   {hab:'zauber', name:'Funki', label:'Glücksdrache', g:'der', c:'#fff8f1', b:'#fffdfa', luck:'#f4cdbd', feet:'#f4cdbd', nose:'nostrils', mouth:'smile', fav:'muffin', say:'Nie aufgeben! ✨'},
   schaf:    {hab:'zauber', name:'Wolke', label:'Wolkenschaf', g:'das', c:'#fff1e3', b:'#ffffff', bodyC:'#ffffff', wool:true, ears:'sheep', earC:'#f0d4bf', mouth:'w', fav:'karotte', say:'Mäh-gisch!'},
+  greif:    {hab:'zauber', name:'Greifi', label:'Greif', g:'der', c:'#fffaf0', b:'#f6dfb4', bodyC:'#e2b26a', ears:'owl', mouth:'beak', beakC:'#ffc23d', feet:'#ffb84d', wings:['#b98048','#e8c28a'], tail:'lion', tuft:'#a8743f', fav:'fisch', say:'Kraaah! Halb Adler, halb Löwe! 🦅'},
+  phoenix:  {hab:'zauber', name:'Flammi', label:'Phönix', g:'der', c:'#ff8a3d', b:'#ffd166', ears:'flame', arms:'wing', limb:'#ff6b4a', mouth:'beak', beakC:'#ffd166', feet:'#ffb84d', wings:['#ff6b4a','#ffd166'], tail:'phoenix', fav:'muffin', say:'Ich glühe vor Freude! 🔥'},
+  pegasus:  {hab:'zauber', name:'Sternwind', label:'Pegasus', g:'der', c:'#ffffff', b:'#f4f1ff', ears:'cat', inner:'#ffd0e2', hair:'#c9b8ff', tail:'horse', wings:['#ffffff','#dcd3ff'], muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'Wiehern – ich kann fliegen! ✨'},
   mondkatze:{hab:'zauber', name:'Luna', label:'Mondkatze', g:'die', c:'#7478e0', b:'#c3c5ff', ears:'cat', inner:'#ffc7e8', moon:true, nose:'tri', mouth:'w', fav:'fisch', say:'Miau im Mondschein!'},
 };
+// Lucys Wunschtiere (Oktober 2026)
+Object.assign(A, {
+  capybara: {hab:'wiese', name:'Capy', label:'Capybara', g:'das', c:'#b5835a', b:'#d6ae86', ears:'small', earC:'#93663f', inner:'#7a5232', muzzle:true, nose:'nostrils', mouth:'smile', citrus:true, fav:'karotte', say:'Ganz entspannt … 🍊'},
+  kaenguru: {hab:'wueste', name:'Kängi', label:'Känguru', g:'das', c:'#d49a62', b:'#f3d7b5', ears:'fennec', earC:'#c58a52', inner:'#f3d7b5', pouch:true, tail:'kangaroo', muzzle:true, nose:'dot', mouth:'w', fav:'karotte', say:'Hüpf! In meinem Beutel wohnt mein Baby! 🦘'},
+  koala:    {hab:'wald', name:'Kuschel', label:'Koala', g:'der', c:'#a9b3bf', b:'#e8ecf0', ears:'koala', nose:'koala', mouth:'smile', fav:'muffin', say:'Ich liebe Eukalyptus! 🌿'},
+  panda:    {hab:'wald', name:'Pandi', label:'Panda', g:'der', c:'#ffffff', b:'#ffffff', ears:'round', earC:'#3a3446', earIn:'#3a3446', patches:'#3a3446', limb:'#3a3446', nose:'dot', mouth:'smile', fav:'apfel', say:'Hast du Bambus für mich? 🎋'},
+});
+// Urzeit (ab Level 16)
+Object.assign(A, {
+  mammut:   {hab:'urzeit', name:'Manni', label:'Mammut', g:'das', c:'#a0704a', b:'#c99a72', ears:'round', earC:'#8a5c38', earIn:'#c99a72', hair:'#6e4528', trunk:true, mouth:'none', fav:'apfel', say:'Töröö! 🦣'},
+  trex:     {hab:'urzeit', name:'Rexi', label:'T-Rex', g:'der', c:'#7fcf6a', b:'#e8f7c8', spots:'#5fae4e', tail:'dino', nose:'nostrils', mouth:'wide', teeth:true, fav:'fisch', say:'ROOOAAAR! 🦖'},
+  ptera:    {hab:'urzeit', name:'Ptera', label:'Flugsaurier', g:'der', c:'#b48be0', b:'#ece0fb', crest:'#ff9ec4', wings:['#c9a8ef','#ead9ff'], bat:true, mouth:'longbeak', feet:'#ffb84d', fav:'fisch', say:'Kräääh! Ich segle! 🪽'},
+  brachio:  {hab:'urzeit', name:'Brachi', label:'Brachiosaurus', g:'der', c:'#9fd3c7', b:'#e3f6f0', neck:true, tail:'dino', hy:24, hrx:24, hry:20, fy:28, eyeY:22, eyeX:9, blushX:15, nose:'nostrils', mouth:'smile', fav:'karotte', say:'Ich bin sooo groß! 🦕'},
+});
 const ORDER = Object.keys(A);
 
 /* Wie sich ein Tier bewegt, wenn man es trägt (alle anderen laufen) */
@@ -510,7 +681,10 @@ const MOVE = {
   kueken:'fly', eule:'fly', drache:'glide', schaf:'float',
   pinguin:'waddle', // Pinguine können nicht fliegen! (sagt Lucy)
   hase:'hop', frosch:'hop', springmaus:'hop', eichhorn:'hop',
-  einhorn:'gallop', schildi:'slow',
+  einhorn:'gallop', schildi:'slow', pferd:'gallop',
+  greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
+  trex:'stomp', mammut:'stomp', brachio:'slow',
+  kaenguru:'hop', capybara:'slow', koala:'slow',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
 const moveOf = type => MOVE[type] || 'walk';
@@ -534,6 +708,62 @@ const ACC = [
 ];
 const ACCM = Object.fromEntries(ACC.map(a => [a.id, a]));
 
+/* ---------- Eigener Avatar: Aussehen und Kleidung ----------
+   Kleidung wird freigeschaltet über lvl (ab Level X) oder gift (steckt in Überraschungsgeschenken) */
+const AV_SKIN = ['#ffe3cc','#f6cfa8','#e8b08a','#c98e64','#9c6644','#6b4429'];
+const AV_HAIR = { blond:'#f6d365', braun:'#8a5a3b', schwarz:'#3a2e3f', rot:'#d9622b', rosa:'#ff9ec4', blau:'#6cb8ff', lila:'#a77bf0', weiss:'#eeeef5' };
+const AV_EYES = ['#6b4a35','#3d7bd9','#3e9e6a','#7a5cc9','#2d2440'];
+const AV_STYLES = { lang:'Lang', bob:'Bob', kurz:'Kurz', zoepfe:'Zöpfe', pferd:'Pferdeschwanz', dutt:'Dutt', locken:'Locken', igel:'Igelfrisur' };
+const CLOTHES = [
+  // Oben (full = Kleid/Latzhose, dann wird nichts darunter gezeigt)
+  {id:'shirt_rot',  slot:'top', name:'T-Shirt rot',        lvl:1,  style:'tee',     c:'#ff6b6b'},
+  {id:'shirt_blau', slot:'top', name:'T-Shirt blau',       lvl:1,  style:'tee',     c:'#4cc9f0'},
+  {id:'shirt_gelb', slot:'top', name:'T-Shirt gelb',       lvl:1,  style:'tee',     c:'#ffd23f'},
+  {id:'kleid',      slot:'top', name:'Sommerkleid',        lvl:1,  style:'dress',   c:'#ff9ec4', c2:'#ffffff', full:true},
+  {id:'ringel',     slot:'top', name:'Ringelshirt',        lvl:3,  style:'stripes', c:'#ffffff', c2:'#ff7eb6'},
+  {id:'pulli',      slot:'top', name:'Kuschelpulli',       lvl:5,  style:'sweater', c:'#9be89b', c2:'#5cc97b'},
+  {id:'latz',       slot:'top', name:'Latzhose',           lvl:7,  style:'overall', c:'#5b8def', c2:'#ffd23f', full:true},
+  {id:'drachenhoodie', slot:'top', name:'Drachen-Hoodie',  lvl:9,  style:'hoodie',  c:'#7fd3b0', c2:'#f4cdbd', deco:'spikes'},
+  {id:'held',       slot:'top', name:'Superhelden-Anzug',  lvl:12, style:'hero',    c:'#5b5fef', c2:'#ffd23f'},
+  {id:'prinzessin', slot:'top', name:'Prinzessinnenkleid', lvl:15, style:'gown',    c:'#ffb3d9', c2:'#ffd23f', full:true},
+  {id:'ritter',     slot:'top', name:'Ritterrüstung',      lvl:18, style:'armor',   c:'#c9d1dc', c2:'#8a96a8'},
+  {id:'astronaut',  slot:'top', name:'Astronautenanzug',   gift:true, style:'space', c:'#f4f7fb', c2:'#5b8def'},
+  {id:'loewenhoodie', slot:'top', name:'Löwen-Hoodie',     gift:true, style:'hoodie', c:'#f7c868', c2:'#fff1d2', deco:'mane'},
+  // Unten
+  {id:'jeans',      slot:'bottom', name:'Jeans',           lvl:1,  style:'pants',   c:'#5b7fc4'},
+  {id:'rock',       slot:'bottom', name:'Rock',            lvl:1,  style:'skirt',   c:'#a77bf0'},
+  {id:'shorts',     slot:'bottom', name:'Shorts',          lvl:2,  style:'shorts',  c:'#ff9f43'},
+  {id:'leggings',   slot:'bottom', name:'Sternen-Leggings',lvl:6,  style:'leggings',c:'#3a2e5c', c2:'#ffd23f'},
+  {id:'tutu',       slot:'bottom', name:'Tutu',            lvl:10, style:'tutu',    c:'#ffc4e6', c2:'#ffffff'},
+  {id:'regenbogen', slot:'bottom', name:'Regenbogenhose',  gift:true, style:'rainbow'},
+  // Schuhe
+  {id:'sneaker',    slot:'shoes', name:'Turnschuhe',       lvl:1,  style:'shoe',    c:'#ffffff', c2:'#ff6b6b'},
+  {id:'sandalen',   slot:'shoes', name:'Sandalen',         lvl:1,  style:'shoe',    c:'#e8b46a'},
+  {id:'stiefel',    slot:'shoes', name:'Stiefel',          lvl:4,  style:'boots',   c:'#8a5a3b'},
+  {id:'glitzer',    slot:'shoes', name:'Glitzerschuhe',    lvl:8,  style:'glitter', c:'#ff7eb6'},
+  {id:'gummistiefel', slot:'shoes', name:'Gummistiefel',   gift:true, style:'boots', c:'#ffd23f'},
+  // Kopf
+  {id:'schleife',   slot:'hat', name:'Schleife',           lvl:1,  e:'🎀', side:true},
+  {id:'kappe',      slot:'hat', name:'Kappe',              lvl:2,  e:'🧢'},
+  {id:'blumen',     slot:'hat', name:'Blumenkranz',        lvl:4,  style:'flowers'},
+  {id:'hasen',      slot:'hat', name:'Hasenohren',         lvl:6,  style:'bunny'},
+  {id:'katzen',     slot:'hat', name:'Katzenohren',        lvl:8,  style:'cat'},
+  {id:'krone',      slot:'hat', name:'Krone',              lvl:11, e:'👑'},
+  {id:'zylinder',   slot:'hat', name:'Zylinder',           lvl:13, e:'🎩'},
+  {id:'hoerner',    slot:'hat', name:'Drachenhörner',      lvl:16, style:'horns'},
+  {id:'doktorhut',  slot:'hat', name:'Doktorhut',          lvl:20, e:'🎓'},
+  {id:'sonnenhut',  slot:'hat', name:'Sonnenhut',          gift:true, e:'👒'},
+  // Extras
+  {id:'rucksack',   slot:'extra', name:'Rucksack',         lvl:3,  style:'backpack', c:'#ff9f43'},
+  {id:'umhang',     slot:'extra', name:'Umhang',           lvl:12, style:'cape',     c:'#e63946'},
+  {id:'feenfluegel',slot:'extra', name:'Feenflügel',       lvl:14, style:'fairy'},
+  {id:'zauberstab', slot:'extra', name:'Zauberstab',       lvl:17, e:'🪄'},
+  {id:'drachenfluegel', slot:'extra', name:'Drachenflügel',gift:true, style:'dragonwings', c:'#f4cdbd'},
+  {id:'ballon',     slot:'extra', name:'Luftballon',       gift:true, style:'balloon'},
+];
+const CL = Object.fromEntries(CLOTHES.map(c => [c.id, c]));
+const AV_SLOTS = [['top','👕 Oben'],['bottom','👖 Unten'],['shoes','👟 Schuhe'],['hat','🎩 Kopf'],['extra','✨ Extra']];
+
 const PRAISE = ['Super! 🎉','Klasse! ⭐','Richtig! 👏','Wow, toll! 🌟','Spitze! 💪','Genau! 🥳','Du bist ein Rechen-Profi! 🏆'];
 const HELLO = ['Du rechnest super!','Hihi, das kitzelt!','Noch eine Aufgabe?','Ich hab dich lieb! 💕','Juhu!','Spielen wir?','Kuschel? 🥰'];
 
@@ -544,7 +774,8 @@ const TEST = new URLSearchParams(location.search).has('test');
 const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
   treats:{apfel:2, karotte:1, fisch:1, muffin:1}, pets:[], range:10, ops:['+','-'],
-  sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{} };
+  sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{},
+  av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true };
 let S;
 function load(){
   let saved = null;
@@ -555,14 +786,23 @@ function load(){
     S.xp = xpFor(15); // Level 15: alle Welten und Accessoires
     S.treats = { apfel:99, karotte:99, fisch:99, muffin:99 };
   }
+  // Im Test mindestens das höchste Level, das etwas freischaltet (Welten, Accessoires) – auch wenn neue dazukommen
+  if (TEST){ const max = Math.max(...HABS.map(h => h.lvl), ...ACC.map(a => a.lvl), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
   // Im Test immer alle Tiere da – auch neu eingebaute
   if (TEST) ORDER.forEach(type => { if (!(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); });
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
+  S.av = Object.assign({...DEFAULT.av}, S.av);
+  S.avOwned = S.avOwned || [];
+  S.furnOwned = S.furnOwned || [];
+  if (TEST) S.furnOwned = FURN_LIST.filter(f => f.gift).map(f => f.id); // im Test alle Geschenk-Möbel
+  if (TEST) S.avOwned = CLOTHES.filter(c => c.gift).map(c => c.id); // im Test alle Geschenk-Kleider
   // Lampen gibt es jetzt pro Zimmer (alte Einträge ceil/wall verwerfen)
   if (!S.lamps || 'ceil' in S.lamps) S.lamps = {};
   if (!ROOMS[S.room]) S.room = 'flur';
   // Hausbesuch aus der Zeit vor den Zimmern: die saßen im Wohnzimmer, Sitzplätze passen nicht mehr
   (S.pets || []).forEach(p => { if (p.at && !p.room){ p.room = 'wohn'; delete p.seat; } });
+  // Spielzimmer wurden zu Kinderzimmern mit anderen Möbeln: alte Sitzplätze dort passen nicht mehr
+  if (!S.kidRooms){ (S.pets || []).forEach(p => { if (p.room === 'spiel1' || p.room === 'spiel2') delete p.seat; }); S.kidRooms = true; }
   // Neue XP-Kurve: alte Spielstände einmalig umrechnen – gleiches Level, gleicher Fortschritt im Balken
   if (saved && !saved.xpv){
     const o = oldLevelInfo(S.xp);
@@ -603,8 +843,12 @@ function oldLevelInfo(xp){
 }
 const level = () => levelInfo(S.xp).l;
 const habOpen = h => level() >= h.lvl || S.pets.some(p => A[p.type].hab === h.id);
+const nameOf = p => p.name || A[p.type].name; // eigener Name (selbst vergeben) oder der Standardname
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
+function setName(p, v){ v = v.trim().slice(0, 16); if (!v || v === A[p.type].name) delete p.name; else p.name = v; save(); }
 const where = p => p.at || A[p.type].hab; // p.at = 'haus', solange das Tier zu Besuch ist
 const accOpen = a => level() >= a.lvl;
+const clothOpen = c => c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
 
 /* ================= Sound ================= */
 let AC;
@@ -637,10 +881,12 @@ const SFX = {
   blub:  () => tone(500, .1, 'sine', 0, .06, 1100),
   click: () => tone(1400, .03, 'square', 0, .025),
   twinkle: () => tone(1568, .15, 'sine', 0, .04),
+  stomp: () => { tone(110, .22, 'sine', 0, .22, 45); tone(70, .15, 'triangle', .02, .12, 40); },
 };
 /* Geräusch-Takt und Glitzer beim Tragen: [ms, Sound, Partikel] */
 const STEP = {
-  fly:[320, SFX.flap], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
+  fly:[320, SFX.flap], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
+  gold:[280, () => { SFX.flap(); tone(1760, .08, 'sine', 0, .03); }, el => { const [x, y] = centerOf(el); confetti(x, y, 9, GOLD); sprinkle(el, ['🪙','✨'], 1); }], blaze:[320, SFX.flap, ['🔥','✨']], stomp:[500, SFX.stomp], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
   hop:[500, SFX.hop], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
 
@@ -704,12 +950,31 @@ function petSVG(type, acc = {}){
     // kurzer, dicker Schwanz mit Zacke
     back += `<g class="ltail">${E(96,114,17,8,c,-25)}${E(106,104,3.5,4.5,pk)}</g>`;
   }
+  if (t.wings){ // große Flügel hinter dem Körper (Federn oder Haut wie beim Flugsaurier), schlagen beim Fliegen
+    const [wc, wi] = t.wings;
+    const w = t.bat ? 'M46 96 C30 70 10 50 -10 40 C-2 56 0 66 6 72 C12 70 16 74 18 80 C24 78 30 84 34 90Z'
+                    : 'M46 98 C24 100 2 84 -6 34 C6 46 14 50 20 50 C16 62 20 70 28 72 C24 82 32 90 46 90Z';
+    const iw = t.bat ? 'M42 92 C30 76 14 60 0 52 C6 64 10 72 22 82Z' : 'M42 94 C26 94 10 80 4 54 C14 66 22 72 30 76 C32 84 38 88 42 90Z';
+    back += `<g class="wing dwl">${P(w,wc)}${P(iw,wi,true)}</g><g class="wing dwr">${P(mir(w),wc)}${P(mir(iw),wi,true)}</g>`;
+  }
+  if (t.crest) back += P(`M56 ${top+8} C68 ${top-12} 94 ${top-20} 110 ${top-18} C96 ${top-6} 80 ${top+4} 68 ${top+12}Z`, t.crest); // Flugsaurier-Kamm
   if (t.hump) back += E(90,90,16,15,c);
   switch (t.tail){
     case 'squirrel': back += P('M80 118 C118 118 124 70 104 44 C94 32 74 40 84 56 C92 70 90 92 76 100Z', c) + P('M86 104 C108 100 112 74 100 58', mix(c,'#ffffff',.5), true); break;
     case 'gecko':    back += P('M76 116 C100 126 114 108 104 94 C98 88 90 94 96 100 C100 108 90 112 78 108Z', c); break;
     case 'jerboa':   back += S_('M80 116 C106 120 108 94 112 76', line(c), 3) + E(112,72,6,8,'#ffffff'); break;
-    case 'lion':     back += S_('M80 112 C104 118 112 100 106 82', line(c), 5) + S_('M80 112 C104 118 112 100 106 82', c, 3) + E(106,78,7,9,t.lmane); break;
+    case 'lion':     back += S_('M80 112 C104 118 112 100 106 82', line(t.bodyC || c), 5) + S_('M80 112 C104 118 112 100 106 82', t.bodyC || c, 3) + E(106,78,7,9,t.tuft || t.lmane); break;
+    case 'horse':    { const d = 'M80 104 C100 100 110 112 104 128'; back += S_(d, line(t.hair), 11) + S_(d, t.hair, 8); break; }
+    case 'plume': { // Papillon: großer, flauschiger Puschelschwanz (Lucys Wunsch)
+      const cx = 110, cy = 84;
+      back += S_('M78 108 C88 106 98 100 104 94', line('#ffffff'), 12) + S_('M78 108 C88 106 98 100 104 94', '#ffffff', 9);
+      for (let i=0; i<12; i++){ const a = i/12*Math.PI*2; back += E((cx + 22*Math.cos(a)).toFixed(1), (cy + 22*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+      back += E(cx, cy, 25, 25, '#ffffff', 0, true) + E(cx-6, cy-8, 8, 5, '#f4efe9', -20, true) + E(cx+8, cy+8, 7, 4, '#f4efe9', 20, true); break;
+    }
+    case 'kangaroo': back += P('M76 112 C98 124 118 120 122 106 C110 112 96 110 80 102Z', c); break;
+    case 'dino':     back += P('M78 114 C100 120 118 110 121 92 C112 102 98 104 82 102Z', c); break;
+    case 'phoenix':  back += P('M78 110 C100 112 118 96 121 76 C112 90 102 94 94 94 C106 86 110 74 107 60 C98 78 90 88 80 98Z', '#ff6b4a')
+                       + P('M82 106 C98 106 110 96 114 84 C106 92 98 96 88 98Z', '#ffd166', true); break;
     case 'fish':     back += P('M98 80 L119 62 L115 96Z', mix(c,'#ff9f43',.35)); break;
     case 'whale':    back += P('M96 98 C106 92 108 80 119 70 C121 86 117 100 104 106Z', c); break;
   }
@@ -733,6 +998,21 @@ function petSVG(type, acc = {}){
     case 'fennec': back += Ep(22,8,13,28,ec,-32) + Ep(23,10,7,19,inner,-32,true); break;
     case 'jerboa': back += Ep(36,-2,11,22,ec,-18) + Ep(36,1,6,15,inner,-18,true); break;
     case 'frog':   back += Ep(40,eyY,15,15,c); break;
+    case 'koala': back += Ep(20,34,19,18,c) + Ep(21,35,12,11,'#f4f6f8',0,true) + [[8,26],[10,42],[16,20]].map(([x,y]) => Ep(x,y,4,4,'#f4f6f8',0,true)).join(''); break;
+    case 'puffy': { // Papillon (Lucys Wunsch): Ohren als lange, schräg aufgestellte Fell-Puschel
+      const [cx, cy, rx, ry, rot] = [19, 13, 11, 24, -42], th = rot * Math.PI / 180;
+      for (let i=0; i<14; i++){
+        const a = i/14*Math.PI*2, px = rx*Math.cos(a), py = ry*Math.sin(a);
+        back += Ep(+(cx + px*Math.cos(th) - py*Math.sin(th)).toFixed(1), +(cy + px*Math.sin(th) + py*Math.cos(th)).toFixed(1), 7.5, 7.5, ec);
+      }
+      back += Ep(cx, cy, rx+3, ry+3, ec, rot, true) + Ep(cx+2, cy+4, 4.5, 13, inner, rot, true); break;
+    }
+    case 'butterfly': { // Papillon: große, schräg aufgestellte Ohren wie Schmetterlingsflügel, außen lange helle Fransen
+      const fr = t.fringe || mix(ec, '#ffffff', .6);
+      back += [[2,-6,-30],[-4,5,-15],[-5,17,0],[-1,28,15],[7,38,30]].map(([x,y,r]) => Ep(x,y,5,13,fr,r)).join('')
+            + Pp('M44 30 C32 12 16 -4 2 -10 C-4 6 0 24 12 36 C22 44 34 40 44 34Z', ec)
+            + Pp('M38 28 C28 16 18 6 8 1 C8 14 14 26 24 32Z', inner, true); break;
+    }
   }
 
   /* --- Körper (stehende Tiere) --- */
@@ -740,13 +1020,30 @@ function petSVG(type, acc = {}){
     const bc = t.bodyC || c;
     body += `<g class="foot fl">${E(47,119,9,6,feet)}</g><g class="foot fr">${E(73,119,9,6,feet)}</g>`;
     if (t.wool) [[44,96],[60,92],[76,96],[42,108],[78,108],[60,114]].forEach(([x,y]) => body += E(x,y,11,11,bc));
-    body += E(60,100,25,20,bc);
+    if (t.fluffy){ // flauschiger Wolken-Körper wie ein Puschel
+      for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; body += E((60 + 23*Math.cos(a)).toFixed(1), (101 + 17*Math.sin(a)).toFixed(1), 9, 9, bc); }
+      body += E(60,101,26,20,bc,0,true) + E(52,106,6,4,'#f4efe9',-15,true) + E(70,96,5,3.5,'#f4efe9',15,true);
+    } else body += E(60,100,25,20,bc);
     if (t.shell){
       body += E(60,101,29,21,t.shell);
       const s = mix(t.shell,'#ffffff',.3);
       body += E(60,99,8,6,s,0,true) + Ep(45,96,5,4,s,0,true) + Ep(48,109,5,4,s,0,true);
     } else if (!t.wool) {
       body += E(60,104,15,12,b,0,true);
+    }
+    if (t.flank) body += E(81,96,7,8,t.flank,-15); // dunkler Fleck an der Seite
+    if (t.pouch){ // Känguru: Baby schaut aus dem Beutel
+      body += Ep(55,93,2.5,4,c) + E(60,99,7,6,c) + `<circle cx="57.5" cy="99" r="1.3" fill="${INK}"/><circle cx="62.5" cy="99" r="1.3" fill="${INK}"/>`
+            + E(60,108,14,8,mix(b,'#c08a5a',.3));
+    }
+    if (t.ruff){ // flauschige Brustmähne: außen Locken mit Kontur, innen ohne, damit es weich ineinander übergeht
+      [[45,93,9],[75,93,9],[49,105,8],[71,105,8],[60,112,7]].forEach(([x,y,r]) => body += E(x,y,r,r,'#ffffff'));
+      body += E(60,100,16,13,'#ffffff',0,true);
+    }
+    if (t.neck){ // Brachiosaurus: langer, kräftiger Hals und dicker Bauch mit Flecken
+      const d = `M60 ${hy+8} L60 92`;
+      body += E(60,104,31,22,c) + E(60,108,18,12,b,0,true) + S_(d, line(c), 33) + S_(d, c, 28)
+            + [[40,98,4],[78,100,5],[72,110,3],[60,60,3],[57,74,2.5]].map(([x,y,r]) => E(x,y,r,r*.8,mix(c,'#3a8f7d',.35),0,true)).join('');
     }
     body += t.arms === 'wing'
       ? `<g class="wing wl">${E(35,98,6,11,limb,35)}</g><g class="wing wr">${E(85,98,6,11,limb,-35)}</g>`
@@ -763,6 +1060,10 @@ function petSVG(type, acc = {}){
   if (t.muzzle) face += E(60, fy+8, 13, 9, b, 0, true);
   if (t.luck) face += E(60, eyY-9, 4, 8, t.luck, 0, true) + E(60, fy+9, 18, 12, b); // Stirnfleck + breite Schnauze
   if (t.patches) face += Ep(60-eyX, eyY, 10, 11, t.patches, 15, true);
+  if (t.pmask){ // Papillon-Maske: außen dunkel, um die Augen rotbraun, schmale weiße Blesse in der Mitte
+    face += Pp('M57 22 C44 20 26 26 22 42 C20 54 30 64 44 62 C52 60 56 50 56 40Z', t.pmask, true);
+    if (t.tanC) face += Pp('M54 40 C46 38 36 44 36 54 C36 62 46 66 54 62 C56 56 56 46 54 40Z', t.tanC, true);
+  }
   if (t.spots) face += E(88, hy-14, 5, 4, t.spots, 0, true) + E(94, hy-2, 3.5, 3, t.spots, 0, true) + E(30, hy-20, 4, 3, t.spots, 0, true);
   if (t.stripes) face += S_('M54 24 L55 31 M60 22 L60 30 M66 24 L65 31', line(c), 2.4);
   if (t.moon) face += P('M64 20 A9 9 0 1 0 64 38 A7 7 0 1 1 64 20Z', '#ffe27a');
@@ -773,7 +1074,7 @@ function petSVG(type, acc = {}){
   ).join('') + `</g>`;
   face += `<g class="eh">` + ex.map(x => S_(`M${x-6} ${eyY+1} Q${x} ${eyY-6} ${x+6} ${eyY+1}`, INK, 3)).join('') + `</g>`;
   face += `<g class="es">` + ex.map(x => S_(`M${x-6} ${eyY} Q${x} ${eyY+5} ${x+6} ${eyY}`, INK, 3)).join('') + `</g>`; // Schlafaugen
-  face += `<g opacity=".6">` + Ep(60-eyX-12, fy+9, 7, 4.5, '#ff8fb8', 0, true) + `</g>`;
+  face += `<g opacity=".6">` + Ep(60-(t.blushX ?? eyX+12), fy+9, t.neck ? 5 : 7, t.neck ? 3.5 : 4.5, '#ff8fb8', 0, true) + `</g>`;
   if (t.whiskers) face += `<g fill="${line(b)}">` + [[50,fy+9],[46,fy+12],[70,fy+9],[74,fy+12]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('') + `</g>`;
 
   let my = fy + (t.nose === 'snout' ? 14 : t.muzzle ? 11 : 8);
@@ -781,28 +1082,43 @@ function petSVG(type, acc = {}){
     case 'tri':      face += P(`M57.5 ${fy+3} L62.5 ${fy+3} L60 ${fy+6}Z`, '#ff8fb8', true); break;
     case 'dot':      face += E(60, fy+4, 3, 2.2, INK, 0, true); break;
     case 'snout':    face += E(60, fy+7, 8, 5.5, '#ff9cc2') + E(57, fy+7, 1.5, 2.2, '#d0578a', 0, true) + E(63, fy+7, 1.5, 2.2, '#d0578a', 0, true); break;
+    case 'koala':    face += E(60, fy+1, 7, 9, '#4a4458', 0, true) + E(58, fy-3, 2, 2.5, '#8a8496', 0, true); my += 4; break; // große Koala-Nase
     case 'nostrils': face += E(56, fy+5, 1.5, 1.2, INK, 0, true) + E(64, fy+5, 1.5, 1.2, INK, 0, true); break;
   }
   switch (t.mouth){
     case 'w':     face += `<path class="mouth" d="M54 ${my} Q57 ${my+4} 60 ${my} Q63 ${my+4} 66 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
     case 'wide':  face += `<path class="mouth" d="M46 ${my-2} Q60 ${my+9} 74 ${my-2}" fill="none" stroke="${INK}" stroke-width="2.4"/>`; break;
     case 'o':     face += `<ellipse class="mouth" cx="60" cy="${my+1}" rx="3.5" ry="4" fill="#c2455f"/>`; break;
-    case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs('#ffa94d')}/>`; break;
+    case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs(t.beakC || '#ffa94d')}/>`; break;
+    case 'longbeak': face += `<path class="mouth" d="M54 ${fy+3} L66 ${fy+3} L60 ${fy+20}Z" ${fs('#ffb84d')}/>`; break;
+    case 'none':  break;
+    case 'tongue': face += `<ellipse cx="60" cy="${my+4}" rx="4" ry="5" fill="#ff8fb0" stroke="#d65f86" stroke-width="1.5"/><path class="mouth" d="M53 ${my} Q56.5 ${my+4} 60 ${my} Q63.5 ${my+4} 67 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
     default:      face += `<path class="mouth" d="M55 ${my} Q60 ${my+5} 65 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
   }
   if (t.fang) face += P(`M62 ${my+1.5} L65.5 ${my+1} L63.8 ${my+5}Z`, '#ffffff');
+  if (t.teeth) [[51,my+1.5],[57,my+3.5],[63,my+3.5],[69,my+1.5]].forEach(([x,y]) => face += P(`M${x-2.5} ${y} L${x+2.5} ${y} L${x} ${y+4.5}Z`, '#ffffff')); // T-Rex
+  if (t.trunk){ // Mammut: Stoßzähne und Rüssel
+    const tk = `M50 ${fy+6} C45 ${fy+20} 50 ${fy+30} 58 ${fy+31}`;
+    face += S_(tk, line('#fff8e8'), 7) + S_(tk, '#fff8e8', 4.5) + S_(mir(tk), line('#fff8e8'), 7) + S_(mir(tk), '#fff8e8', 4.5);
+    const tr = `M60 ${fy-4} C59 ${fy+12} 56 ${fy+24} 62 ${fy+31} C68 ${fy+36} 72 ${fy+29} 67 ${fy+26}`;
+    face += S_(tr, line(c), 12) + S_(tr, c, 9);
+  }
 
   /* --- vor dem Kopf --- */
   switch (t.ears){
     case 'tuft':   front += P('M56 22 C52 8 60 4 61 14 C63 2 73 8 65 22Z', c); break;
     case 'floppy': front += Ep(20,56,10,21,ec,18); break;
     case 'sheep':  front += Ep(17,50,11,6,ec,28); break;
+    case 'flame':  // Phönix: Flammenkrone
+      front += P('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z', '#ff9f43') + P(mir('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z'), '#ff9f43')
+             + P('M60 24 C48 14 54 2 60 -8 C66 2 72 14 60 24Z', '#ffd166'); break;
   }
   if (t.horn) front += P('M55 24 L60 -8 L65 24Z', '#ffd966') + S_('M56.5 15 L63.5 12 M58 5 L62 3', '#e0a800', 2);
   if (t.hair) front += E(53,22,7,7,t.hair) + E(61,18,8,8,t.hair) + E(69,22,6,6,t.hair);
   if (t.narhorn) front += P(`M57 ${top+4} L60 ${top-34} L63 ${top+4}Z`, '#fff3d6') + S_(`M57.8 ${top-6} L62.2 ${top-9} M58.6 ${top-18} L61.4 ${top-20}`, '#d8c39a', 1.6);
   if (t.spout) front += S_(`M60 ${top+2} C60 ${top-8} 52 ${top-12} 47 ${top-18} M60 ${top+2} C60 ${top-8} 68 ${top-12} 73 ${top-18}`, '#bfe9ff', 4) + `<circle cx="45" cy="${top-22}" r="3" fill="#bfe9ff"/><circle cx="75" cy="${top-22}" r="3" fill="#bfe9ff"/>`;
   if (t.moon) front += star(92, 12, 6, '#ffe27a') + star(26, 6, 4, '#ffe27a');
+  if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
 
   /* --- Accessoires --- */
   let over = '';
@@ -821,12 +1137,131 @@ function petNode(p, delay){
   const d = delay ?? -Math.random()*4;
   return `<div class="inner"><div class="bob" style="animation-delay:${d.toFixed(2)}s">${petSVG(p.type, p.acc).replace('class="eo"', `class="eo" style="animation-delay:${(d*1.3).toFixed(2)}s"`)}</div></div>`;
 }
+/* ================= Eigener Avatar (SVG im gleichen Stil wie die Tiere) ================= */
+const RAINBOW = `<defs><linearGradient id="rbw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".25" stop-color="#ffd23f"/><stop offset=".5" stop-color="#5cc97b"/><stop offset=".75" stop-color="#4cc9f0"/><stop offset="1" stop-color="#9b5de5"/></linearGradient></defs>`;
+function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlich herunter, kein Schatten)
+  const skin = AV_SKIN[av.skin] || AV_SKIN[1], hc = AV_HAIR[av.hc] || AV_HAIR.braun, eye = AV_EYES[av.eyes] || AV_EYES[0];
+  const top = CL[av.top], bot = top?.full ? null : CL[av.bottom], shoe = CL[av.shoes], hat = CL[av.hat], ex = CL[av.extra];
+  const em = (e, x, y, size, rot=0) => `<text class="acc-e" x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central"${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}>${e}</text>`;
+  let back = '', body = '', head = '', face = '', front = '', over = '';
+
+  /* --- hinten: Extras, Ohren/Hörner vom Kopfschmuck, lange Haare --- */
+  switch (ex?.style){
+    case 'cape':  back += P('M42 84 L78 84 L94 124 L26 124Z', ex.c) + P('M47 88 L73 88 L84 120 L36 120Z', mix(ex.c,'#000000',.18), true); break;
+    case 'fairy': back += `<g opacity=".88">${Ep(30,78,15,23,'#e3d4ff',-35)}${Ep(34,102,10,14,'#ffd6ec',-60)}</g>`; break;
+    case 'backpack': back += E(60,94,25,17,ex.c) + E(60,88,10,4,mix(ex.c,'#000000',.15),0,true); break;
+    case 'dragonwings':
+      back += [[6,64,-50],[12,56,-30],[21,52,-10],[30,55,10]].map(([x,y,r]) => Ep(x,y,5.5,10,ex.c,-r)).join('') + Ep(24,78,16,11,ex.c,35); break;
+  }
+  switch (hat?.style){
+    case 'bunny': back += Ep(45,-4,8,22,'#ffffff',-12) + Ep(45,-2,4,15,'#ffc4dd',-12,true); break;
+    case 'cat':   back += Pp('M30 34 L30 4 L52 22Z', hc) + Pp('M34 28 L34 12 L46 23Z', '#ffb8d2', true); break;
+    case 'horns': back += Pp('M38 28 C33 18 31 8 33 -2 C40 4 45 12 48 24Z', '#f4cdbd'); break;
+  }
+  const hb = { lang:'M24 50 C18 92 24 112 38 112 L82 112 C96 112 102 92 96 50 C96 22 80 12 60 12 C40 12 24 22 24 50Z',
+               bob:'M23 50 C20 78 28 86 40 86 L80 86 C92 86 100 78 97 50 C97 22 80 12 60 12 C40 12 23 22 23 50Z' }[av.hair];
+  if (hb) back += P(hb, hc);
+  if (av.hair === 'pferd') back += P('M80 26 C104 26 114 54 106 90 C100 74 96 58 84 46Z', hc) + E(84,30,5,5,'#ff7eb6');
+  if (av.hair === 'dutt') back += E(60,13,14,13,hc) + E(60,24,9,3,'#ff7eb6');
+  if (av.hair === 'locken'){
+    for (let i=0; i<12; i++){ const a = (150 + i*240/11) * Math.PI/180; back += E((60+36*Math.cos(a)).toFixed(1), (54+34*Math.sin(a)).toFixed(1), 11, 11, hc); }
+    back += Ep(25,78,10,10,hc) + Ep(28,92,8,8,hc);
+  }
+  if (av.hair === 'igel') back += spikes(60, 50, 34, 30, 9, 8, 190, 350, hc);
+
+  /* --- Körper: Beine, Hose/Rock, Schuhe, Oberteil, Arme --- */
+  const pants = 'M42 98 L78 98 L78 117 L64 117 L62 107 L58 107 L56 117 L42 117Z';
+  const sh = shoe || { style:'shoe', c:skin };
+  if (sit){ // Reitsitz: Beine hängen links und rechts am Tier herunter
+    const shortBot = bot && ['skirt','tutu','shorts'].includes(bot.style);
+    const lc = top?.style === 'overall' ? top.c : top?.full ? skin : bot && !shortBot ? (bot.style === 'rainbow' ? 'url(#rbw)' : bot.c) : skin;
+    body += Ep(43, 108, 6.5, 13, lc, 40) + Ep(35, 118, 7.5, 5, sh.c, 40);
+    if (bot) body += P('M42 98 L78 98 L80 106 L40 106Z', bot.style === 'rainbow' ? 'url(#rbw)' : bot.c);
+  } else {
+  [51,69].forEach(x => body += `<rect x="${x-4.5}" y="100" width="9" height="19" rx="4" ${fs(skin)}/>`);
+  if (bot) switch (bot.style){
+    case 'pants':    body += P(pants, bot.c); break;
+    case 'rainbow':  body += P(pants, 'url(#rbw)'); break;
+    case 'leggings': body += P(pants, bot.c) + [[47,104],[52,112],[68,103],[73,111],[60,100]].map(([x,y]) => star(x,y,2.6,bot.c2)).join(''); break;
+    case 'shorts':   body += P('M42 98 L78 98 L78 108 L63 108 L60 104 L57 108 L42 108Z', bot.c); break;
+    case 'skirt':    body += P('M44 98 L76 98 L84 112 L36 112Z', bot.c); break;
+    case 'tutu':     body += P('M44 98 L76 98 L82 108 L38 108Z', bot.c) + [38,46,54,62,70,78].map(x => E(x+2,108,5,4,bot.c)).join('') + [[48,102],[60,104],[72,102]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="${bot.c2}"/>`).join(''); break;
+  }
+  [51,69].forEach(x => {
+    if (sh.style === 'boots') body += `<rect x="${x-6}" y="106" width="12" height="13" rx="3" ${fs(sh.c)}/>`;
+    body += E(x, 119, 8, 5, sh.c);
+    if (sh.c2) body += S_(`M${x-4} 117 L${x+3} 117`, sh.c2, 2);
+    if (sh.style === 'glitter') body += [[x-3,118],[x+3,120]].map(([a,b]) => `<circle cx="${a}" cy="${b}" r="1.2" fill="#fff"/>`).join('');
+  });
+  }
+  const T = 'M41 88 C41 82 48 80 54 80 L66 80 C72 80 79 82 79 88 L80 104 L40 104Z';
+  let sleeve = skin;
+  if (top){
+    sleeve = top.c;
+    const tc = top.style === 'overall' ? top.c2 : top.c;
+    if (top.style === 'overall') sleeve = top.c2;
+    body += P(T, tc);
+    switch (top.style){
+      case 'tee':     body += S_('M54 81 Q60 86 66 81', line(top.c), 2); break;
+      case 'stripes': body += [88,94,100].map(y => S_(`M42 ${y} L78 ${y}`, top.c2, 3.5)).join(''); sleeve = top.c2; break;
+      case 'sweater': body += E(60,81,8,3,top.c2) + S_('M41 101 L79 101', top.c2, 3); break;
+      case 'hoodie':
+        body += P('M50 94 L70 94 L72 102 L48 102Z', top.c2, true) + S_('M56 82 L55 90 M64 82 L65 90', mix(top.c,'#000000',.25), 1.6);
+        if (top.deco === 'spikes') body += Pp('M42 84 L44 76 L49 82Z', top.c2);
+        if (top.deco === 'mane') [40,47,54,61,68,75,80].forEach((x,i) => body += E(x, 82 + (i%2)*2, 6, 6, '#e0832f'));
+        break;
+      case 'dress': case 'gown':
+        body += P('M42 97 L78 97 L92 119 L28 119Z', top.c) + E(60,97,5,3.5,top.c2);
+        if (top.style === 'gown') body += [[44,108],[60,112],[76,108],[52,90],[68,90]].map(([x,y]) => star(x,y,3,top.c2)).join('') + Ep(41,84,8,7,top.c);
+        break;
+      case 'overall': body += P(pants, top.c) + P('M48 86 L72 86 L72 100 L48 100Z', top.c) + S_('M49 87 L46 80 M71 87 L74 80', top.c, 3) + Ep(51,90,1.6,1.6,top.c2); break;
+      case 'armor':   body += S_('M42 92 L78 92 M42 98 L78 98', top.c2, 2) + E(60,88,5,5,'#ffd23f'); break;
+      case 'hero':    body += star(60, 92, 8, top.c2); break;
+      case 'space':   body += `<rect x="51" y="88" width="18" height="11" rx="2" ${fs(top.c2)}/>` + `<circle cx="55" cy="93" r="1.6" fill="#ffd23f"/><circle cx="60" cy="93" r="1.6" fill="#ff6b6b"/><circle cx="65" cy="93" r="1.6" fill="#5cc97b"/>`; break;
+    }
+  }
+  body += Ep(36, 92, 6, 11, sleeve, 28) + Ep(32, 102, 4.5, 4.5, skin);
+  if (ex?.style === 'backpack') body += S_('M47 82 L49 102', mix(ex.c,'#000000',.2), 3) + S_('M73 82 L71 102', mix(ex.c,'#000000',.2), 3);
+
+  /* --- Kopf und Gesicht --- */
+  head += Ep(27, 56, 5, 7, skin) + E(60, 52, 34, 32, skin);
+  const ex2 = [47, 73], ey = 57;
+  face += `<g opacity=".6">${Ep(38, 67, 6, 4, '#ff8fb8', 0, true)}</g>`;
+  face += `<g class="eo">` + ex2.map(x => `<ellipse cx="${x}" cy="${ey}" rx="6" ry="7.5" fill="${eye}"/><ellipse cx="${x}" cy="${ey+.5}" rx="3.4" ry="4.4" fill="${INK}"/><circle cx="${x+2}" cy="${ey-3}" r="2.3" fill="#fff"/><circle cx="${x-2}" cy="${ey+3}" r="1.1" fill="#fff"/>`).join('') + `</g>`;
+  face += `<g class="eh">` + ex2.map(x => S_(`M${x-6} ${ey+1} Q${x} ${ey-6} ${x+6} ${ey+1}`, INK, 3)).join('') + `</g>`;
+  face += `<g class="es">` + ex2.map(x => S_(`M${x-6} ${ey} Q${x} ${ey+5} ${x+6} ${ey}`, INK, 3)).join('') + `</g>`;
+  if (av.g === 'm') face += S_('M41.5 52 L38 49 M43 50 L41 46 M78.5 52 L82 49 M77 50 L79 46', INK, 1.8); // Wimpern
+  face += S_('M42 46 Q47 43 52 45', mix(hc,'#000000',.2), 2) + S_('M68 45 Q73 43 78 46', mix(hc,'#000000',.2), 2);
+  face += E(60, 64, 1.8, 1.3, mix(skin,'#000000',.3), 0, true);
+  face += `<path class="mouth" d="M54 69 Q60 74.5 66 69" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
+
+  /* --- Haare vorne (Pony), Zöpfe, Kopfschmuck --- */
+  front += av.hair === 'igel'
+    ? P('M28 46 C30 26 44 18 60 18 C76 18 90 26 92 46 C84 38 72 34 60 34 C48 34 36 38 28 46Z', hc)
+    : P('M25 56 C21 30 38 15 60 15 C82 15 99 30 95 56 C93 46 88 39 80 35 C74 41 64 43 54 41 C46 40 38 42 32 46 C28 49 26 52 25 56Z', hc);
+  if (av.hair === 'zoepfe') [-1, 1].forEach(s => {
+    [68, 78, 88, 98].forEach((y, i) => front += E(60 + s*(33 + i), y, 6.5, 6.5, hc));
+    front += E(60 + s*37, 106, 4, 3, '#ff7eb6');
+  });
+  if (hat){
+    if (hat.e) over += hat.side ? em(hat.e, 88, 24, 20, 18) : em(hat.e, 60, 12, 36);
+    if (hat.style === 'flowers') over += [[34,30,'🌸'],[44,20,'🌼'],[56,15,'🌷'],[68,15,'🌸'],[80,20,'🌼'],[88,30,'🌷']].map(([x,y,e]) => em(e, x, y, 12)).join('');
+  }
+  if (ex?.style === 'balloon') front += S_('M24 58 Q20 80 32 102', '#8a7f99', 1.2) + `<ellipse cx="24" cy="42" rx="11" ry="13" ${fs('#ff6b9a')}/>`;
+  if (ex?.e) over += em(ex.e, 26, 96, 22, -20);
+
+  const vb = crop ? '14 -10 92 92' : '0 -24 120 154';
+  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar">${RAINBOW}
+    ${crop || sit ? '' : '<ellipse cx="60" cy="124" rx="28" ry="4.5" fill="rgba(40,30,70,.14)"/>'}
+    <g stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">${back}${body}${head}${face}${front}</g>${over}
+  </svg>`;
+}
 function retrigger(el, cls){ if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function happy(el, ms=1100){ const svg = el.querySelector('svg'); if (!svg) return; svg.classList.add('happy'); clearTimeout(svg._h); svg._h = setTimeout(() => svg.classList.remove('happy'), ms); }
 
 /* ================= Effekte ================= */
-function confetti(x, y, n=26){
-  const cols = ['#ff7eb6','#ffd23f','#4cc9f0','#5cc97b','#9b5de5','#ff9f43'];
+const GOLD = ['#ffd23f','#ffc107','#f5b301','#ffe680','#e6a800'];
+function confetti(x, y, n=26, cols=['#ff7eb6','#ffd23f','#4cc9f0','#5cc97b','#9b5de5','#ff9f43']){
   for (let i=0; i<n; i++){
     const el = document.createElement('div');
     el.className = 'confetti';
@@ -896,17 +1331,23 @@ function addXP(n){
   renderHUD();
 }
 function openLevel(l, bonus, accs, habs){
+  const clothes = CLOTHES.filter(c => c.lvl === l);
   $('#infoStage').innerHTML = `<div class="bigstar">⭐</div>`;
   $('#infoTitle').textContent = `Level ${l}!`;
   $('#infoList').innerHTML =
     habs.map(h => `<li><span>${h.e}</span>Neue Welt: ${h.name}! Dort warten ${ORDER.filter(t => A[t].hab === h.id).length} neue Tiere.</li>`).join('') +
     accs.map(a => `<li><span>${a.e}</span>Neues Accessoire: ${a.name}</li>`).join('') +
+    clothes.map(c => `<li><span>👕</span>Neu für deinen Avatar: ${c.name}</li>`).join('') +
+    FURN_LIST.filter(f => f.lvl === l && l > 1).map(f => `<li><span>${f.e}</span>Neues Möbelstück fürs Haus: ${f.name}</li>`).join('') +
+    (l === RIDE_LVL ? `<li><span>🐴</span>Neu: Du kannst jetzt auf deinen Tieren reiten! Zieh deinen Avatar auf ein Tier.</li>` : '') +
     `<li><span>${bonus.join('')}</span>3 Leckerlis als Bonus</li>`;
   $('#infoBtns').innerHTML = habs.length
     ? `<button class="btn alt" data-a="close">Weiter rechnen</button><button class="btn" data-a="world:${habs[0].id}">Hinreisen ${habs[0].e}</button>`
     : accs.length
       ? `<button class="btn alt" data-a="close">Weiter rechnen</button><button class="btn" data-a="ward">Anziehen 👗</button>`
-      : `<button class="btn" data-a="close">Juhu!</button>`;
+      : clothes.length
+        ? `<button class="btn alt" data-a="close">Weiter rechnen</button><button class="btn" data-a="avatar:${clothes[0].slot}">Anprobieren 👕</button>`
+        : `<button class="btn" data-a="close">Juhu!</button>`;
   $('#infoModal').classList.add('open');
   SFX.level(); confetti(innerWidth/2, innerHeight/2 - 120, 50);
   renderTreats();
@@ -917,6 +1358,7 @@ $('#infoBtns').addEventListener('click', e => {
   closeQueued('#infoModal');
   if (a.startsWith('world:')){ S.hab = a.slice(6); save(); show('world'); }
   else if (a === 'ward'){ show('world'); openWard(); }
+  else if (a.startsWith('avatar:')) openAvatar(a.slice(7));
 });
 
 /* ================= Rechnen ================= */
@@ -981,6 +1423,7 @@ function submit(){
     SFX.ok(); confetti(cx, cy - 20);
     floatText(`+${gain} XP  +1 ${TREATS[tk]}`, cx, cy - 40);
     retrigger(mascot.querySelector('.inner'), 'jump'); happy(mascot);
+    setTimeout(() => { retrigger($('#avCoach .inner'), 'jump'); happy($('#avCoach')); }, 120); // Avatar freut sich mit
     addXP(gain); renderTask(); save();
     setTimeout(() => { newTask(); if (S.sinceGift >= 5) queueModal(openGift); }, 1000);
   } else {
@@ -1040,6 +1483,8 @@ function openGift(){
 function revealGift(){
   const owned = S.pets.map(p => p.type);
   const free = ORDER.filter(t => !owned.includes(t) && level() >= HAB[A[t].hab].lvl);
+  const giftClothes = CLOTHES.filter(c => c.gift && !clothOpen(c)); // Überraschungs-Kleidung, wenn alle Tiere da sind
+  const giftFurn = FURN_LIST.filter(f => f.gift && !furnOpen(f));    // … oder Überraschungs-Möbel
   S.sinceGift = 0;
   const [cx, cy] = centerOf($('#giftStage'));
   SFX.gift(); confetti(cx, cy, 50);
@@ -1048,9 +1493,29 @@ function revealGift(){
     S.pets.push(p); S.newPet = p.id; giftPet = p;
     $('#giftStage').innerHTML = `<div class="reveal-pet">${petNode(p, 0)}</div>`;
     setTimeout(() => happy($('#giftStage')), 500);
-    $('#giftTitle').textContent = `Hurra! ${t.name}, ${t.g} ${t.label}!`;
-    $('#giftMsg').textContent = `${t.name} wohnt jetzt in der Welt „${HAB[t.hab].name}“ ${HAB[t.hab].e}. Lieblingsessen: ${TREATS[t.fav]}`;
-    $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button><button class="btn" data-a="world">Besuchen ${HAB[t.hab].e}</button>`;
+    $('#giftTitle').textContent = `Hurra! ${t.g === 'die' ? 'Eine' : 'Ein'} ${t.label}!`;
+    $('#giftMsg').textContent = `Wohnt in der Welt „${HAB[t.hab].name}“ ${HAB[t.hab].e}. Lieblingsessen: ${TREATS[t.fav]}`;
+    // gleich einen Namen aussuchen (vorgeschlagen ist der Standardname)
+    $('#giftBtns').innerHTML = `<label class="namebox">✏️ Name: <input id="giftName" maxlength="16" value="${esc(t.name)}" autocomplete="off"></label>`
+      + `<button class="btn alt" data-a="quiz">Weiter rechnen</button><button class="btn" data-a="world">Besuchen ${HAB[t.hab].e}</button>`;
+    $('#giftName').addEventListener('input', e => setName(p, e.target.value));
+  } else if (giftFurn.length && (!giftClothes.length || Math.random() < giftFurn.length / (giftFurn.length + giftClothes.length))){
+    giftPet = null;
+    const f = pick(giftFurn);
+    S.furnOwned.push(f.id);
+    $('#giftStage').innerHTML = `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1;font-family:var(--emoji)">${f.e}</div>`;
+    $('#giftTitle').textContent = `Neues Möbelstück: ${f.name}!`;
+    $('#giftMsg').textContent = 'Das gibt es nur als Überraschung. Stell es in deinem Haus auf! 🏠';
+    $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button><button class="btn" data-a="build">Einrichten 🔨</button>`;
+  } else if (giftClothes.length){
+    giftPet = null;
+    const c = pick(giftClothes);
+    S.avOwned.push(c.id);
+    $('#giftStage').innerHTML = `<div class="reveal-pet">${avatarSVG({...S.av, [c.slot]:c.id})}</div>`;
+    setTimeout(() => happy($('#giftStage')), 500);
+    $('#giftTitle').textContent = `Neu für deinen Avatar: ${c.name}!`;
+    $('#giftMsg').textContent = 'Das gibt es nur als Überraschung. Probier es gleich an!';
+    $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button><button class="btn" data-a="avatar:${c.slot}">Anziehen 👕</button>`;
   } else {
     giftPet = null;
     const got = []; for (let i=0; i<5; i++){ const k = pick(Object.keys(TREATS)); S.treats[k]++; got.push(TREATS[k]); }
@@ -1068,10 +1533,13 @@ $('#giftBtns').addEventListener('click', e => {
   const b = e.target.closest('.btn'); if (!b) return;
   closeQueued('#giftModal');
   if (b.dataset.a === 'world'){ if (giftPet) S.hab = A[giftPet.type].hab; show('world'); }
+  else if (b.dataset.a.startsWith('avatar:')) openAvatar(b.dataset.a.slice(7));
+  else if (b.dataset.a === 'build'){ S.hab = 'haus'; show('world'); enterBuild(); }
 });
 
 /* ================= Welt ================= */
 const scene = $('#scene');
+let build = false, selI = null; // Einrichten-Modus im Haus und das gerade ausgewählte Möbelstück
 function renderScene(){
   const h = HAB[S.hab], R = h.indoor ? ROOMS[S.room] : null;
   scene.className = 'scene ' + h.id;
@@ -1083,6 +1551,7 @@ function renderScene(){
   if (h.fx === 'bubbles') for (let i=0; i<14; i++){ const s = rnd(8,22); html += `<div class="fx bub" style="left:${rnd(2,96)}%;width:${s}px;height:${s}px;animation-duration:${rnd(7,14)}s;animation-delay:-${rnd(0,14)}s"></div>`; }
   if (h.fx === 'snow') for (let i=0; i<22; i++) html += `<div class="fx snow" style="left:${rnd(0,96)}%;font-size:${rnd(10,20)}px;animation-duration:${rnd(8,16)}s;animation-delay:-${rnd(0,16)}s">❄</div>`;
   if (h.fx === 'leaves') for (let i=0; i<7; i++) html += `<div class="fx leaf" style="left:${rnd(0,90)}%;font-size:${rnd(16,24)}px;animation-duration:${rnd(12,20)}s;animation-delay:-${rnd(0,20)}s">${pick(['🍃','🍂'])}</div>`;
+  if (h.fx === 'ash') for (let i=0; i<12; i++) html += `<div class="fx ash" style="left:${rnd(40,98)}%;animation-duration:${rnd(9,16)}s;animation-delay:-${rnd(0,16)}s"></div>`; // Vulkanasche
   if (h.fx === 'sparkle') for (let i=0; i<14; i++) html += `<div class="fx spark" style="left:${rnd(2,96)}%;top:${rnd(12,44)}%;font-size:${rnd(12,22)}px;animation-delay:-${(Math.random()*2.2).toFixed(1)}s">✨</div>`;
   if (R){
     html += `<div class="floor" style="background:${FLOORS[R.floor]}"></div>`;
@@ -1094,17 +1563,94 @@ function renderScene(){
     html += `<div class="night"></div><button class="lamp ceil" data-lamp="${S.room}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`;
     html += `<div class="roomname">${R.e} ${R.name}</div>`;
   }
-  html += (R ? R.decos : h.decos).map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
-    `<div class="deco"${seat ? ` data-i="${i}"` : ''} style="left:${x}%;top:${y}%;font-size:${s}${R ? 'cqmin' : 'px'};z-index:${Math.round(y*10)}${flip ? ';transform:translate(-50%,-100%) scaleX(-1)' : ''}">${e}</div>`)).join('');
+  html += curDecos().map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
+    `<div class="deco${R && build && i === selI ? ' sel' : ''}"${R ? ` data-i="${i}"` : ''}${seat ? ' data-seat' : ''} style="left:${x}%;top:${y}%;font-size:${s}${R ? 'cqmin' : 'px'};z-index:${Math.round(y*10)}${flip ? ';transform:translate(-50%,-100%) scaleX(-1)' : ''}">${e}</div>`)).join('');
   // Türen: draußen ein Häuschen (Tier draufziehen = zu Besuch), drinnen Zimmertüren und die Haustür (= nach Hause)
   html += R
     ? R.doors.map(([to, x]) => to === 'out'
         ? `<button class="door in out" data-to="out" style="left:${x}%" aria-label="Haustür nach draußen"><span class="sign">Nach Hause</span></button>`
         : `<button class="door in" data-to="${to}" style="left:${x}%;--dc:${ROOMS[to].dc}" aria-label="Tür ${ROOMS[to].in}"><span class="sign">${ROOMS[to].e} ${ROOMS[to].name}</span></button>`).join('')
     : `<button class="door" data-to="haus" aria-label="Zum Haus">🏠<small>Haus</small></button>`;
+  // Einrichten: kleine Werkzeugleiste über dem ausgewählten Möbelstück
+  if (R && build && selI != null && furnOf(S.room)[selI]){
+    const o = furnOf(S.room)[selI], f = FURN[o.id];
+    html += `<div class="ftools" style="left:${o.x}%;top:calc(${Math.min(o.y, 86)}% - ${o.s || f.s}cqmin - 8px)">`
+      + [['flip','🔄','Spiegeln'],['small','➖','Kleiner'],['big','➕','Größer'],['del','🗑️','Wegräumen']].map(([a, e, l]) => `<button data-ft="${a}" aria-label="${l}">${e}</button>`).join('') + `</div>`;
+  }
   $('#bg').innerHTML = html;
+  scene.classList.toggle('build', !!(R && build));
   updateLight();
 }
+/* ================= Einrichten (Möbel selbst aufstellen) ================= */
+function enterBuild(){
+  build = true; selI = null; SFX.dress();
+  $('#tray').hidden = true; $('#buildbar').hidden = false;
+  renderWorld(); renderBuildbar();
+  const hint = $('#hint');
+  hint.textContent = 'Zieh die Möbel herum. Tippe ein Möbelstück an zum Spiegeln, Größer-/Kleinermachen oder Wegräumen. Unten findest du neue Möbel!';
+  hint.style.opacity = 1;
+}
+function exitBuild(){
+  if (!build) return;
+  build = false; selI = null; SFX.pop();
+  $('#tray').hidden = false; $('#buildbar').hidden = true;
+  renderWorld();
+}
+function renderBuildbar(){
+  $('#fcat').innerHTML = FURN_LIST.map(f => {
+    const open = furnOpen(f);
+    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${f.e}</span><small>${open ? f.name : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
+  }).join('');
+}
+// Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
+function furnRemoved(i){
+  S.pets.forEach(p => {
+    if (where(p) !== 'haus' || roomOf(p) !== S.room || !p.seat) return;
+    if (p.seat.i === i) delete p.seat; else if (p.seat.i > i) p.seat.i--;
+  });
+}
+$('#fcat').addEventListener('click', e => {
+  const b = e.target.closest('.fitem'); if (!b) return;
+  const f = FURN[b.dataset.f];
+  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
+  const list = furnOf(S.room);
+  list.push({ id:f.id, x:rnd(30, 70), y:f.wall ? rnd(24, 36) : rnd(66, 80) });
+  selI = list.length - 1; SFX.dress(); save(); renderWorld();
+});
+$('#buildDone').addEventListener('click', exitBuild);
+let resetArmedRoom = null;
+$('#buildReset').addEventListener('click', () => {
+  if (!resetArmedRoom){ toast('Nochmal tippen: Das Zimmer bekommt wieder seine Start-Möbel.'); resetArmedRoom = setTimeout(() => resetArmedRoom = null, 3000); return; }
+  clearTimeout(resetArmedRoom); resetArmedRoom = null;
+  delete S.furn[S.room];
+  S.pets.forEach(p => { if (where(p) === 'haus' && roomOf(p) === S.room) delete p.seat; });
+  selI = null; SFX.pop(); save(); renderWorld();
+});
+// Möbel ziehen (nur im Einrichten-Modus); antippen = auswählen
+scene.addEventListener('pointerdown', e => {
+  if (!build || !HAB[S.hab].indoor || e.target.closest('.ftools, .door, .lamp')) return;
+  const d = e.target.closest('.deco[data-i]');
+  if (!d){ if (selI != null){ selI = null; renderWorld(); } return; }
+  e.preventDefault();
+  const i = +d.dataset.i, o = furnOf(S.room)[i], f = FURN[o.id];
+  const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, ox = o.x, oy = Math.min(o.y, 86);
+  let moved = false;
+  d.setPointerCapture(e.pointerId);
+  const move = ev => {
+    if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6){ moved = true; d.classList.add('sel'); scene.querySelector('.ftools')?.remove(); hideHint(); }
+    if (!moved) return;
+    o.x = clamp(ox + (ev.clientX - sx) / r.width * 100, 4, 96);
+    o.y = f.wall ? clamp(oy + (ev.clientY - sy) / r.height * 100, 14, 52) : clamp(oy + (ev.clientY - sy) / r.height * 100, 58, 86);
+    d.style.left = o.x + '%'; d.style.top = o.y + '%'; d.style.zIndex = Math.round(o.y * 10);
+  };
+  const up = () => {
+    d.removeEventListener('pointermove', move); d.removeEventListener('pointerup', up); d.removeEventListener('pointercancel', up);
+    selI = i;
+    if (moved){ SFX.pop(); save(); } else SFX.tap();
+    renderWorld(); // Tiere auf dem Möbelstück ziehen mit um
+  };
+  d.addEventListener('pointermove', move); d.addEventListener('pointerup', up); d.addEventListener('pointercancel', up);
+});
 // Deckenlampe pro Zimmer: aus = Nacht im Zimmer (Fenster dunkel)
 const lampOn = () => S.lamps[S.room] !== false;
 function updateLight(){
@@ -1114,12 +1660,23 @@ function updateLight(){
   scene.classList.toggle('dark', !lampOn());
 }
 function goRoom(to){
-  S.room = to; save();
+  S.room = to; selI = null; save();
   tone(520, .08, 'triangle', 0, .08, 380); tone(380, .1, 'triangle', .1, .08, 300); // Tür auf, Tür zu
   renderWorld();
   scene.animate([{ opacity:.3 }, { opacity:1 }], { duration:250, easing:'ease-out' });
 }
 scene.addEventListener('click', e => {
+  const ft = e.target.closest('[data-ft]');
+  if (ft && selI != null){ // Werkzeugleiste beim Einrichten
+    const list = furnOf(S.room), o = list[selI], f = FURN[o.id], a = ft.dataset.ft;
+    if (a === 'flip'){ o.f = !o.f; if (!o.f) delete o.f; }
+    if (a === 'small') o.s = Math.max(f.s * .6, (o.s || f.s) / 1.15);
+    if (a === 'big')   o.s = Math.min(f.s * 1.8, (o.s || f.s) * 1.15);
+    if (a === 'del'){ list.splice(selI, 1); furnRemoved(selI); selI = null; SFX.pop(); }
+    else SFX.dress();
+    save(); renderWorld();
+    return;
+  }
   if (e.target.closest('.lamp')){
     S.lamps[S.room] = !lampOn();
     tone(lampOn() ? 1200 : 700, .05, 'square', 0, .05);
@@ -1138,17 +1695,20 @@ const floorSpot = p => { p.x = rnd(14, 86); p.y = rnd(64, 80); };
 function goThroughDoor(el, p, door){
   const t = A[p.type], to = door.dataset.to;
   delete p.seat;
-  if (to === 'out'){ delete p.at; delete p.room; const q = newPet(p.type); p.x = q.x; p.y = q.y; toast(`${t.name} geht zurück in die Welt „${HAB[t.hab].name}“ ${HAB[t.hab].e}`); }
-  else if (to === 'haus'){ p.at = 'haus'; p.room = 'flur'; floorSpot(p); toast(`${t.name} kommt zu Besuch ins Haus! 🏠`); }
-  else { p.room = to; floorSpot(p); toast(`${t.name} geht ${ROOMS[to].in} ${ROOMS[to].e}`); }
+  if (to === 'out'){ delete p.at; delete p.room; const q = newPet(p.type); p.x = q.x; p.y = q.y; toast(`${nameOf(p)} geht zurück in die Welt „${HAB[t.hab].name}“ ${HAB[t.hab].e}`); }
+  else if (to === 'haus'){ p.at = 'haus'; p.room = 'flur'; floorSpot(p); toast(`${nameOf(p)} kommt zu Besuch ins Haus! 🏠`); }
+  else { p.room = to; floorSpot(p); toast(`${nameOf(p)} geht ${ROOMS[to].in} ${ROOMS[to].e}`); }
   SFX.pop(); SFX.love();
   el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
   save();
   setTimeout(renderWorld, 400);
 }
 /* Möbel: Tiere setzen oder legen sich hin */
-const curDecos = () => HAB[S.hab].indoor ? ROOMS[S.room].decos : HAB[S.hab].decos;
-const seatEls = () => [...scene.querySelectorAll('.deco[data-i]')];
+// im Haus: [Emoji, x, y, Größe, Sitzplatz, gespiegelt] aus den eingerichteten Möbeln
+const curDecos = () => HAB[S.hab].indoor
+  ? furnOf(S.room).map(o => { const f = FURN[o.id] || FURN.teddy; return [f.e, o.x, o.y, o.s || f.s, f.seat, o.f]; })
+  : HAB[S.hab].decos;
+const seatEls = () => [...scene.querySelectorAll('.deco[data-seat]')];
 const seatOf = d => curDecos()[+d.dataset.i][4];
 function seatAt(ev){
   if (!HAB[S.hab].indoor || !ev || ev.clientX == null) return null;
@@ -1161,7 +1721,7 @@ function seatPos(d, slot){
 // Tier auf seinen Platz setzen (auch nach Neuaufbau der Szene, Möbel wachsen mit dem Bildschirm)
 function applySeat(el, p){
   const d = scene.querySelector(`.deco[data-i="${p.seat?.i}"]`);
-  if (!d){ delete p.seat; return false; }
+  if (!d || !seatOf(d) || seatOf(d).slots[p.seat.slot] === undefined){ delete p.seat; return false; } // Möbel weggeräumt oder ausgetauscht
   [p.x, p.y] = seatPos(d, p.seat.slot);
   placePet(el, p);
   // Größe nach dem Standort des Möbels auf dem Boden, nicht nach der Sitzhöhe – sonst wirken Tiere auf dem Sofa zu klein
@@ -1198,13 +1758,13 @@ function openInvite(){ $('#inviteModal').classList.add('open'); renderInvite(); 
 function renderInvite(){
   const out = S.pets.filter(p => !p.at);
   $('#inviteGrid').innerHTML = out.length
-    ? out.map(p => `<button class="acard" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${A[p.type].name}</b><span>${HAB[A[p.type].hab].e} ${HAB[A[p.type].hab].name}</span></button>`).join('')
+    ? out.map(p => `<button class="acard" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${esc(nameOf(p))}</b><span>${HAB[A[p.type].hab].e} ${HAB[A[p.type].hab].name}</span></button>`).join('')
     : `<div class="habLocked">Alle Tiere sind schon im Haus! 🥳</div>`;
 }
 $('#inviteGrid').addEventListener('click', e => {
   const b = e.target.closest('.acard'); if (!b) return;
   const p = S.pets.find(x => x.id === b.dataset.id);
-  invite(p.id); toast(`${A[p.type].name} kommt zu Besuch! 🏠`);
+  invite(p.id); toast(`${nameOf(p)} kommt zu Besuch! 🏠`);
   renderInvite(); renderWorld();
 });
 $('#inviteClose').addEventListener('click', () => $('#inviteModal').classList.remove('open'));
@@ -1229,6 +1789,7 @@ function placePet(el, p){
 }
 function renderWorld(){
   if (!habOpen(HAB[S.hab])) S.hab = 'wiese';
+  if (build && !HAB[S.hab].indoor){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten gibt es nur im Haus
   renderScene(); renderHabs();
   const wrap = $('#pets'); wrap.innerHTML = '';
   const indoor = HAB[S.hab].indoor;
@@ -1239,6 +1800,8 @@ function renderWorld(){
     el.innerHTML = petNode(p);
     placePet(el, p); attachPet(el, p); wrap.appendChild(el);
     if (p.seat) applySeat(el, p);
+    if (p.id === S.ride) addRider(el, p);
+    makeBig(el, p.id); // bleibt groß, auch wenn die Welt neu gezeichnet wird
   });
   const hint = $('#hint');
   hint.classList.toggle('low', indoor);
@@ -1250,12 +1813,13 @@ function renderWorld(){
   }
   else if (!here.length){ hint.textContent = `Hier wohnt noch niemand. Rechne weiter – im nächsten Geschenk steckt vielleicht ein Tier aus der Welt „${HAB[S.hab].name}“!`; hint.style.opacity = 1; }
   else { hint.textContent = 'Tippe die Tiere an, schieb sie herum, füttere sie – und zieh sie an! 👗'; hint.style.opacity = S.hintSeen ? 0 : 1; }
+  if (build){ hint.textContent = 'Zieh die Möbel herum. Tippe ein Möbelstück an zum Spiegeln, Größer-/Kleinermachen oder Wegräumen. Unten findest du neue Möbel!'; hint.style.opacity = S.buildSeen ? 0 : 1; }
   renderTreats();
   if (S.newPet){
     const el = wrap.querySelector(`[data-id="${S.newPet}"]`), p = S.pets.find(x => x.id === S.newPet);
     if (el){
       S.newPet = null; save(); renderHUD();
-      setTimeout(() => { retrigger(el.querySelector('.inner'), 'jump'); happy(el); bubble(el, `Hallo, ich bin ${A[p.type].name}!`); SFX.boing(); sprinkle(el, ['✨','💖'], 4); }, 300);
+      setTimeout(() => { retrigger(el.querySelector('.inner'), 'jump'); happy(el); bubble(el, `Hallo, ich bin ${nameOf(p)}!`); SFX.boing(); sprinkle(el, ['✨','💖'], 4); }, 300);
     }
   }
 }
@@ -1267,6 +1831,7 @@ function bubble(el, text){
   setTimeout(() => b.remove(), 1700);
 }
 function hideHint(){
+  if (build){ if (!S.buildSeen){ S.buildSeen = true; save(); } $('#hint').style.opacity = 0; return; }
   if (HAB[S.hab].indoor){ if (!S.roomsSeen){ S.roomsSeen = true; save(); $('#hint').style.opacity = 0; } return; }
   if (!S.hintSeen){ S.hintSeen = true; save(); $('#hint').style.opacity = 0; }
 }
@@ -1279,7 +1844,7 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    const mode = moveOf(p.type), airy = ['fly','float','glide'].includes(mode);
+    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold'].includes(mode);
     let moved = false, stepper = null;
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
@@ -1291,7 +1856,7 @@ function attachPet(el, p){
         snd(); stepper = setInterval(() => {
           // Sicherheitsnetz: Tier nicht mehr in der Hand oder nicht mehr da → Ruhe
           if (!el.isConnected || !el.classList.contains('held')) return up();
-          snd(); if (fx) sprinkle(el, fx, 1);
+          snd(); if (typeof fx === 'function') fx(el); else if (fx) sprinkle(el, fx, 1);
         }, ms);
       }
       if (ev.buttons === 0 && ev.pointerType === 'mouse') return up(); // Maus woanders losgelassen
@@ -1343,19 +1908,47 @@ function attachPet(el, p){
   });
 }
 
+/* Reiten (ab Level 10): der Avatar sitzt auf einem Tier und macht jede Bewegung mit */
+const RIDE_LVL = 10;
+function addRider(el, p){
+  const t = A[p.type], blob = t.body === 'blob';
+  const top = (t.hy ?? (blob ? 78 : 56)) - (t.hry ?? (blob ? 40 : 36)); // Oberkante des Kopfes im Tierbild
+  // Hüfte des Avatars (83 % seiner Höhe) sitzt knapp unter der Kopfoberkante; der Avatar ist 70 % so breit wie das Tier
+  const pct = (top + 24) / 154 * 100 + 5 - 83 * .7;
+  el.querySelector('.bob').insertAdjacentHTML('beforeend', `<div class="rider" style="top:${pct.toFixed(1)}%">${avatarSVG(S.av, false, true)}</div>`);
+}
+function mount(el){
+  const p = S.pets.find(x => x.id === el.dataset.id);
+  scene.querySelectorAll('.rider').forEach(r => r.remove());
+  S.ride = p.id; save();
+  addRider(el, p);
+  hideHint(); SFX.boing(); happy(el);
+  retrigger(el.querySelector('.inner'), 'jump');
+  bubble(el, pick(['Halt dich gut fest! 🐴','Los geht’s!','Hü hott!','Juhu, wir reiten!']));
+}
+function dismount(){
+  const r = scene.querySelector('.rider'), el = r?.closest('.pet');
+  r?.remove(); S.ride = null; save(); SFX.pop();
+  if (el) bubble(el, 'Danke fürs Reiten! 💕'); else toast('Abgestiegen! 👋');
+}
 function renderTreats(){
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
-  ).join('') + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
+  ).join('') + `<button class="treat tool ride ${level() < RIDE_LVL ? 'empty' : ''}" id="rideBtn" aria-label="Reiten">${avatarSVG(S.av, true)}</button>`
+    + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
 }
 $('#tray').addEventListener('pointerdown', e => {
-  const btn = e.target.closest('.treat'); if (!btn || btn.classList.contains('tool')) return;
+  const btn = e.target.closest('.treat'); if (!btn) return;
+  const ride = btn.id === 'rideBtn'; // Avatar-Knopf: auf ein Tier ziehen = aufsteigen, antippen = absteigen
+  if (!ride && btn.classList.contains('tool')) return;
   e.preventDefault();
   const k = btn.dataset.t;
-  if (!S.treats[k]){ retrigger(btn, 'shake'); SFX.no(); toast('Rechne Aufgaben, um Leckerlis zu verdienen! 🧮'); return; }
+  if (ride && level() < RIDE_LVL){ retrigger(btn, 'shake'); SFX.no(); toast(`Ab Level ${RIDE_LVL} kannst du auf deinen Tieren reiten! 🐴`); return; }
+  if (!ride && !S.treats[k]){ retrigger(btn, 'shake'); SFX.no(); toast('Rechne Aufgaben, um Leckerlis zu verdienen! 🧮'); return; }
   btn.setPointerCapture(e.pointerId);
   const ghost = document.createElement('div');
-  ghost.className = 'ghost'; ghost.textContent = TREATS[k];
+  ghost.className = 'ghost' + (ride ? ' rideghost' : '');
+  if (ride) ghost.innerHTML = avatarSVG(S.av, true); else ghost.textContent = TREATS[k];
   ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
   document.body.appendChild(ghost);
   SFX.tap();
@@ -1371,8 +1964,14 @@ $('#tray').addEventListener('pointerdown', e => {
     target?.classList.remove('target');
     const pet = findPet(ev);
     ghost.remove();
+    const tap = Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 10;
+    if (ride){
+      if (pet) mount(pet);
+      else if (tap) S.ride ? dismount() : toast('Zieh deinen Avatar auf ein Tier, dann reitest du! 👆');
+      return;
+    }
     if (pet) feed(pet, k);
-    else if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 10) toast('Zieh das Leckerli zu einem Tier! 👆');
+    else if (tap) toast('Zieh das Leckerli zu einem Tier! 👆');
   };
   btn.addEventListener('pointermove', move); btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', up);
 });
@@ -1380,6 +1979,7 @@ $('#tray').addEventListener('click', e => {
   if (e.target.closest('#albumBtn')){ SFX.tap(); openAlbum(); }
   if (e.target.closest('#wardBtn')){ SFX.tap(); openWard(); }
   if (e.target.closest('#inviteBtn')){ SFX.tap(); openInvite(); }
+  if (e.target.closest('#buildBtn')) enterBuild();
 });
 
 function feed(el, k){
@@ -1395,8 +1995,51 @@ function feed(el, k){
   sprinkle(el, ['❤️','💖','💕'], fav ? 6 : 3, 300);
   const [x, y] = centerOf(el);
   floatText(`+${fav ? 5 : 2} XP`, x, y - 60);
+  if (fav) setTimeout(() => favParty(el, p), 450);
   addXP(fav ? 5 : 2);
   renderTreats(); save();
+}
+/* Lieblingsessen (Lucys Wunsch): Feuerwerk über dem Tier, und es wird für 10 Sekunden groß */
+const BIG = {}; // Tier-id → Zeitpunkt, bis zu dem es groß bleibt (überlebt das Neuzeichnen der Welt)
+function makeBig(el, id){
+  const left = BIG[id] - Date.now(); if (!(left > 0)) return;
+  el.classList.add('big');
+  clearTimeout(el._big);
+  el._big = setTimeout(() => { el.classList.remove('big'); SFX.pop(); }, left);
+}
+function firework(x, y, delay){
+  setTimeout(() => {
+    const cols = pick([['#ff4d8d','#ffb3d1'],['#ffd23f','#fff3b0'],['#4cc9f0','#bff0ff'],['#9b5de5','#e0ccff'],['#5cc97b','#c9f5d4'],['#ff9f43','#ffe0b8']]);
+    tone(300, .35, 'sine', 0, .05, 1400); // Pfeifen der Rakete
+    const rocket = document.createElement('div');
+    rocket.className = 'fw'; rocket.style.cssText = `left:${x}px;top:${y + 140}px;background:${cols[0]};color:${cols[0]}`;
+    document.body.appendChild(rocket);
+    rocket.animate([{ transform:'translate(-50%,0)', opacity:1 }, { transform:'translate(-50%,-140px)', opacity:1 }], { duration:350, easing:'ease-out' }).onfinish = () => {
+      rocket.remove();
+      tone(90, .3, 'sawtooth', 0, .08, 40); tone(1800, .25, 'triangle', .02, .04, 600); // Knall und Funkeln
+      const n = 22;
+      for (let i=0; i<n; i++){
+        const s = document.createElement('div'), a = i/n*Math.PI*2, r = 75 + Math.random()*40;
+        const sc = i % 2 ? cols[1] : cols[0];
+        s.className = 'fw'; s.style.cssText = `left:${x}px;top:${y}px;background:${sc};color:${sc}`;
+        document.body.appendChild(s);
+        s.animate([
+          { transform:'translate(-50%,-50%) scale(1)', opacity:1 },
+          { transform:`translate(calc(-50% + ${Math.cos(a)*r}px), calc(-50% + ${Math.sin(a)*r}px)) scale(1)`, opacity:1, offset:.6 },
+          { transform:`translate(calc(-50% + ${Math.cos(a)*r*1.1}px), calc(-50% + ${Math.sin(a)*r*1.1 + 30}px)) scale(.3)`, opacity:0 }
+        ], { duration:1100, easing:'cubic-bezier(.2,.8,.4,1)' }).onfinish = () => s.remove();
+      }
+    };
+  }, delay);
+}
+function favParty(el, p){
+  if (!el.isConnected) return;
+  const [x, y] = centerOf(el), h = el.getBoundingClientRect().height;
+  // fünf Raketen nacheinander, über dem Tier verteilt
+  [[0,0],[-70,30],[70,20],[-35,-30],[40,-40]].forEach(([dx, dy], i) => firework(x + dx, y - h*.9 + dy, i * 420));
+  BIG[p.id] = Date.now() + 10000;
+  makeBig(el, p.id);
+  SFX.boing(); sprinkle(el, ['✨','💖'], 6);
 }
 
 /* ================= Anziehen ================= */
@@ -1405,7 +2048,8 @@ function openWard(){ $('#wardModal').classList.add('open'); renderWard(); }
 function renderWard(){
   const p = wardSel();
   $('#wardPet').innerHTML = petNode(p, 0);
-  $('#wardPets').innerHTML = S.pets.map(q => `<button class="wp ${q.id === p.id ? 'on' : ''}" data-id="${q.id}" aria-label="${A[q.type].name}">${petSVG(q.type, q.acc)}</button>`).join('');
+  $('#wardPets').innerHTML = S.pets.map(q => `<button class="wp ${q.id === p.id ? 'on' : ''}" data-id="${q.id}" aria-label="${esc(nameOf(q))}">${petSVG(q.type, q.acc)}</button>`).join('');
+  const inp = $('#petName'); inp.value = nameOf(p); inp.placeholder = A[p.type].name;
   $('#wardGrid').innerHTML = ACC.map(a => {
     const open = accOpen(a), on = p.acc[a.slot] === a.id;
     return `<button class="acc ${on ? 'on' : ''} ${open ? '' : 'locked'}" data-a="${a.id}"><span class="e">${a.e}</span><small>${open ? a.name : '🔒 Level ' + a.lvl}</small></button>`;
@@ -1425,11 +2069,69 @@ $('#wardGrid').addEventListener('click', e => {
   SFX.dress(); save(); renderWard();
   const wp = $('#wardPet'); retrigger(wp.querySelector('.inner'), 'jump'); happy(wp);
 });
+$('#petName').addEventListener('input', e => { setName(wardSel(), e.target.value); renderMascot(); });
+$('#petName').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
 $('#wardOff').addEventListener('click', () => { const p = wardSel(); p.acc = {}; SFX.pop(); save(); renderWard(); });
 $('#wardClose').addEventListener('click', () => {
   $('#wardModal').classList.remove('open');
   renderMascot();
   if ($('#world').classList.contains('active')) renderWorld();
+});
+
+/* ================= Avatar-Editor ================= */
+let avTab = 'ich';
+function renderAvatar(){
+  $('#avBtn svg')?.remove();
+  $('#avBtn').insertAdjacentHTML('afterbegin', avatarSVG(S.av, true));
+  $('#avCoach').innerHTML = `<div class="inner"><div class="bob" style="animation-delay:-1.3s">${avatarSVG(S.av)}</div></div>`;
+  $('#avBadge').classList.toggle('show', !!S.avNew);
+}
+function openAvatar(tab){
+  if (tab) avTab = tab;
+  S.avNew = false; save(); renderAvatar();
+  $('#avModal').classList.add('open'); renderAvatarEditor();
+}
+function renderAvatarEditor(){
+  $('#avBig').innerHTML = avatarSVG(S.av);
+  $('#avTabs').innerHTML = [['ich','🙂 Ich'],['haare','💇 Haare'], ...AV_SLOTS].map(([id, l]) => `<button class="avtab ${id === avTab ? 'on' : ''}" data-t="${id}">${l}</button>`).join('');
+  const card = (k, v, svg, label, on, lock) => `<button class="avopt ${on ? 'on' : ''} ${lock ? 'locked' : ''}" data-k="${k}" data-v="${v}">${svg}<small>${lock || label}</small></button>`;
+  const sw = (k, v, c, on) => `<button class="sw ${on ? 'on' : ''}" data-k="${k}" data-v="${v}" style="background:${c}" aria-label="${v}"></button>`;
+  let h = '';
+  if (avTab === 'ich'){
+    h += `<h3>Ich bin …</h3><div class="avgrid">` + [['m','Mädchen'],['j','Junge']].map(([v, l]) => card('g', v, avatarSVG({...S.av, g:v}, true), l, S.av.g === v)).join('') + `</div>`;
+    h += `<h3>Hautfarbe</h3><div class="swrow">` + AV_SKIN.map((c, i) => sw('skin', i, c, S.av.skin === i)).join('') + `</div>`;
+    h += `<h3>Augenfarbe</h3><div class="swrow">` + AV_EYES.map((c, i) => sw('eyes', i, c, S.av.eyes === i)).join('') + `</div>`;
+  } else if (avTab === 'haare'){
+    h += `<h3>Frisur</h3><div class="avgrid">` + Object.entries(AV_STYLES).map(([v, l]) => card('hair', v, avatarSVG({...S.av, hair:v, hat:null}, true), l, S.av.hair === v)).join('') + `</div>`;
+    h += `<h3>Haarfarbe</h3><div class="swrow">` + Object.entries(AV_HAIR).map(([v, c]) => sw('hc', v, c, S.av.hc === v)).join('') + `</div>`;
+  } else {
+    const slot = avTab, crop = slot === 'hat';
+    if (slot === 'bottom' && CL[S.av.top]?.full) h += `<p class="avnote">Zu ${CL[S.av.top].name} brauchst du nichts darunter. Wähle bei 👕 Oben ein Shirt, dann siehst du Hose oder Rock.</p>`;
+    h += `<div class="avgrid">`;
+    if (slot === 'hat' || slot === 'extra') h += card(slot, '', avatarSVG({...S.av, [slot]:null}, crop), 'Nichts', !S.av[slot]);
+    h += CLOTHES.filter(c => c.slot === slot).map(c => card(slot, c.id, avatarSVG({...S.av, [slot]:c.id}, crop), c.name, S.av[slot] === c.id,
+      clothOpen(c) ? '' : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
+    h += `</div>`;
+  }
+  $('#avGrid').innerHTML = h;
+}
+$('#avBtn').addEventListener('click', () => { SFX.tap(); openAvatar(); });
+$('#avTabs').addEventListener('click', e => { const b = e.target.closest('.avtab'); if (!b) return; SFX.tap(); avTab = b.dataset.t; renderAvatarEditor(); });
+$('#avGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-k]'); if (!b) return;
+  const k = b.dataset.k, v = b.dataset.v;
+  if (b.classList.contains('locked')){
+    const c = CL[v]; SFX.no(); retrigger(b, 'shake');
+    toast(c.lvl ? `${c.name} gibt es ab Level ${c.lvl}! 🧮` : `${c.name} steckt in einem Überraschungsgeschenk! 🎁`);
+    return;
+  }
+  S.av[k] = (k === 'skin' || k === 'eyes') ? +v : (v || null);
+  SFX.dress(); save(); renderAvatarEditor(); renderAvatar();
+  retrigger($('#avBig svg'), 'wobble'); happy($('#avBig'));
+});
+$('#avClose').addEventListener('click', () => {
+  $('#avModal').classList.remove('open');
+  if ($('#world').classList.contains('active')) renderWorld(); // Reiter und Avatar-Knopf in der Welt auffrischen
 });
 
 /* ================= Album ================= */
@@ -1443,7 +2145,7 @@ function openAlbum(){
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
       const t = A[type], p = owned[type];
       return p
-        ? `<div class="acard">${petSVG(type, p.acc)}<b>${t.name}</b><span>${t.label} · ❤️ ${p.love} · mag ${TREATS[t.fav]}</span></div>`
+        ? `<div class="acard">${petSVG(type, p.acc)}<b>${esc(nameOf(p))}</b><span>${t.label} · ❤️ ${p.love} · mag ${TREATS[t.fav]}</span></div>`
         : `<div class="acard locked">${petSVG(type)}<b>???</b><span>noch versteckt</span></div>`;
     }).join('') + `</div>`;
   }).join('');
@@ -1493,7 +2195,7 @@ document.addEventListener('keydown', e => {
 /* ================= Start ================= */
 load(); save();
 if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
-buildChips(); buildPad(); renderMascot(); renderHUD(); newTask();
+buildChips(); buildPad(); renderMascot(); renderAvatar(); renderHUD(); newTask();
 if (S.sinceGift >= 5) queueModal(openGift);
 </script>
 </body>
