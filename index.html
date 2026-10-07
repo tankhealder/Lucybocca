@@ -79,7 +79,33 @@ main{flex:1;position:relative;min-height:0}
 .scene.wueste{background:linear-gradient(#ffe7b8,#ffc27a 44%,#f7d58a 44%,#e9b45f)}
 .scene.eis{background:linear-gradient(#a9dcff,#e3f5ff 44%,#f7fcff 44%,#cfe6f7)}
 .scene.zauber{background:linear-gradient(#a98cff,#ffc4e6 46%,#ffe8f5 46%,#f3c2ff)}
-.scene.schloss{background:linear-gradient(#6f5fe8,#c8a8ff 46%,#ffe0f3 46%,#f6c4ec)}
+.scene.schloss{container-type:size}
+/* Schloss-Möbel: Bällebad, Thron, Schulbänke, Tafel, Spielzeugkiste */
+.pitbox{display:block;width:1.7em;height:.72em;border-radius:.12em .12em .3em .3em;border:.05em solid #9b5de5;
+  background:radial-gradient(circle,#ff6b6b .07em,transparent .075em) 0 0/.26em .24em,radial-gradient(circle,#ffd23f .07em,transparent .075em) .13em .1em/.26em .24em,
+  radial-gradient(circle,#4cc9f0 .07em,transparent .075em) .05em .17em/.3em .3em,radial-gradient(circle,#5cc97b .07em,transparent .075em) .2em .04em/.32em .28em,#fde7f6;
+  box-shadow:inset 0 .06em 0 rgba(58,46,92,.12)}
+.throne{display:block;width:.78em;height:1.05em;position:relative}
+.throne::before{content:"";position:absolute;left:.06em;right:.06em;top:0;height:.72em;border-radius:.34em .34em .06em .06em;background:#ffd23f;box-shadow:inset 0 0 0 .05em #e6a800,inset 0 0 0 .13em #9b5de5}
+.throne::after{content:"";position:absolute;left:0;right:0;top:.6em;height:.22em;border-radius:.07em;background:#e63946;box-shadow:0 .22em 0 -.03em #e6a800}
+.desk{position:absolute;transform:translate(-50%,-100%);width:17cqmin;height:7cqmin;pointer-events:none}
+.desk::before{content:"";position:absolute;left:0;right:0;top:0;height:2.2cqmin;border-radius:.8cqmin;background:#d9a066;box-shadow:0 2px 0 #b07a44}
+.desk::after{content:"";position:absolute;left:12%;right:12%;top:2.2cqmin;bottom:0;border-left:1.6cqmin solid #b07a44;border-right:1.6cqmin solid #b07a44}
+.board{position:absolute;transform:translateX(-50%);aspect-ratio:2.2;padding:1.2cqmin;z-index:5;border:1.3cqmin solid #9a5f2c;border-radius:1.2cqmin;background:#2f5d45;
+  color:#fff;font-family:var(--font);font-weight:600;font-size:clamp(13px,3.6cqmin,26px);line-height:1.2;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;box-shadow:0 4px 0 rgba(58,46,92,.15);cursor:pointer}
+.board span{overflow-wrap:anywhere}
+.boardinput{width:100%;font:inherit;font-size:20px;font-weight:600;color:#fff;background:#2f5d45;border:6px solid #9a5f2c;border-radius:12px;padding:10px;text-align:center;resize:none;margin-bottom:12px;user-select:text;-webkit-user-select:text}
+.toybox{position:absolute;transform:translate(-50%,-100%);width:20cqmin;height:13cqmin;padding:0;border-radius:1.5cqmin;background:repeating-linear-gradient(90deg,#c07d43 0 4cqmin,#b06f38 4cqmin 4.4cqmin);box-shadow:inset 0 0 0 .8cqmin #8f5627,0 4px 0 rgba(58,46,92,.15);cursor:pointer}
+.toybox::after{content:"🧸";position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);font-size:6cqmin;font-family:var(--emoji)}
+.toybox .lid{position:absolute;left:-.6cqmin;right:-.6cqmin;top:-3cqmin;height:4cqmin;border-radius:2cqmin 2cqmin .6cqmin .6cqmin;background:#d68f4f;box-shadow:inset 0 0 0 .7cqmin #8f5627;transform-origin:10% 100%;transition:transform .25s}
+.toybox.open .lid{transform:rotate(-40deg)}
+.toy{position:absolute;transform:translate(-50%,-100%);font-size:9cqmin;line-height:1;font-family:var(--emoji);cursor:grab;touch-action:none;user-select:none}
+.pitball{position:fixed;width:12px;height:12px;border-radius:50%;pointer-events:none;z-index:6400;box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
+.pet.pit .bob{animation:pitbob 1.4s ease-in-out infinite}
+@keyframes pitbob{50%{transform:translateY(-6%) rotate(3deg)}}
+.pet.slide svg{transform:scaleY(.9);transform-origin:50% 100%}
+.netstatus.below{top:98px}
+.hint.lower{top:140px}
 /* Zauberschloss: Freundin (live), Namensschilder, Chat */
 .pet.remote{transition:left .16s linear,top .16s linear;cursor:default}
 .nametag{position:absolute;left:50%;top:100%;transform:translate(-50%,2px);background:rgba(255,255,255,.92);color:var(--ink);font-weight:700;font-size:13px;padding:2px 9px;border-radius:10px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 0 rgba(58,46,92,.15)}
@@ -277,6 +303,10 @@ button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 .treat .n{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 5px;font-family:var(--font)}
 .treat.empty{filter:grayscale(1);opacity:.5}
 .treat.tool{background:#efe6ff}
+.treat.tool.on{background:var(--purple);box-shadow:0 3px 0 #6d35b5}
+.tray{max-width:calc(100% - 16px);overflow-x:auto;scrollbar-width:none;padding-top:12px} /* viele Knöpfe: auf dem Handy seitlich wischen */
+.tray::-webkit-scrollbar{display:none}
+.treat{flex:none}
 /* Weltauswahl an der Haustür */
 .gogrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .gobtn{display:flex;align-items:center;gap:8px;padding:12px;border-radius:16px;background:var(--soft);font-weight:600;font-size:17px;box-shadow:0 3px 0 #d6cdee}
@@ -501,6 +531,13 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
   <div class="btns"><button class="btn alt" id="tCancel">Später</button><button class="btn" id="tGo">Los geht’s! 🏰</button></div>
 </div></div>
 
+<div class="modal" id="boardModal"><div class="mcard">
+  <h2>Tafel ✏️</h2>
+  <p>Was du hier schreibst, sieht auch deine Freundin.</p>
+  <textarea id="boardInput" maxlength="80" rows="3" class="boardinput"></textarea>
+  <div class="btns"><button class="btn alt" id="boardTask">🎲 Rechenaufgabe</button><button class="btn alt" id="boardWipe">🧽 Wegwischen</button><button class="btn" id="boardDone">Fertig</button></div>
+</div></div>
+
 <div class="modal" id="bringModal"><div class="mcard wide">
   <h2>Wer kommt mit? 🐾</h2>
   <p>Such dir bis zu 6 Tiere aus, die mit ins Zauberschloss kommen.</p>
@@ -539,9 +576,8 @@ const HABS = [
     decos:[['🌷',12,72,34],['🌼',86,66,28],['🌳',8,52,90],['🌻',92,92,40],['🍄',70,57,26],['🌸',30,96,30],['🌳',95,50,70],['🌼',50,59,22]] },
   // Besuchshaus: hier wohnt niemand fest, jedes Tier darf zu Besuch kommen. Die Zimmer stehen in ROOMS.
   { id:'haus',   name:'Haus',       e:'🏠', lvl:1,  ymin:58, indoor:true, decos:[] },
-  // Gemeinsame Welt: hier spielen Lucy und ihre Freundin live zusammen (über Firebase, siehe NET)
-  { id:'schloss', name:'Zauberschloss', e:'🏰', lvl:1, ymin:56, shared:true, hills:['#e6d6ff','#dccaff'], fx:'sparkle',
-    decos:[['🏰',50,54,170],['🌳',7,60,84],['🌳',94,62,72],['🌈',84,42,80],['⛲',78,78,64],['🎠',20,76,62],['🌸',10,93,30],['🌷',90,95,28],['🌸',58,95,24],['🦋',32,62,22]] },
+  // Gemeinsame Welt: hier spielen Lucy und ihre Freundin live zusammen (über Firebase, siehe NET). Hat Zimmer wie das Haus (ROOMS k_…).
+  { id:'schloss', name:'Zauberschloss', e:'🏰', lvl:1, ymin:58, shared:true, indoor:true, decos:[] },
   { id:'wald',   name:'Wald',       e:'🌲', lvl:3,  hills:['#5fbf78','#53b36c'], fx:'leaves',
     decos:[['🌲',6,52,100],['🌲',22,47,70],['🌲',92,53,110],['🌳',74,46,70],['🍄',14,82,34],['🍄',84,72,26],['🪵',56,56,40],['🌿',40,97,34],['🍂',66,92,24]] },
   { id:'meer',   name:'Meer',       e:'🌊', lvl:5,  ymin:30, fx:'bubbles',
@@ -571,6 +607,8 @@ const FLOORS = {
   tiles:'repeating-conic-gradient(#fff 0 25%,#cfe6f7 0 50%) 0 0/40px 40px',
   carpet:'radial-gradient(#d9b1e3 2px,transparent 3px) 0 0/18px 18px,#ecd5f2',
   mat:'repeating-linear-gradient(90deg,#ff9ec4 0 60px,#ffd166 60px 120px,#7bdff2 120px 180px,#9be89b 180px 240px)',
+  castle:'repeating-conic-gradient(#f3eeff 0 25%,#ddd0ff 0 50%) 0 0/64px 64px',
+  grass:'radial-gradient(#8ed081 1.5px,transparent 2px) 0 0/14px 14px,#a6dd8f',
 };
 const SIT = (slots=[0], k=.5) => ({ pose:'sit', slots, k });
 const LIE = (slots=[-.13,.17], k=.62) => ({ pose:'lie', slots, k });
@@ -612,7 +650,19 @@ const FURN_LIST = [
   {id:'klavier', e:'🎹', name:'Klavier', s:24, lvl:5},
   {id:'trommel', e:'🥁', name:'Trommel', s:16, lvl:5},
   {id:'mikro', e:'🎤', name:'Mikrofon', s:8, lvl:5},
-  {id:'rutsche', e:'🛝', name:'Rutsche', s:26, lvl:6, seat:SIT([-.13], .34)},
+  {id:'rutsche', e:'🛝', name:'Rutsche', s:26, lvl:6, seat:{ pose:'slide', slots:[-.13], k:.34 }}, // echte Rutsche: oben hinsetzen, dann runterrutschen
+  {id:'baellebad', e:'🔴', html:'<span class="pitbox"></span>', name:'Bällebad', s:22, lvl:8, seat:{ pose:'pit', slots:[-.28,0,.28], k:.62 }},
+  {id:'thron', e:'👑', html:'<span class="throne"></span>', name:'Thron', s:24, lvl:14, seat:SIT([0], .66)},
+  {id:'baum', e:'🌳', name:'Baum', s:30, lvl:1},
+  {id:'blume', e:'🌷', name:'Tulpe', s:8, lvl:1},
+  {id:'sonnenblume', e:'🌻', name:'Sonnenblume', s:10, lvl:1},
+  {id:'pilz', e:'🍄', name:'Pilz', s:7, lvl:1},
+  {id:'schmetterling', e:'🦋', name:'Schmetterling', s:6, lvl:1, wall:true},
+  {id:'globus', e:'🌍', name:'Globus', s:10, lvl:1},
+  {id:'buecher', e:'📚', name:'Bücher', s:10, lvl:1},
+  {id:'schild', e:'🛡️', name:'Wappenschild', s:11, lvl:7, wall:true},
+  {id:'schwerter', e:'⚔️', name:'Schwerter', s:10, lvl:7, wall:true},
+  {id:'kerze', e:'🕯️', name:'Kerze', s:8, lvl:7},
   {id:'palette', e:'🎨', name:'Malpalette', s:10, lvl:6, wall:true},
   {id:'burg', e:'🏰', name:'Burg', s:14, lvl:7},
   {id:'drachenbild', e:'🐉', name:'Drachenbild', s:14, lvl:8, wall:true},
@@ -666,9 +716,29 @@ const ROOMS = {
             doors:[['spiel1',10],['schlaf',90]],
             decos:[['bett',36,74],['loewenbild',38,30],['sonne',72,22],['palme',70,64],['teddy',68,90,10],['ballon',23,44],['krone',84,90]] },
 };
+/* Zauberschloss-Zimmer (gemeinsame Welt, Lucys Wunsch): Halle → Garten, Schulzimmer, Spielzimmer.
+   board = Tafel [x%, y%, Breite], desks = Schulbänke vor den Stühlen, toybox = Spielzeugkiste, nolamp = draußen */
+Object.assign(ROOMS, {
+  k_halle:  { castle:true, name:'Schlosshalle', e:'👑', in:'in die Schlosshalle', at:'in der Schlosshalle', dc:'#b48be0', wall:tiles('#b9acdf','#d9cff5',64,32), floor:'castle', rug:['#e63946','#ff8a94'], win:[60,14],
+              doors:[['k_garten',10],['k_spiel',76],['k_schule',91]],
+              decos:[['thron',40,64],['schild',26,30],['schwerter',40,22],['schild',54,30,11,true],['kerze',22,64],['kerze',58,64],['pflanze',96,66,14]] },
+  k_garten: { castle:true, name:'Schlossgarten', e:'🌳', in:'in den Schlossgarten', at:'im Schlossgarten', dc:'#5cc97b', wall:'linear-gradient(#8fd8ff,#d6f4ff 56%)', floor:'grass', nolamp:true,
+              doors:[['k_halle',10]],
+              decos:[['baum',26,60,34],['baum',92,60,30],['brunnen',58,72,28],['stuhl',36,76],['stuhl',80,76,16,true],['blume',20,80],['sonnenblume',70,82],['blume',44,84],['pilz',62,84],['schmetterling',46,30],['schmetterling',72,22],['sonne',86,18,10]] },
+  k_schule: { castle:true, name:'Schulzimmer', e:'📚', in:'ins Schulzimmer', at:'im Schulzimmer', dc:'#f2b84b', wall:stripes('#eef7e4','#e2f0d4'), floor:'wood', board:[52,13,50],
+              doors:[['k_halle',10]],
+              desks:[[32,70],[52,70],[72,70],[32,82],[52,82],[72,82]],
+              decos:[['stuhl',32,67,13],['stuhl',52,67,13],['stuhl',72,67,13],['stuhl',32,79,13],['stuhl',52,79,13],['stuhl',72,79,13],['globus',90,62],['buecher',90,74],['uhr',84,26]] },
+  k_spiel:  { castle:true, name:'Spielzimmer', e:'🎠', in:'ins Spielzimmer', at:'im Spielzimmer', dc:'#ff8fb8', wall:stripes('#ffe6f1','#fff3c9'), floor:'mat', toybox:[15,80],
+              doors:[['k_halle',10]],
+              decos:[['baellebad',44,80],['rutsche',78,72,30],['ballon',30,30],['stern',52,22],['ballon',66,34],['stern',88,20]] },
+});
 const roomOf = p => ROOMS[p.room] ? p.room : 'wohn';
 // Möbel eines Zimmers (selbst eingerichtet oder die Start-Einrichtung): [{id, x, y, s?, f?}]
+const CASTLE_FURN = {};
 function furnOf(room){
+  if (ROOMS[room]?.castle) // Schloss: feste Einrichtung, bei beiden gleich (nicht im eigenen Spielstand)
+    return CASTLE_FURN[room] ||= ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
   S.furn = S.furn || {};
   if (!S.furn[room]) S.furn[room] = ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
   return S.furn[room];
@@ -918,6 +988,7 @@ const ME_HELLO = ['Hallo! 👋','Wohin gehen wir?','Ich hab euch lieb! 💕','La
 const isMe = p => p.type === 'me'; // Avatar-Spielfigur (zu Hause S.me, im Zauberschloss eine eigene Position)
 const info = p => isMe(p) ? ME_INFO : A[p.type];
 const ridePet = () => S.ride && S.pets.find(x => x.id === S.ride);
+const curRoom = () => HAB[S.hab]?.shared ? together().room : S.room; // Zimmer, das man gerade anschaut (Haus oder Schloss)
 const meHere = () => !ridePet() && S.me.hab === S.hab && (!HAB[S.hab].indoor || S.me.room === S.room);
 const accOpen = a => level() >= a.lvl;
 const clothOpen = c => c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
@@ -1615,7 +1686,7 @@ $('#giftBtns').addEventListener('click', e => {
 const scene = $('#scene');
 let build = false, selI = null; // Einrichten-Modus im Haus und das gerade ausgewählte Möbelstück
 function renderScene(){
-  const h = HAB[S.hab], R = h.indoor ? ROOMS[S.room] : null;
+  const h = HAB[S.hab], R = h.indoor ? ROOMS[curRoom()] : null;
   scene.className = 'scene ' + h.id;
   scene.style.background = R ? R.wall : '';
   let html = '';
@@ -1634,7 +1705,10 @@ function renderScene(){
     if (R.table){ const [x, y, items] = R.table; html += `<div class="table" style="left:${x}%;top:${y}%;z-index:${y*10}"><div class="items">${items}</div></div>`; }
     if (R.counter){ const [x, w, items] = R.counter; html += `<div class="counter" style="left:${x}%;width:${w}%"><div class="items">${items}</div></div>`; }
     if (R.fridge) html += `<div class="fridge" style="left:${R.fridge}%"></div>`;
-    html += `<div class="night"></div><button class="lamp ceil" data-lamp="${S.room}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`;
+    if (R.board){ const [x, y, w] = R.board; html += `<button class="board" id="board" style="left:${x}%;top:${y}%;width:${w}cqmin" aria-label="Tafel"><span id="boardText"></span></button>`; }
+    if (R.desks) html += R.desks.map(([x, y]) => `<div class="desk" style="left:${x}%;top:${y}%;z-index:${Math.round(y * 10) + 5}"></div>`).join('');
+    if (R.toybox){ const [x, y] = R.toybox; html += `<button class="toybox" id="toybox" style="left:${x}%;top:${y}%;z-index:${y * 10}" aria-label="Spielzeugkiste"><span class="lid"></span></button>`; }
+    html += `<div class="night"></div>` + (R.nolamp ? '' : `<button class="lamp ceil" data-lamp="${curRoom()}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`);
     html += `<div class="roomname">${R.e} ${R.name}</div>`;
   }
   html += curDecos().map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
@@ -1703,7 +1777,7 @@ $('#buildReset').addEventListener('click', () => {
 });
 // Möbel ziehen (nur im Einrichten-Modus); antippen = auswählen
 scene.addEventListener('pointerdown', e => {
-  if (!build || !HAB[S.hab].indoor || e.target.closest('.ftools, .door, .lamp')) return;
+  if (!build || S.hab !== 'haus' || e.target.closest('.ftools, .door, .lamp')) return;
   const d = e.target.closest('.deco[data-i]');
   if (!d){ if (selI != null){ selI = null; renderWorld(); } return; }
   e.preventDefault();
@@ -1727,15 +1801,21 @@ scene.addEventListener('pointerdown', e => {
   d.addEventListener('pointermove', move); d.addEventListener('pointerup', up); d.addEventListener('pointercancel', up);
 });
 // Deckenlampe pro Zimmer: aus = Nacht im Zimmer (Fenster dunkel)
-const lampOn = () => S.lamps[S.room] !== false;
+const lampOn = () => S.lamps[curRoom()] !== false;
 function updateLight(){
   if (!HAB[S.hab].indoor) return;
+  if (!scene.querySelector('.lamp')){ scene.querySelector('.night').style.opacity = 0; scene.classList.remove('dark'); return; } // draußen (Schlossgarten)
   scene.querySelector('.lamp').classList.toggle('on', lampOn());
   scene.querySelector('.night').style.opacity = lampOn() ? 0 : .55;
   scene.classList.toggle('dark', !lampOn());
 }
 function goRoom(to){
-  S.room = to; selI = null; save();
+  if (HAB[S.hab].shared){ // im Schloss geht die Spielfigur mit (und das Tier, auf dem sie reitet)
+    const T = together(); T.room = to; delete T.me.seat; floorSpot(T.me);
+    if (T.ride && T.pos[T.ride]){ T.pos[T.ride].room = to; delete T.pos[T.ride].seat; floorSpot(T.pos[T.ride]); }
+    netPush(true);
+  } else S.room = to;
+  selI = null; save();
   tone(520, .08, 'triangle', 0, .08, 380); tone(380, .1, 'triangle', .1, .08, 300); // Tür auf, Tür zu
   renderWorld();
   scene.animate([{ opacity:.3 }, { opacity:1 }], { duration:250, easing:'ease-out' });
@@ -1753,7 +1833,7 @@ scene.addEventListener('click', e => {
     return;
   }
   if (e.target.closest('.lamp')){
-    S.lamps[S.room] = !lampOn();
+    S.lamps[curRoom()] = !lampOn();
     tone(lampOn() ? 1200 : 700, .05, 'square', 0, .05);
     save(); updateLight();
     return;
@@ -1809,7 +1889,7 @@ $('#goClose').addEventListener('click', () => { $('#goModal').classList.remove('
 /* Möbel: Tiere setzen oder legen sich hin */
 // im Haus: [Emoji, x, y, Größe, Sitzplatz, gespiegelt] aus den eingerichteten Möbeln
 const curDecos = () => HAB[S.hab].indoor
-  ? furnOf(S.room).map(o => { const f = FURN[o.id] || FURN.teddy; return [f.e, o.x, o.y, o.s || f.s, f.seat, o.f]; })
+  ? furnOf(curRoom()).map(o => { const f = FURN[o.id] || FURN.teddy; return [f.html || f.e, o.x, o.y, o.s || f.s, f.seat, o.f]; })
   : HAB[S.hab].decos;
 const seatEls = () => [...scene.querySelectorAll('.deco[data-seat]')];
 const seatOf = d => curDecos()[+d.dataset.i][4];
@@ -1832,14 +1912,17 @@ function applySeat(el, p){
   el.style.setProperty('--s', clamp(.78 + (floorY - 50) / 40 * .35, .7, 1.15).toFixed(3));
   const pose = seatOf(d).pose;
   // in der Badewanne steckt das Tier hinter dem Wannenrand, sonst sitzt/liegt es vorne drauf
-  el.style.zIndex = +d.style.zIndex + (pose === 'bath' ? -1 : 1 + p.seat.slot);
+  el.style.zIndex = +d.style.zIndex + (pose === 'bath' || pose === 'pit' ? -1 : 1 + p.seat.slot);
   el.classList.add(pose);
+  p.pz = [pose, +el.style.zIndex]; // für die Freundin im Schloss: Haltung und Ebene
   return true;
 }
-function standUp(el, p){ delete p.seat; el.classList.remove('sit', 'lie', 'bath'); }
+function standUp(el, p){ delete p.seat; delete p.pz; el.classList.remove('sit', 'lie', 'bath', 'pit', 'slide'); }
 function trySeat(el, p, d, ev){
   const s = seatOf(d), i = +d.dataset.i, sr = scene.getBoundingClientRect(), r = d.getBoundingClientRect();
-  const here = [...S.pets.filter(q => where(q) === S.hab && roomOf(q) === S.room), ...(meHere() ? [S.me] : [])]; // auch der Avatar belegt einen Platz
+  const T = HAB[S.hab].shared && together();
+  const here = T ? [...T.pets.map(id => T.pos[id]).filter(q => q && q.room === T.room), ...(T.ride ? [] : [T.me])] // Schloss: eigene Tiere + Spielfigur
+                 : [...S.pets.filter(q => where(q) === S.hab && roomOf(q) === S.room), ...(meHere() ? [S.me] : [])]; // auch der Avatar belegt einen Platz
   const taken = here.filter(q => q !== p && q.seat?.i === i).map(q => q.seat.slot);
   const free = s.slots.map((o, k) => k).filter(k => !taken.includes(k));
   if (!free.length){ bubble(el, 'Hier ist kein Platz mehr!'); return false; }
@@ -1848,10 +1931,46 @@ function trySeat(el, p, d, ev){
   p.seat = { i, slot };
   applySeat(el, p);
   SFX.pop();
+  if (s.pose === 'slide'){ slideDown(el, p, d); return true; }
+  if (s.pose === 'pit'){ const [x, y] = centerOf(el); ballBurst(x, y); SFX.boing(); }
   bubble(el, s.pose === 'lie' ? pick(['Gute Nacht! 😴','Zeit für ein Nickerchen 💤','Sooo müde…'])
     : s.pose === 'bath' ? pick(['Blubb, ein Schaumbad! 🫧','Plitsch platsch!','Rubbel mir den Rücken! 🧼'])
+    : s.pose === 'pit' ? pick(['Juhuu, Bällebad! 🔴🟡🔵','Platsch in die Bälle!','So viele Bälle! 🥳'])
     : pick(['Gemütlich! 🥰','Hier sitz ich gern!','Ahh, bequem!']));
   return true;
+}
+// Bunte Bälle spritzen aus dem Bällebad
+function ballBurst(x, y){
+  const cols = ['#ff6b6b','#ffd23f','#4cc9f0','#5cc97b','#9b5de5','#ff9f43'];
+  for (let i=0; i<16; i++){
+    const b = document.createElement('div'), a = -Math.PI/2 + (Math.random() - .5) * 2.2, v = 70 + Math.random()*90;
+    b.className = 'pitball'; b.style.cssText = `left:${x}px;top:${y}px;background:${pick(cols)}`;
+    document.body.appendChild(b);
+    b.animate([{ transform:'translate(-50%,-50%)' }, { transform:`translate(calc(-50% + ${Math.cos(a)*v}px), calc(-50% + ${Math.sin(a)*v}px))`, offset:.45 },
+      { transform:`translate(calc(-50% + ${Math.cos(a)*v*1.4}px), calc(-50% + 40px))`, opacity:0 }], { duration:900, easing:'ease-out' }).onfinish = () => b.remove();
+  }
+}
+// Echte Rutsche: oben kurz sitzen, dann im Bogen herunterrutschen und unten landen
+function slideDown(el, p, d){
+  const flip = !!curDecos()[+d.dataset.i][5];
+  p.sliding = true;
+  setTimeout(() => {
+    if (!el.isConnected || !p.seat){ delete p.sliding; return; }
+    const r = d.getBoundingClientRect(), sr = scene.getBoundingClientRect();
+    const ex = (r.left + r.width * (flip ? .1 : .9) - sr.left) / sr.width * 100, ey = (r.bottom - sr.top) / sr.height * 100;
+    standUp(el, p);
+    el.style.zIndex = +d.style.zIndex + 2;
+    el.style.transition = 'left .85s cubic-bezier(.45,0,.7,1), top .85s cubic-bezier(.3,0,.5,1)';
+    p.x = clamp(ex, 7, 93); p.y = clamp(ey, HAB[S.hab].ymin || 58, 92);
+    el.style.left = p.x + '%'; el.style.top = p.y + '%';
+    tone(1400, .85, 'sine', 0, .07, 350); // Wiiii
+    setTimeout(() => {
+      el.style.transition = ''; delete p.sliding; placePet(el, p);
+      retrigger(el.querySelector('.inner'), 'jump'); SFX.pop();
+      bubble(el, pick(['Wiiiiii! 🛝','Nochmal! Nochmal!','Das war lustig! 😆']));
+      save(); netPush(true);
+    }, 880);
+  }, 650);
 }
 function invite(id){
   const p = S.pets.find(x => x.id === id); if (!p || p.at) return;
@@ -1893,7 +2012,7 @@ function placePet(el, p){
 }
 function renderWorld(){
   if (!habOpen(HAB[S.hab])) S.hab = 'wiese';
-  if (build && !HAB[S.hab].indoor){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten gibt es nur im Haus
+  if (build && S.hab !== 'haus'){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten gibt es nur im Haus
   renderScene(); renderHabs();
   const wrap = $('#pets'); wrap.innerHTML = '';
   const indoor = HAB[S.hab].indoor;
@@ -1917,7 +2036,7 @@ function renderWorld(){
   }
   // Zauberschloss: gemeinsam mit der Freundin
   const shared = !!HAB[S.hab].shared;
-  $('#chatbar').hidden = !shared; $('#netStatus').hidden = !shared;
+  $('#chatbar').hidden = !shared || !NET.chatOpen; $('#netStatus').hidden = !shared; // Chat klappt über 💬 auf
   if (shared){ renderShared(wrap); setNet(NET.meRef ? netStatusText() : NET.status || '🔌 Verbinde …'); netJoin(); }
   else netLeave();
   const hint = $('#hint');
@@ -1931,7 +2050,8 @@ function renderWorld(){
   }
   else if (!here.length){ hint.textContent = `Hier wohnt noch niemand. Rechne weiter – im nächsten Geschenk steckt vielleicht ein Tier aus der Welt „${HAB[S.hab].name}“!`; hint.style.opacity = 1; }
   else { hint.textContent = 'Tippe die Tiere an, schieb sie herum, füttere sie – und zieh sie an! 👗'; hint.style.opacity = S.hintSeen ? 0 : 1; }
-  if (shared){ hint.textContent = 'Hier spielt ihr zusammen! 🐾 bringt Tiere mit, unten könnt ihr euch schreiben.'; hint.style.opacity = S.sharedSeen ? 0 : 1; }
+  hint.classList.toggle('lower', shared); $('#netStatus').classList.toggle('below', shared);
+  if (shared){ hint.textContent = 'Hier spielt ihr zusammen! Geht durch die Türen in Garten, Schule und Spielzimmer. 🐾 bringt Tiere mit, unten könnt ihr euch schreiben.'; hint.style.opacity = S.sharedSeen ? 0 : 1; }
   if (build){ hint.textContent = 'Zieh die Möbel herum. Tippe ein Möbelstück an zum Spiegeln, Größer-/Kleinermachen oder Wegräumen. Unten findest du neue Möbel!'; hint.style.opacity = S.buildSeen ? 0 : 1; }
   renderTreats();
   if (S.newPet){
@@ -1951,7 +2071,7 @@ function bubble(el, text, chat){
 }
 function hideHint(){
   if (build){ if (!S.buildSeen){ S.buildSeen = true; save(); } $('#hint').style.opacity = 0; return; }
-  if (HAB[S.hab].shared){ if (!S.sharedSeen){ S.sharedSeen = true; save(); } $('#hint').style.opacity = 0; return; }
+  if (HAB[S.hab].shared){ if (!S.sharedSeen){ S.sharedSeen = true; save(); } $('#hint').style.opacity = 0; return; } // vor „indoor“, weil das Schloss auch Zimmer hat
   if (HAB[S.hab].indoor){ if (!S.roomsSeen){ S.roomsSeen = true; save(); $('#hint').style.opacity = 0; } return; }
   if (!S.hintSeen){ S.hintSeen = true; save(); $('#hint').style.opacity = 0; }
 }
@@ -2001,11 +2121,11 @@ function attachPet(el, p){
       if (!isMe(p)){ S.sel = p.id; renderMascot(); }
       scene.querySelectorAll('.door.hot').forEach(d => d.classList.remove('hot'));
       const door = moved && doorAt(ev);
-      if (door){ el.classList.remove('flying'); isMe(p) ? meThroughDoor(el, door) : goThroughDoor(el, p, door); return; }
+      if (door){ el.classList.remove('flying'); HAB[S.hab].shared ? sharedThroughDoor(el, p, door) : isMe(p) ? meThroughDoor(el, door) : goThroughDoor(el, p, door); return; }
       const seat = moved && seatAt(ev);
       if (seat){
         clearTimeout(el._land); el.classList.remove('flying'); el.style.transition = '';
-        if (trySeat(el, p, seat, ev)){ save(); if (isMe(p)) setTimeout(renderWorld, 0); return; } // Avatar: mit Sitz-Beinen neu zeichnen
+        if (trySeat(el, p, seat, ev)){ save(); if (isMe(p) && !p.sliding) setTimeout(renderWorld, 0); return; } // Avatar: mit Sitz-Beinen neu zeichnen
       }
       if (moved && airy){
         // sanft zurück auf den Boden gleiten, dann landen
@@ -2103,6 +2223,7 @@ const MAX_BRING = 6;
 function together(){
   const T = S.together = S.together || {};
   T.code = T.code || ''; T.name = T.name || ''; T.pets = (T.pets || []).filter(id => S.pets.some(p => p.id === id)); T.pos = T.pos || {};
+  if (!ROOMS[T.room]?.castle) T.room = 'k_halle'; // Zimmer im Schloss, in dem man gerade ist (die Spielfigur ist immer dort)
   // Positionen immer am selben Objekt ändern (das Ziehen hält eine Referenz darauf)
   if (!T.me) T.me = { x:50, y:74 };
   T.me.id = 'me'; T.me.type = 'me';
@@ -2113,6 +2234,7 @@ function tPos(id, type){
   const T = together();
   if (!T.pos[id]) T.pos[id] = { x:rnd(15, 85), y:rnd(66, 84) };
   T.pos[id].id = id; T.pos[id].type = type;
+  if (!ROOMS[T.pos[id].room]?.castle) T.pos[id].room = T.room; // neu mitgebrachte Tiere kommen in das Zimmer, in dem man ist
   return T.pos[id];
 }
 const cleanCode = s => s.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9äöüß-]/g, '');
@@ -2122,8 +2244,10 @@ function randomCode(){
 }
 function setNet(text){ NET.status = text; const el = $('#netStatus'); if (el) el.textContent = text; }
 function netStatusText(){
-  const others = Object.values(NET.others).filter(o => o && o.av);
-  return others.length ? `🟢 ${others.map(o => o.n || 'Freundin').join(', ')} ${others.length > 1 ? 'sind' : 'ist'} da!` : '⚪ Warte auf deine Freundin …';
+  const others = Object.values(NET.others).filter(o => o && o.av), here = together().room;
+  return others.length
+    ? '🟢 ' + others.map(o => `${o.n || 'Freundin'} ist ${o.room === here ? 'hier!' : ROOMS[o.room]?.at || 'im Schloss'}`).join(' · ')
+    : '⚪ Warte auf deine Freundin …';
 }
 async function netConnect(){
   if (NET.db) return true;
@@ -2157,21 +2281,26 @@ async function netJoin(){
     renderRemote(); setNet(netStatusText()); renderHabs();
     NET.first = false;
   }, err => { console.warn(err); setNet('😢 Kein Zugang – stimmt der Weltcode?'); netLeave(); });
+  // gemeinsames Spielzeug (Spielzeugkiste) und die Tafel im Schulzimmer
+  NET.unsubToys = onValue(ref(NET.db, `worlds/${T.code}/toys`), snap => { NET.toys = snap.val() || {}; renderToys(); });
+  NET.unsubBoard = onValue(ref(NET.db, `worlds/${T.code}/board`), snap => { NET.board = snap.val()?.x ?? null; renderBoard(); });
 }
 function netLeave(){
   if (!NET.meRef) return;
   NET.fb.remove(NET.meRef).catch(() => {});
-  NET.unsub?.(); NET.unsub = null; NET.meRef = null; NET.others = {}; NET.held = {};
-  document.querySelectorAll('.pet.remote').forEach(el => el.remove());
+  NET.unsub?.(); NET.unsubToys?.(); NET.unsubBoard?.();
+  NET.unsub = NET.unsubToys = NET.unsubBoard = null; NET.meRef = null; NET.others = {}; NET.held = {}; NET.toys = {};
+  document.querySelectorAll('.pet.remote, .toy').forEach(el => el.remove());
 }
+const toyRef = id => NET.fb.ref(NET.db, `worlds/${together().code}/toys/${id}`);
 function netPayload(){
   const T = together(), r1 = v => Math.round(v * 10) / 10;
   const pets = {};
   T.pets.forEach(id => {
     const p = S.pets.find(q => q.id === id), q = tPos(id, p.type);
-    pets[id] = { type:p.type, name:nameOf(p), acc:p.acc || {}, x:r1(q.x), y:r1(q.y), h:NET.held[id] ? 1 : 0, big:BIG[id] > Date.now() ? 1 : 0 };
+    pets[id] = { type:p.type, name:nameOf(p), acc:p.acc || {}, room:q.room, x:r1(q.x), y:r1(q.y), h:NET.held[id] ? 1 : 0, big:BIG[id] > Date.now() ? 1 : 0, pz:q.seat && q.pz || null };
   });
-  return { n:T.name, av:S.av, t:NET.fb.serverTimestamp(), me:{ x:r1(T.me.x), y:r1(T.me.y), h:NET.held.me ? 1 : 0 }, ride:T.ride || null, pets, say:NET.say };
+  return { n:T.name, av:S.av, t:NET.fb.serverTimestamp(), room:T.room, me:{ x:r1(T.me.x), y:r1(T.me.y), h:NET.held.me ? 1 : 0, pz:T.me.seat && T.me.pz || null }, ride:T.ride || null, pets, say:NET.say };
 }
 let pushTimer = null, pushLast = 0;
 function netPush(now){
@@ -2185,20 +2314,34 @@ function renderShared(wrap){
   const T = together();
   T.pets.forEach(id => {
     const real = S.pets.find(q => q.id === id), p = tPos(id, real.type);
+    if (p.room !== T.room) return; // in einem anderen Schlosszimmer
     const el = document.createElement('div');
     el.className = 'pet'; el.dataset.id = id;
     el.innerHTML = petNode(real);
     placePet(el, p); attachPet(el, p); wrap.appendChild(el);
+    if (p.seat) applySeat(el, p);
     if (T.ride === id) addRider(el, real);
     makeBig(el, id);
   });
   if (!T.ride){
     const el = document.createElement('div');
     el.className = 'pet me'; el.dataset.id = 'me';
-    el.innerHTML = `<div class="inner"><div class="bob" style="animation-delay:-.7s">${avatarSVG(S.av)}</div></div><div class="nametag">${esc(T.name || 'Ich')}</div>`;
+    el.innerHTML = `<div class="inner"><div class="bob" style="animation-delay:-.7s">${avatarSVG(S.av, false, !!T.me.seat)}</div></div><div class="nametag">${esc(T.name || 'Ich')}</div>`;
     placePet(el, T.me); attachPet(el, T.me); wrap.appendChild(el);
+    if (T.me.seat && !applySeat(el, T.me)) el.querySelector('.bob').innerHTML = avatarSVG(S.av);
   }
-  renderRemote();
+  renderRemote(); renderToys(); renderBoard();
+}
+// Schloss: Tier oder Spielfigur durch eine Tür ziehen
+function sharedThroughDoor(el, p, door){
+  const to = door.dataset.to; if (!ROOMS[to]?.castle) return;
+  delete p.seat; delete p.pz;
+  if (isMe(p)){ goRoom(to); return; } // man geht selbst mit
+  el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
+  p.room = to; floorSpot(p); SFX.pop();
+  toast(`${nameOf(S.pets.find(q => q.id === p.id))} geht ${ROOMS[to].in} ${ROOMS[to].e}`);
+  save(); netPush(true);
+  setTimeout(renderWorld, 400);
 }
 // Die Freundin (Avatar + Tiere) live anzeigen; nur Geändertes wird neu gezeichnet
 function renderRemote(){
@@ -2208,12 +2351,17 @@ function renderRemote(){
     el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
     el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold'].includes(moveOf(type)));
   };
+  const here = together().room;
+  const setPose = (el, pz) => { // sitzt/liegt/badet die Freundin oder ihr Tier gerade?
+    el.classList.remove('sit','lie','bath','pit','slide');
+    if (pz){ el.classList.add(pz[0]); el.style.zIndex = pz[1]; }
+  };
   for (const [pid, pl] of Object.entries(NET.others)){
     if (!pl || !pl.av) continue;
     const pets = pl.pets || {};
     let sayEl = null;
     for (const [id, q] of Object.entries(pets)){
-      if (!A[q.type]) continue;
+      if (!A[q.type] || (q.room || here) !== here) continue; // nur Tiere im selben Schlosszimmer
       const key = `${pid}-${id}`; seen.add(key);
       let el = wrap.querySelector(`[data-rid="${key}"]`);
       if (!el){ el = document.createElement('div'); el.className = 'pet remote'; el.dataset.rid = key; wrap.appendChild(el); }
@@ -2225,15 +2373,16 @@ function renderRemote(){
       }
       if (pl.ride === id) sayEl = el;
       el.classList.toggle('big', !!q.big);
-      placePet(el, { type:q.type, x:q.x, y:q.y }); setHeld(el, q.h, q.type);
+      placePet(el, { type:q.type, x:q.x, y:q.y }); setHeld(el, q.h, q.type); setPose(el, q.pz);
     }
-    if (!pl.ride || !pets[pl.ride]){
+    if ((!pl.ride || !pets[pl.ride]) && (pl.room || here) === here){
       const key = `${pid}-me`; seen.add(key);
       let el = wrap.querySelector(`[data-rid="${key}"]`);
       if (!el){ el = document.createElement('div'); el.className = 'pet me remote'; el.dataset.rid = key; wrap.appendChild(el); }
-      const look = JSON.stringify([pl.av, pl.n]);
-      if (el._look !== look){ el._look = look; el.innerHTML = `<div class="inner"><div class="bob">${avatarSVG(pl.av)}</div></div><div class="nametag friend">${esc(pl.n || 'Freundin')}</div>`; }
-      placePet(el, { type:'me', x:pl.me?.x ?? 50, y:pl.me?.y ?? 74 }); setHeld(el, pl.me?.h, 'me');
+      const sitting = !!pl.me?.pz && pl.me.pz[0] !== 'lie';
+      const look = JSON.stringify([pl.av, pl.n, sitting]);
+      if (el._look !== look){ el._look = look; el.innerHTML = `<div class="inner"><div class="bob">${avatarSVG(pl.av, false, sitting)}</div></div><div class="nametag friend">${esc(pl.n || 'Freundin')}</div>`; }
+      placePet(el, { type:'me', x:pl.me?.x ?? 50, y:pl.me?.y ?? 74 }); setHeld(el, pl.me?.h, 'me'); setPose(el, pl.me?.pz);
       sayEl = el;
     }
     // neue Chat-Nachricht als Sprechblase (alte Nachrichten beim Betreten nicht nochmal zeigen)
@@ -2244,6 +2393,85 @@ function renderRemote(){
   }
   wrap.querySelectorAll('.pet.remote').forEach(el => { if (!seen.has(el.dataset.rid)) el.remove(); });
 }
+/* Spielzeugkiste (Spielzimmer im Schloss): Spielzeug herausholen, herumziehen, in die Kiste zurücklegen – beide sehen es */
+const TOYS = ['⚽','🧸','🪀','🎲','🧩','🪁','🚂','🦆','🏀','🎾','🪅','🛼','🎨','🎺','🚗','🛸','🎈','🪆','🦖','🦄'];
+const MAX_TOYS = 16;
+function renderToys(){
+  if (!HAB[S.hab].shared) return;
+  const wrap = $('#pets'), here = together().room, toys = NET.toys || {};
+  wrap.querySelectorAll('.toy').forEach(el => { if (!toys[el.dataset.tid] || toys[el.dataset.tid].room !== here) el.remove(); });
+  for (const [tid, t] of Object.entries(toys)){
+    if (t.room !== here) continue;
+    let el = wrap.querySelector(`.toy[data-tid="${tid}"]`);
+    if (!el){
+      el = document.createElement('div'); el.className = 'toy'; el.dataset.tid = tid; el.textContent = t.e;
+      wrap.appendChild(el); attachToy(el);
+      if (NET.newToy === tid){ el.animate([{ transform:'translate(-50%,-100%) scale(.2)', offset:0 }, { transform:'translate(-50%,-260%) scale(1.3)', offset:.5 }, { transform:'translate(-50%,-100%) scale(1)' }], { duration:650, easing:'ease-out' }); NET.newToy = null; }
+    }
+    if (!el._drag){ el.style.left = t.x + '%'; el.style.top = t.y + '%'; el.style.zIndex = 900 + Math.round(t.y); }
+  }
+}
+function attachToy(el){
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    el.setPointerCapture(e.pointerId);
+    const r = scene.getBoundingClientRect(), t = NET.toys[el.dataset.tid]; if (!t) return;
+    const sx = e.clientX, sy = e.clientY, ox = t.x, oy = t.y;
+    let moved = false, last = 0;
+    el._drag = true;
+    const move = ev => {
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) moved = true;
+      if (!moved) return;
+      t.x = clamp(ox + (ev.clientX - sx) / r.width * 100, 5, 95); t.y = clamp(oy + (ev.clientY - sy) / r.height * 100, 58, 94);
+      el.style.left = t.x + '%'; el.style.top = t.y + '%'; el.style.zIndex = 2950;
+      if (Date.now() - last > 120){ last = Date.now(); NET.fb.set(toyRef(el.dataset.tid), t).catch(() => {}); }
+    };
+    const up = ev => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+      el._drag = false;
+      if (!moved){ retrigger(el, 'wobble'); tone(880, .08, 'triangle', 0, .08); return; } // antippen: wackeln
+      const box = $('#toybox')?.getBoundingClientRect();
+      if (box && ev.clientX > box.left && ev.clientX < box.right && ev.clientY > box.top - 20 && ev.clientY < box.bottom){ // zurück in die Kiste
+        NET.fb.remove(toyRef(el.dataset.tid)).catch(() => {}); SFX.pop(); el.remove(); return;
+      }
+      el.style.zIndex = 900 + Math.round(t.y); SFX.tap();
+      NET.fb.set(toyRef(el.dataset.tid), t).catch(() => {});
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+}
+function openToybox(){
+  if (!NET.meRef){ toast('Erst mit dem Zauberschloss verbinden 🔌'); return; }
+  if (Object.keys(NET.toys || {}).length >= MAX_TOYS){ SFX.no(); toast('Die Kiste ist leer! Räum erst ein paar Spielsachen zurück 🧺'); retrigger($('#toybox'), 'shake'); return; }
+  const [bx, by] = ROOMS[together().room].toybox;
+  const tid = 't' + Date.now().toString(36) + rnd(10, 99);
+  NET.newToy = tid;
+  $('#toybox').classList.add('open'); setTimeout(() => $('#toybox')?.classList.remove('open'), 600);
+  tone(500, .15, 'triangle', 0, .08, 900); SFX.pop();
+  NET.fb.set(toyRef(tid), { e:pick(TOYS), room:together().room, x:clamp(bx + rnd(8, 40), 5, 95), y:clamp(by - rnd(0, 18), 62, 94) }).catch(() => {});
+}
+/* Tafel im Schulzimmer: was eine schreibt, sehen beide */
+function renderBoard(){
+  const el = $('#boardText'); if (!el) return;
+  el.textContent = NET.board ?? 'Tippe hier, um auf die Tafel zu schreiben ✏️';
+}
+function openBoard(){ $('#boardInput').value = NET.board || ''; $('#boardModal').classList.add('open'); }
+function boardTask(){ // Rechenaufgabe passend zu den eingestellten Rechenarten
+  const t = makeTask(); return `${t.text} = ?`;
+}
+$('#boardTask').addEventListener('click', () => { $('#boardInput').value = boardTask(); SFX.tap(); });
+$('#boardWipe').addEventListener('click', () => { $('#boardInput').value = ''; tone(300, .25, 'triangle', 0, .06, 200); });
+$('#boardDone').addEventListener('click', () => {
+  const v = $('#boardInput').value.trim().slice(0, 80);
+  NET.board = v || null; renderBoard();
+  if (NET.meRef) NET.fb.set(NET.fb.ref(NET.db, `worlds/${together().code}/board`), { x:v }).catch(() => {});
+  $('#boardModal').classList.remove('open'); SFX.dress();
+});
+scene.addEventListener('click', e => {
+  if (!HAB[S.hab].shared) return;
+  if (e.target.closest('#toybox')) openToybox();
+  else if (e.target.closest('#board')){ SFX.tap(); openBoard(); }
+});
 // Chat
 function sendChat(text){
   text = text.trim().slice(0, 120); if (!text) return;
@@ -2303,8 +2531,8 @@ function renderTreats(){
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
   ).join('') + `<button class="treat tool ride" id="rideBtn" aria-label="Avatar herholen oder reiten">${avatarSVG(S.av, true)}</button>`
-    + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '')
-    + (HAB[S.hab].shared ? `<button class="treat tool" id="bringBtn" aria-label="Tiere mitbringen">🐾</button><button class="treat tool" id="codeBtn" aria-label="Weltcode">🔑</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
+    + (S.hab === 'haus' ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '')
+    + (HAB[S.hab].shared ? `<button class="treat tool ${NET.chatOpen ? 'on' : ''}" id="chatBtn" aria-label="Chat">💬</button><button class="treat tool" id="bringBtn" aria-label="Tiere mitbringen">🐾</button><button class="treat tool" id="codeBtn" aria-label="Weltcode">🔑</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
 }
 $('#tray').addEventListener('pointerdown', e => {
   const btn = e.target.closest('.treat'); if (!btn) return;
@@ -2353,6 +2581,11 @@ $('#tray').addEventListener('click', e => {
   if (e.target.closest('#inviteBtn')){ SFX.tap(); openInvite(); }
   if (e.target.closest('#buildBtn')) enterBuild();
   if (e.target.closest('#bringBtn')){ SFX.tap(); openBring(); }
+  if (e.target.closest('#chatBtn')){
+    SFX.tap(); NET.chatOpen = !NET.chatOpen;
+    $('#chatbar').hidden = !NET.chatOpen; $('#chatBtn').classList.toggle('on', NET.chatOpen);
+    if (NET.chatOpen) $('#chatInput').focus();
+  }
   if (e.target.closest('#codeBtn')){ SFX.tap(); openTogether(); }
 });
 
