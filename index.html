@@ -79,6 +79,24 @@ main{flex:1;position:relative;min-height:0}
 .scene.wueste{background:linear-gradient(#ffe7b8,#ffc27a 44%,#f7d58a 44%,#e9b45f)}
 .scene.eis{background:linear-gradient(#a9dcff,#e3f5ff 44%,#f7fcff 44%,#cfe6f7)}
 .scene.zauber{background:linear-gradient(#a98cff,#ffc4e6 46%,#ffe8f5 46%,#f3c2ff)}
+.scene.schloss{background:linear-gradient(#6f5fe8,#c8a8ff 46%,#ffe0f3 46%,#f6c4ec)}
+/* Zauberschloss: Freundin (live), Namensschilder, Chat */
+.pet.remote{transition:left .16s linear,top .16s linear;cursor:default}
+.nametag{position:absolute;left:50%;top:100%;transform:translate(-50%,2px);background:rgba(255,255,255,.92);color:var(--ink);font-weight:700;font-size:13px;padding:2px 9px;border-radius:10px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 0 rgba(58,46,92,.15)}
+.nametag.friend{background:var(--pink);color:#fff}
+.bubble.chat{white-space:normal;width:max-content;max-width:220px;text-align:center;font-size:16px;background:#fffbe6}
+.bubble.chat::after{border-top-color:#fffbe6}
+.netstatus{position:absolute;left:12px;top:58px;z-index:3000;background:rgba(255,255,255,.92);padding:6px 14px;border-radius:14px;font-weight:700;font-size:15px;box-shadow:0 3px 0 rgba(58,46,92,.12)}
+.netstatus[hidden],.chatbar[hidden]{display:none}
+.chatbar{position:absolute;left:8px;right:8px;bottom:86px;z-index:3000;display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.95);border-radius:20px;padding:6px;box-shadow:0 4px 0 rgba(58,46,92,.12)}
+.chatbar input{flex:1;min-width:0;font:inherit;font-size:16px;font-weight:600;color:var(--ink);border:3px solid #e6dbff;border-radius:14px;padding:8px 12px;background:var(--soft);user-select:text;-webkit-user-select:text}
+.chatbar input:focus{outline:none;border-color:var(--purple);background:#fff}
+.chatbar .qe{flex:none;width:36px;height:36px;border-radius:12px;background:#f1edfa;font-size:20px;font-family:var(--emoji)}
+.chatbar .send{flex:none;padding:9px 14px;border-radius:14px;background:var(--purple);color:#fff;font-weight:700;box-shadow:0 3px 0 #6d35b5}
+.codebox{display:flex;gap:6px;justify-content:center;align-items:center;margin:4px 0 12px}
+.codebox input{font:inherit;font-weight:700;font-size:17px;color:var(--ink);width:min(260px,60vw);padding:9px 12px;border-radius:14px;border:3px solid #e6dbff;background:var(--soft);text-align:center;user-select:text;-webkit-user-select:text}
+.codebox .iconbtn{width:44px;height:44px}
+@media (max-width:480px){.chatbar .qe:nth-of-type(n+3){display:none}}
 .scene.urzeit{background:linear-gradient(#ffb47a,#ffe0b5 44%,#a8cf6e 44%,#7fb24f)}
 .fx.ash{top:-20px;width:7px;height:7px;border-radius:50%;background:rgba(120,90,80,.45);animation:fall linear infinite}
 /* ---------- Haus: Zimmer (Wand = Hintergrund der Szene, Boden = .floor) ---------- */
@@ -126,6 +144,7 @@ main{flex:1;position:relative;min-height:0}
 .door .sign{position:absolute;left:50%;top:-1.1cqmin;transform:translate(-50%,-125%);background:#fff;border-radius:10px;padding:3px 8px;font-family:var(--font);font-size:clamp(10px,2.4cqmin,13px);font-weight:600;color:var(--ink);white-space:nowrap;box-shadow:0 3px 0 rgba(58,46,92,.12)}
 .door.in.hot{transform:translate(-50%,-100%) scale(1.05);box-shadow:0 0 0 6px var(--yellow);filter:brightness(1.12)}
 button.acard{font-family:inherit;color:inherit;cursor:pointer}
+button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 .hill{position:absolute;border-radius:50%}
 .hill.a{width:80%;height:40%;left:-20%;top:34%}
 .hill.b{width:90%;height:44%;right:-30%;top:36%}
@@ -258,6 +277,11 @@ button.acard{font-family:inherit;color:inherit;cursor:pointer}
 .treat .n{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 5px;font-family:var(--font)}
 .treat.empty{filter:grayscale(1);opacity:.5}
 .treat.tool{background:#efe6ff}
+/* Weltauswahl an der Haustür */
+.gogrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gobtn{display:flex;align-items:center;gap:8px;padding:12px;border-radius:16px;background:var(--soft);font-weight:600;font-size:17px;box-shadow:0 3px 0 #d6cdee}
+.gobtn span{font-size:28px;font-family:var(--emoji)}
+.gobtn:active{transform:translateY(2px)}
 /* Einrichten-Modus */
 .tray[hidden]{display:none}
 .scene.build .deco[data-i]{pointer-events:auto;cursor:grab;outline:2px dashed rgba(155,93,229,.65);outline-offset:3px;border-radius:12px;touch-action:none}
@@ -275,6 +299,7 @@ button.acard{font-family:inherit;color:inherit;cursor:pointer}
 .fitem small{font-size:10px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px}
 .fitem.locked .e{filter:grayscale(1);opacity:.35}
 .pet .bob{position:relative}
+.pet.me{width:clamp(112px,22vw,172px)} /* Spielfigur etwas größer als die Tiere */
 .rider{position:absolute;left:15%;width:70%;pointer-events:none}
 .rider svg{display:block;width:100%;height:auto;overflow:visible}
 .treat.ride{padding:3px}
@@ -411,6 +436,12 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
       </div>
       <div class="habs" id="habs"></div>
       <div class="tray" id="tray"></div>
+      <div class="netstatus" id="netStatus" hidden></div>
+      <div class="chatbar" id="chatbar" hidden>
+        <button class="qe" data-q="👋">👋</button><button class="qe" data-q="❤️">❤️</button><button class="qe" data-q="😂">😂</button><button class="qe" data-q="🐉">🐉</button>
+        <input id="chatInput" maxlength="120" placeholder="Schreib etwas …" autocomplete="off" enterkeyhint="send">
+        <button class="send" id="chatSend">➤</button>
+      </div>
       <div class="buildbar" id="buildbar" hidden>
         <button class="btn alt" id="buildReset" aria-label="Zimmer zurücksetzen">↺</button>
         <div class="fcat" id="fcat"></div>
@@ -456,6 +487,34 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
   <br><button class="btn" id="avClose">Fertig</button>
 </div></div>
 
+<div class="modal" id="togetherModal"><div class="mcard">
+  <h2>Zauberschloss 🏰</h2>
+  <p>Hier spielst du zusammen mit deiner Freundin! Ihr braucht beide <b>denselben geheimen Weltcode</b>.</p>
+  <label class="namebox">Dein Name: <input id="tName" maxlength="16" autocomplete="off"></label>
+  <p style="margin:6px 0 2px">Weltcode:</p>
+  <div class="codebox">
+    <input id="tCode" maxlength="40" autocomplete="off" placeholder="z. B. stern-drache-4821-kiwi">
+    <button class="iconbtn" id="tNew" aria-label="Neuen Code würfeln">🎲</button>
+    <button class="iconbtn" id="tCopy" aria-label="Code kopieren">📋</button>
+  </div>
+  <p style="font-size:14px">🎲 würfelt einen neuen Code. Schick ihn per Signal an deine Freundin, sie trägt ihn bei sich ein.</p>
+  <div class="btns"><button class="btn alt" id="tCancel">Später</button><button class="btn" id="tGo">Los geht’s! 🏰</button></div>
+</div></div>
+
+<div class="modal" id="bringModal"><div class="mcard wide">
+  <h2>Wer kommt mit? 🐾</h2>
+  <p>Such dir bis zu 6 Tiere aus, die mit ins Zauberschloss kommen.</p>
+  <div class="album" id="bringGrid"></div>
+  <br><button class="btn" id="bringClose">Fertig</button>
+</div></div>
+
+<div class="modal" id="goModal"><div class="mcard">
+  <h2>Wohin gehst du? 🚪</h2>
+  <p>Such dir eine Welt aus!</p>
+  <div class="gogrid" id="goGrid"></div>
+  <br><button class="btn alt" id="goClose">Lieber zu Hause bleiben</button>
+</div></div>
+
 <div class="modal" id="inviteModal"><div class="mcard wide">
   <h2>Wen lädst du ein? 📨</h2>
   <p>Tippe auf ein Tier, dann kommt es zu Besuch ins Haus.</p>
@@ -480,6 +539,9 @@ const HABS = [
     decos:[['🌷',12,72,34],['🌼',86,66,28],['🌳',8,52,90],['🌻',92,92,40],['🍄',70,57,26],['🌸',30,96,30],['🌳',95,50,70],['🌼',50,59,22]] },
   // Besuchshaus: hier wohnt niemand fest, jedes Tier darf zu Besuch kommen. Die Zimmer stehen in ROOMS.
   { id:'haus',   name:'Haus',       e:'🏠', lvl:1,  ymin:58, indoor:true, decos:[] },
+  // Gemeinsame Welt: hier spielen Lucy und ihre Freundin live zusammen (über Firebase, siehe NET)
+  { id:'schloss', name:'Zauberschloss', e:'🏰', lvl:1, ymin:56, shared:true, hills:['#e6d6ff','#dccaff'], fx:'sparkle',
+    decos:[['🏰',50,54,170],['🌳',7,60,84],['🌳',94,62,72],['🌈',84,42,80],['⛲',78,78,64],['🎠',20,76,62],['🌸',10,93,30],['🌷',90,95,28],['🌸',58,95,24],['🦋',32,62,22]] },
   { id:'wald',   name:'Wald',       e:'🌲', lvl:3,  hills:['#5fbf78','#53b36c'], fx:'leaves',
     decos:[['🌲',6,52,100],['🌲',22,47,70],['🌲',92,53,110],['🌳',74,46,70],['🍄',14,82,34],['🍄',84,72,26],['🪵',56,56,40],['🌿',40,97,34],['🍂',66,92,24]] },
   { id:'meer',   name:'Meer',       e:'🌊', lvl:5,  ymin:30, fx:'bubbles',
@@ -775,7 +837,8 @@ const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
   treats:{apfel:2, karotte:1, fisch:1, muffin:1}, pets:[], range:10, ops:['+','-'],
   sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{},
-  av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true };
+  av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true,
+  me:{ id:'me', type:'me', hab:'haus', room:'wohn', x:50, y:72 } }; // me = der Avatar als Spielfigur, zu Hause im Haus
 let S;
 function load(){
   let saved = null;
@@ -792,6 +855,8 @@ function load(){
   if (TEST) ORDER.forEach(type => { if (!(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); });
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
   S.av = Object.assign({...DEFAULT.av}, S.av);
+  S.me = Object.assign({...DEFAULT.me}, S.me, { id:'me', type:'me' });
+  if (!HAB[S.me.hab]) S.me.hab = 'haus';
   S.avOwned = S.avOwned || [];
   S.furnOwned = S.furnOwned || [];
   if (TEST) S.furnOwned = FURN_LIST.filter(f => f.gift).map(f => f.id); // im Test alle Geschenk-Möbel
@@ -847,6 +912,13 @@ const nameOf = p => p.name || A[p.type].name; // eigener Name (selbst vergeben) 
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
 function setName(p, v){ v = v.trim().slice(0, 16); if (!v || v === A[p.type].name) delete p.name; else p.name = v; save(); }
 const where = p => p.at || A[p.type].hab; // p.at = 'haus', solange das Tier zu Besuch ist
+/* Der Avatar als Spielfigur (S.me) benutzt dieselben Funktionen wie die Tiere */
+const ME_INFO = { hab:'haus', name:'Ich', say:'Hallo! 👋' };
+const ME_HELLO = ['Hallo! 👋','Wohin gehen wir?','Ich hab euch lieb! 💕','Lass uns spielen!','Juhu!','Wer kommt mit?'];
+const isMe = p => p.type === 'me'; // Avatar-Spielfigur (zu Hause S.me, im Zauberschloss eine eigene Position)
+const info = p => isMe(p) ? ME_INFO : A[p.type];
+const ridePet = () => S.ride && S.pets.find(x => x.id === S.ride);
+const meHere = () => !ridePet() && S.me.hab === S.hab && (!HAB[S.hab].indoor || S.me.room === S.room);
 const accOpen = a => level() >= a.lvl;
 const clothOpen = c => c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
 
@@ -1187,11 +1259,13 @@ function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlic
     case 'skirt':    body += P('M44 98 L76 98 L84 112 L36 112Z', bot.c); break;
     case 'tutu':     body += P('M44 98 L76 98 L82 108 L38 108Z', bot.c) + [38,46,54,62,70,78].map(x => E(x+2,108,5,4,bot.c)).join('') + [[48,102],[60,104],[72,102]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="${bot.c2}"/>`).join(''); break;
   }
-  [51,69].forEach(x => {
+  [51,69].forEach(x => { // Schuhe trippeln beim Laufen (wie die Füße der Tiere)
+    body += `<g class="foot ${x < 60 ? 'fl' : 'fr'}">`;
     if (sh.style === 'boots') body += `<rect x="${x-6}" y="106" width="12" height="13" rx="3" ${fs(sh.c)}/>`;
     body += E(x, 119, 8, 5, sh.c);
     if (sh.c2) body += S_(`M${x-4} 117 L${x+3} 117`, sh.c2, 2);
     if (sh.style === 'glitter') body += [[x-3,118],[x+3,120]].map(([a,b]) => `<circle cx="${a}" cy="${b}" r="1.2" fill="#fff"/>`).join('');
+    body += `</g>`;
   });
   }
   const T = 'M41 88 C41 82 48 80 54 80 L66 80 C72 80 79 82 79 88 L80 104 L40 104Z';
@@ -1570,7 +1644,7 @@ function renderScene(){
     ? R.doors.map(([to, x]) => to === 'out'
         ? `<button class="door in out" data-to="out" style="left:${x}%" aria-label="Haustür nach draußen"><span class="sign">Nach Hause</span></button>`
         : `<button class="door in" data-to="${to}" style="left:${x}%;--dc:${ROOMS[to].dc}" aria-label="Tür ${ROOMS[to].in}"><span class="sign">${ROOMS[to].e} ${ROOMS[to].name}</span></button>`).join('')
-    : `<button class="door" data-to="haus" aria-label="Zum Haus">🏠<small>Haus</small></button>`;
+    : h.shared ? '' : `<button class="door" data-to="haus" aria-label="Zum Haus">🏠<small>Haus</small></button>`;
   // Einrichten: kleine Werkzeugleiste über dem ausgewählten Möbelstück
   if (R && build && selI != null && furnOf(S.room)[selI]){
     const o = furnOf(S.room)[selI], f = FURN[o.id];
@@ -1604,8 +1678,8 @@ function renderBuildbar(){
 }
 // Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
 function furnRemoved(i){
-  S.pets.forEach(p => {
-    if (where(p) !== 'haus' || roomOf(p) !== S.room || !p.seat) return;
+  [...S.pets.filter(p => where(p) === 'haus' && roomOf(p) === S.room), ...(meHere() ? [S.me] : [])].forEach(p => {
+    if (!p.seat) return;
     if (p.seat.i === i) delete p.seat; else if (p.seat.i > i) p.seat.i--;
   });
 }
@@ -1624,6 +1698,7 @@ $('#buildReset').addEventListener('click', () => {
   clearTimeout(resetArmedRoom); resetArmedRoom = null;
   delete S.furn[S.room];
   S.pets.forEach(p => { if (where(p) === 'haus' && roomOf(p) === S.room) delete p.seat; });
+  if (meHere()) delete S.me.seat;
   selI = null; SFX.pop(); save(); renderWorld();
 });
 // Möbel ziehen (nur im Einrichten-Modus); antippen = auswählen
@@ -1699,10 +1774,38 @@ function goThroughDoor(el, p, door){
   else if (to === 'haus'){ p.at = 'haus'; p.room = 'flur'; floorSpot(p); toast(`${nameOf(p)} kommt zu Besuch ins Haus! 🏠`); }
   else { p.room = to; floorSpot(p); toast(`${nameOf(p)} geht ${ROOMS[to].in} ${ROOMS[to].e}`); }
   SFX.pop(); SFX.love();
+  // reitet der Avatar auf diesem Tier, geht man mit
+  if (p.id === S.ride){ S.hab = where(p); if (p.at) S.room = roomOf(p); }
   el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
   save();
   setTimeout(renderWorld, 400);
 }
+// Der Avatar geht durch eine Tür – und man geht mit
+function meThroughDoor(el, door){
+  const to = door.dataset.to;
+  delete S.me.seat;
+  if (to === 'out'){ openGo(); return; } // Haustür: aussuchen, in welche Welt es geht
+  el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
+  setTimeout(() => {
+    if (to === 'haus'){ S.me.hab = 'haus'; S.me.room = 'flur'; floorSpot(S.me); S.hab = 'haus'; toast('Wieder zu Hause! 🏠'); goRoom('flur'); }
+    else { S.me.room = to; floorSpot(S.me); goRoom(to); }
+  }, 380);
+}
+function openGo(){
+  $('#goGrid').innerHTML = HABS.filter(h => !h.indoor && !h.shared && habOpen(h)).map(h => `<button class="gobtn" data-h="${h.id}"><span>${h.e}</span>${h.name}</button>`).join('');
+  $('#goModal').classList.add('open');
+}
+$('#goGrid').addEventListener('click', e => {
+  const b = e.target.closest('.gobtn'); if (!b) return;
+  const h = HAB[b.dataset.h];
+  S.me.hab = h.id; delete S.me.room; delete S.me.seat;
+  S.me.x = rnd(30, 70); S.me.y = (h.ymin || 58) + 10;
+  S.hab = h.id; save();
+  $('#goModal').classList.remove('open');
+  SFX.boing(); toast(`Auf geht’s: ${h.e} ${h.name}!`);
+  renderWorld();
+});
+$('#goClose').addEventListener('click', () => { $('#goModal').classList.remove('open'); renderWorld(); });
 /* Möbel: Tiere setzen oder legen sich hin */
 // im Haus: [Emoji, x, y, Größe, Sitzplatz, gespiegelt] aus den eingerichteten Möbeln
 const curDecos = () => HAB[S.hab].indoor
@@ -1736,7 +1839,8 @@ function applySeat(el, p){
 function standUp(el, p){ delete p.seat; el.classList.remove('sit', 'lie', 'bath'); }
 function trySeat(el, p, d, ev){
   const s = seatOf(d), i = +d.dataset.i, sr = scene.getBoundingClientRect(), r = d.getBoundingClientRect();
-  const taken = S.pets.filter(q => q !== p && where(q) === S.hab && roomOf(q) === S.room && q.seat?.i === i).map(q => q.seat.slot);
+  const here = [...S.pets.filter(q => where(q) === S.hab && roomOf(q) === S.room), ...(meHere() ? [S.me] : [])]; // auch der Avatar belegt einen Platz
+  const taken = here.filter(q => q !== p && q.seat?.i === i).map(q => q.seat.slot);
   const free = s.slots.map((o, k) => k).filter(k => !taken.includes(k));
   if (!free.length){ bubble(el, 'Hier ist kein Platz mehr!'); return false; }
   const want = (ev.clientX - r.left) / r.width - .5;
@@ -1770,7 +1874,7 @@ $('#inviteGrid').addEventListener('click', e => {
 $('#inviteClose').addEventListener('click', () => $('#inviteModal').classList.remove('open'));
 function renderHabs(){
   $('#habs').innerHTML = HABS.map(h => {
-    const open = habOpen(h), n = S.pets.filter(p => where(p) === h.id).length;
+    const open = habOpen(h), n = h.shared ? '👭 ' + (NET.meRef ? 1 + Object.keys(NET.others).length : '–') : S.pets.filter(p => where(p) === h.id).length;
     return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : ` · Lv ${h.lvl}`}</button>`;
   }).join('');
   $('#habs .hchip.on')?.scrollIntoView({ inline:'center', block:'nearest' });
@@ -1783,7 +1887,7 @@ $('#habs').addEventListener('click', e => {
 });
 function placePet(el, p){
   el.style.left = p.x + '%'; el.style.top = p.y + '%';
-  const water = (HAB[A[p.type].hab].ymin || 50) < 50;
+  const water = (HAB[info(p).hab].ymin || 50) < 50;
   el.style.setProperty('--s', (water ? .82 + (p.y - 30) / 60 * .3 : clamp(.78 + (p.y - 50) / 40 * .35, .7, 1.15)).toFixed(3));
   el.style.zIndex = el.classList.contains('held') ? 2950 : Math.round(p.y * 10); // in der Hand: über allem (auch über der Tür)
 }
@@ -1803,16 +1907,31 @@ function renderWorld(){
     if (p.id === S.ride) addRider(el, p);
     makeBig(el, p.id); // bleibt groß, auch wenn die Welt neu gezeichnet wird
   });
+  // der Avatar als Spielfigur (wenn er hier ist und gerade nicht reitet)
+  if (meHere()){
+    const el = document.createElement('div');
+    el.className = 'pet me'; el.dataset.id = 'me';
+    el.innerHTML = `<div class="inner"><div class="bob" style="animation-delay:-.7s">${avatarSVG(S.av, false, !!S.me.seat)}</div></div>`;
+    placePet(el, S.me); attachPet(el, S.me); wrap.appendChild(el);
+    if (S.me.seat && !applySeat(el, S.me)) el.querySelector('.bob').innerHTML = avatarSVG(S.av);
+  }
+  // Zauberschloss: gemeinsam mit der Freundin
+  const shared = !!HAB[S.hab].shared;
+  $('#chatbar').hidden = !shared; $('#netStatus').hidden = !shared;
+  if (shared){ renderShared(wrap); setNet(NET.meRef ? netStatusText() : NET.status || '🔌 Verbinde …'); netJoin(); }
+  else netLeave();
   const hint = $('#hint');
   hint.classList.toggle('low', indoor);
   if (indoor){
-    hint.textContent = here.length
-      ? 'Tippe auf eine Tür, um ins nächste Zimmer zu gehen. Zieh ein Tier auf eine Tür, dann geht es dorthin!'
+    const anyone = here.length || meHere();
+    hint.textContent = anyone
+      ? 'Tippe auf eine Tür, um ins nächste Zimmer zu gehen. Zieh ein Tier oder dich selbst auf eine Tür, dann geht es dorthin!'
       : 'Hier ist gerade niemand. Tippe auf 📨 und lade Tiere ein!';
-    hint.style.opacity = here.length && S.roomsSeen ? 0 : 1;
+    hint.style.opacity = anyone && S.roomsSeen ? 0 : 1;
   }
   else if (!here.length){ hint.textContent = `Hier wohnt noch niemand. Rechne weiter – im nächsten Geschenk steckt vielleicht ein Tier aus der Welt „${HAB[S.hab].name}“!`; hint.style.opacity = 1; }
   else { hint.textContent = 'Tippe die Tiere an, schieb sie herum, füttere sie – und zieh sie an! 👗'; hint.style.opacity = S.hintSeen ? 0 : 1; }
+  if (shared){ hint.textContent = 'Hier spielt ihr zusammen! 🐾 bringt Tiere mit, unten könnt ihr euch schreiben.'; hint.style.opacity = S.sharedSeen ? 0 : 1; }
   if (build){ hint.textContent = 'Zieh die Möbel herum. Tippe ein Möbelstück an zum Spiegeln, Größer-/Kleinermachen oder Wegräumen. Unten findest du neue Möbel!'; hint.style.opacity = S.buildSeen ? 0 : 1; }
   renderTreats();
   if (S.newPet){
@@ -1823,15 +1942,16 @@ function renderWorld(){
     }
   }
 }
-function bubble(el, text){
+function bubble(el, text, chat){
   el.querySelectorAll('.bubble').forEach(b => b.remove());
   const b = document.createElement('div');
-  b.className = 'bubble'; b.textContent = text;
+  b.className = 'bubble' + (chat ? ' chat' : ''); b.textContent = text;
   el.appendChild(b);
-  setTimeout(() => b.remove(), 1700);
+  setTimeout(() => b.remove(), chat ? Math.min(9000, 2500 + text.length * 90) : 1700); // Chat-Nachrichten bleiben länger stehen
 }
 function hideHint(){
   if (build){ if (!S.buildSeen){ S.buildSeen = true; save(); } $('#hint').style.opacity = 0; return; }
+  if (HAB[S.hab].shared){ if (!S.sharedSeen){ S.sharedSeen = true; save(); } $('#hint').style.opacity = 0; return; }
   if (HAB[S.hab].indoor){ if (!S.roomsSeen){ S.roomsSeen = true; save(); $('#hint').style.opacity = 0; } return; }
   if (!S.hintSeen){ S.hintSeen = true; save(); $('#hint').style.opacity = 0; }
 }
@@ -1849,7 +1969,7 @@ function attachPet(el, p){
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
         moved = true; el.dataset.move = mode; el.classList.add('held');
-        if (p.seat) standUp(el, p); // hochgenommen = aufgestanden
+        if (p.seat){ standUp(el, p); if (isMe(p)) el.querySelector('.bob').innerHTML = avatarSVG(S.av); } // hochgenommen = aufgestanden
         if (airy){ clearTimeout(el._land); el.style.transition = ''; el.classList.add('flying'); }
         if (mode === 'puff') SFX.boing();
         const [ms, snd, fx] = STEP[mode];
@@ -1861,6 +1981,7 @@ function attachPet(el, p){
       }
       if (ev.buttons === 0 && ev.pointerType === 'mouse') return up(); // Maus woanders losgelassen
       if (!moved) return;
+      if (HAB[S.hab].shared){ NET.held[p.id] = 1; netPush(); } // Zauberschloss: Freundin sieht die Bewegung live
       p.x = clamp((ev.clientX + offX - r.left) / r.width * 100, 7, 93);
       // Fliegende Tiere dürfen auch in den Himmel
       p.y = clamp((ev.clientY + offY - r.top) / r.height * 100, airy ? 24 : ymin, ymax);
@@ -1875,15 +1996,16 @@ function attachPet(el, p){
       el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
       el.removeEventListener('lostpointercapture', up); removeEventListener('blur', up);
       el.classList.remove('held'); if (!p.seat) el.style.zIndex = Math.round(p.y * 10);
+      if (HAB[S.hab].shared){ delete NET.held[p.id]; setTimeout(() => netPush(true)); } // nach dem Landen/Gleiten senden
       hideHint();
-      S.sel = p.id; renderMascot();
+      if (!isMe(p)){ S.sel = p.id; renderMascot(); }
       scene.querySelectorAll('.door.hot').forEach(d => d.classList.remove('hot'));
       const door = moved && doorAt(ev);
-      if (door){ el.classList.remove('flying'); goThroughDoor(el, p, door); return; }
+      if (door){ el.classList.remove('flying'); isMe(p) ? meThroughDoor(el, door) : goThroughDoor(el, p, door); return; }
       const seat = moved && seatAt(ev);
       if (seat){
         clearTimeout(el._land); el.classList.remove('flying'); el.style.transition = '';
-        if (trySeat(el, p, seat, ev)){ save(); return; }
+        if (trySeat(el, p, seat, ev)){ save(); if (isMe(p)) setTimeout(renderWorld, 0); return; } // Avatar: mit Sitz-Beinen neu zeichnen
       }
       if (moved && airy){
         // sanft zurück auf den Boden gleiten, dann landen
@@ -1899,7 +2021,7 @@ function attachPet(el, p){
       }
       retrigger(el.querySelector('.inner'), 'jump');
       if (moved){ SFX.pop(); if (mode === 'puff') bubble(el, 'Pfffff! 💨'); }
-      else { SFX.boing(); happy(el); bubble(el, Math.random() < .5 ? A[p.type].say : pick(HELLO)); sprinkle(el, ['✨','💫','💖'], 2); }
+      else { SFX.boing(); happy(el); bubble(el, isMe(p) ? pick(ME_HELLO) : Math.random() < .5 ? info(p).say : pick(HELLO)); sprinkle(el, ['✨','💫','💖'], 2); }
       save();
     };
     el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
@@ -1910,32 +2032,279 @@ function attachPet(el, p){
 
 /* Reiten (ab Level 10): der Avatar sitzt auf einem Tier und macht jede Bewegung mit */
 const RIDE_LVL = 10;
-function addRider(el, p){
+function addRider(el, p, av = S.av){
   const t = A[p.type], blob = t.body === 'blob';
   const top = (t.hy ?? (blob ? 78 : 56)) - (t.hry ?? (blob ? 40 : 36)); // Oberkante des Kopfes im Tierbild
   // Hüfte des Avatars (83 % seiner Höhe) sitzt knapp unter der Kopfoberkante; der Avatar ist 70 % so breit wie das Tier
   const pct = (top + 24) / 154 * 100 + 5 - 83 * .7;
-  el.querySelector('.bob').insertAdjacentHTML('beforeend', `<div class="rider" style="top:${pct.toFixed(1)}%">${avatarSVG(S.av, false, true)}</div>`);
+  el.querySelector('.bob').insertAdjacentHTML('beforeend', `<div class="rider" style="top:${pct.toFixed(1)}%">${avatarSVG(av, false, true)}</div>`);
 }
 function mount(el){
+  if (el.dataset.id === 'me' || el.classList.contains('remote')) return;
   const p = S.pets.find(x => x.id === el.dataset.id);
+  if (HAB[S.hab].shared){ // im Zauberschloss reitet man nur dort (eigener Zustand, zu Hause ändert sich nichts)
+    const T = together(); T.ride = p.id; save(); renderWorld(); netPush(true);
+    const e2 = scene.querySelector(`[data-id="${p.id}"]`);
+    if (e2){ SFX.boing(); happy(e2); retrigger(e2.querySelector('.inner'), 'jump'); bubble(e2, pick(['Halt dich gut fest! 🐴','Los geht’s!','Hü hott!'])); }
+    return;
+  }
   scene.querySelectorAll('.rider').forEach(r => r.remove());
+  scene.querySelector('.pet.me')?.remove(); // die Spielfigur sitzt jetzt auf dem Tier
+  delete S.me.seat;
   S.ride = p.id; save();
   addRider(el, p);
   hideHint(); SFX.boing(); happy(el);
   retrigger(el.querySelector('.inner'), 'jump');
   bubble(el, pick(['Halt dich gut fest! 🐴','Los geht’s!','Hü hott!','Juhu, wir reiten!']));
 }
+// Absteigen: die Spielfigur steht dann neben dem Tier
 function dismount(){
-  const r = scene.querySelector('.rider'), el = r?.closest('.pet');
-  r?.remove(); S.ride = null; save(); SFX.pop();
-  if (el) bubble(el, 'Danke fürs Reiten! 💕'); else toast('Abgestiegen! 👋');
+  if (HAB[S.hab].shared){
+    const T = together(), q = T.ride && T.pos[T.ride];
+    if (q){ T.me.x = clamp(q.x + (q.x > 50 ? -12 : 12), 7, 93); T.me.y = Math.max(q.y, 60); }
+    T.ride = null; save(); SFX.pop(); renderWorld(); netPush(true);
+    return;
+  }
+  const p = ridePet();
+  S.ride = null;
+  if (p){
+    S.me.hab = where(p); if (p.at) S.me.room = roomOf(p); else delete S.me.room;
+    S.me.x = clamp(p.x + (p.x > 50 ? -12 : 12), 7, 93); S.me.y = Math.max(p.y, (HAB[S.me.hab].ymin || 58) + 4); delete S.me.seat;
+  }
+  save(); SFX.pop(); renderWorld();
+  const el = p && scene.querySelector(`[data-id="${p.id}"]`);
+  if (el) bubble(el, 'Danke fürs Reiten! 💕');
 }
+// Avatar-Knopf antippen, wenn man nicht reitet: Spielfigur herholen (oder sie winkt, wenn sie schon da ist)
+function callMe(){
+  const el0 = scene.querySelector('.pet.me:not(.remote)');
+  if (el0){ SFX.boing(); happy(el0); retrigger(el0.querySelector('.inner'), 'jump'); bubble(el0, 'Hier bin ich! 👋'); return; }
+  S.me.hab = S.hab; delete S.me.seat;
+  if (HAB[S.hab].indoor){ S.me.room = S.room; floorSpot(S.me); } else { delete S.me.room; S.me.x = rnd(30, 70); S.me.y = (HAB[S.hab].ymin || 58) + 10; }
+  save(); renderWorld(); SFX.boing();
+  const el = scene.querySelector('.pet.me');
+  if (el){ retrigger(el.querySelector('.inner'), 'jump'); sprinkle(el, ['✨','💫'], 4); bubble(el, 'Da bin ich! 👋'); }
+}
+/* ================= Zauberschloss: gemeinsam spielen (Firebase Realtime Database) =================
+   Pro Weltcode: worlds/<code>/players/<uid> = { n:Name, av:Avatar, me:{x,y,h}, ride, pets:{id:{type,name,acc,x,y,h}}, say:{x,t} }
+   Jedes Gerät schreibt nur seinen eigenen Eintrag; er verschwindet automatisch, wenn man geht oder die Verbindung abbricht.
+   Die Firebase-Werte sind öffentliche Kennungen (keine Passwörter); geschützt wird über die Datenbank-Regeln + geheimen Weltcode. */
+const FB_CONFIG = {
+  apiKey: 'AIzaSyAIueUvh1GZoLb_5zdZ5VaUAvTn476IgAY',
+  authDomain: 'mathpets-fbbab.firebaseapp.com',
+  databaseURL: 'https://mathpets-fbbab-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'mathpets-fbbab',
+  storageBucket: 'mathpets-fbbab.firebasestorage.app',
+  messagingSenderId: '928845564235',
+  appId: '1:928845564235:web:ad8c688183450d566bc0ce',
+};
+const NET = { fb:null, db:null, uid:null, meRef:null, unsub:null, others:{}, held:{}, say:null, lastSay:{}, first:true, status:'' };
+const MAX_BRING = 6;
+function together(){
+  const T = S.together = S.together || {};
+  T.code = T.code || ''; T.name = T.name || ''; T.pets = (T.pets || []).filter(id => S.pets.some(p => p.id === id)); T.pos = T.pos || {};
+  // Positionen immer am selben Objekt ändern (das Ziehen hält eine Referenz darauf)
+  if (!T.me) T.me = { x:50, y:74 };
+  T.me.id = 'me'; T.me.type = 'me';
+  if (T.ride && !T.pets.includes(T.ride)) T.ride = null;
+  return T;
+}
+function tPos(id, type){
+  const T = together();
+  if (!T.pos[id]) T.pos[id] = { x:rnd(15, 85), y:rnd(66, 84) };
+  T.pos[id].id = id; T.pos[id].type = type;
+  return T.pos[id];
+}
+const cleanCode = s => s.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9äöüß-]/g, '');
+function randomCode(){
+  const w = ['stern','drache','einhorn','krone','zauber','wolke','mond','funkel','regen','perle','feder','glitzer','kiwi','blume','komet','pirat'];
+  return `${pick(w)}-${pick(w)}-${rnd(1000, 9999)}-${pick(w)}`;
+}
+function setNet(text){ NET.status = text; const el = $('#netStatus'); if (el) el.textContent = text; }
+function netStatusText(){
+  const others = Object.values(NET.others).filter(o => o && o.av);
+  return others.length ? `🟢 ${others.map(o => o.n || 'Freundin').join(', ')} ${others.length > 1 ? 'sind' : 'ist'} da!` : '⚪ Warte auf deine Freundin …';
+}
+async function netConnect(){
+  if (NET.db) return true;
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    const [appM, authM, dbM] = await Promise.all(['firebase-app.js','firebase-auth.js','firebase-database.js'].map(f => import(base + f)));
+    const app = appM.initializeApp(FB_CONFIG);
+    const cred = await authM.signInAnonymously(authM.getAuth(app));
+    NET.uid = cred.user.uid; NET.fb = dbM; NET.db = dbM.getDatabase(app);
+    return true;
+  } catch (e){ console.warn('Firebase', e); NET.err = e.code || e.message; return false; }
+}
+async function netJoin(){
+  const T = together();
+  if (!T.code || T.code.length < 12 || !T.name){ openTogether(); return; }
+  if (NET.meRef || NET.joining) return;
+  NET.joining = true;
+  setNet('🔌 Verbinde mit dem Zauberschloss …');
+  const ok = await netConnect();
+  NET.joining = false;
+  if (!ok){ setNet('😢 Keine Verbindung'); toast('Das Zauberschloss ist gerade nicht erreichbar. Bist du im Internet?'); return; }
+  if (!HAB[S.hab].shared || !$('#world').classList.contains('active') || NET.meRef) return; // inzwischen woanders hingegangen
+  const { ref, onValue, onDisconnect } = NET.fb;
+  const base = `worlds/${T.code}/players`;
+  NET.meRef = ref(NET.db, `${base}/${NET.uid}`);
+  onDisconnect(NET.meRef).remove();
+  NET.first = true;
+  netPush(true);
+  NET.unsub = onValue(ref(NET.db, base), snap => {
+    NET.others = snap.val() || {}; delete NET.others[NET.uid];
+    renderRemote(); setNet(netStatusText()); renderHabs();
+    NET.first = false;
+  }, err => { console.warn(err); setNet('😢 Kein Zugang – stimmt der Weltcode?'); netLeave(); });
+}
+function netLeave(){
+  if (!NET.meRef) return;
+  NET.fb.remove(NET.meRef).catch(() => {});
+  NET.unsub?.(); NET.unsub = null; NET.meRef = null; NET.others = {}; NET.held = {};
+  document.querySelectorAll('.pet.remote').forEach(el => el.remove());
+}
+function netPayload(){
+  const T = together(), r1 = v => Math.round(v * 10) / 10;
+  const pets = {};
+  T.pets.forEach(id => {
+    const p = S.pets.find(q => q.id === id), q = tPos(id, p.type);
+    pets[id] = { type:p.type, name:nameOf(p), acc:p.acc || {}, x:r1(q.x), y:r1(q.y), h:NET.held[id] ? 1 : 0, big:BIG[id] > Date.now() ? 1 : 0 };
+  });
+  return { n:T.name, av:S.av, t:NET.fb.serverTimestamp(), me:{ x:r1(T.me.x), y:r1(T.me.y), h:NET.held.me ? 1 : 0 }, ride:T.ride || null, pets, say:NET.say };
+}
+let pushTimer = null, pushLast = 0;
+function netPush(now){
+  if (!NET.meRef) return;
+  const go = () => { pushLast = Date.now(); NET.fb.set(NET.meRef, netPayload()).catch(e => console.warn(e)); };
+  clearTimeout(pushTimer);
+  if (now || Date.now() - pushLast > 120) go(); else pushTimer = setTimeout(go, 130); // beim Ziehen höchstens ~8× pro Sekunde
+}
+// Eigene Figur und mitgebrachte Tiere im Zauberschloss zeichnen
+function renderShared(wrap){
+  const T = together();
+  T.pets.forEach(id => {
+    const real = S.pets.find(q => q.id === id), p = tPos(id, real.type);
+    const el = document.createElement('div');
+    el.className = 'pet'; el.dataset.id = id;
+    el.innerHTML = petNode(real);
+    placePet(el, p); attachPet(el, p); wrap.appendChild(el);
+    if (T.ride === id) addRider(el, real);
+    makeBig(el, id);
+  });
+  if (!T.ride){
+    const el = document.createElement('div');
+    el.className = 'pet me'; el.dataset.id = 'me';
+    el.innerHTML = `<div class="inner"><div class="bob" style="animation-delay:-.7s">${avatarSVG(S.av)}</div></div><div class="nametag">${esc(T.name || 'Ich')}</div>`;
+    placePet(el, T.me); attachPet(el, T.me); wrap.appendChild(el);
+  }
+  renderRemote();
+}
+// Die Freundin (Avatar + Tiere) live anzeigen; nur Geändertes wird neu gezeichnet
+function renderRemote(){
+  if (!HAB[S.hab].shared) return;
+  const wrap = $('#pets'), seen = new Set();
+  const setHeld = (el, h, type) => {
+    el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
+    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold'].includes(moveOf(type)));
+  };
+  for (const [pid, pl] of Object.entries(NET.others)){
+    if (!pl || !pl.av) continue;
+    const pets = pl.pets || {};
+    let sayEl = null;
+    for (const [id, q] of Object.entries(pets)){
+      if (!A[q.type]) continue;
+      const key = `${pid}-${id}`; seen.add(key);
+      let el = wrap.querySelector(`[data-rid="${key}"]`);
+      if (!el){ el = document.createElement('div'); el.className = 'pet remote'; el.dataset.rid = key; wrap.appendChild(el); }
+      const look = JSON.stringify([q.type, q.acc, q.name, pl.ride === id ? pl.av : 0]);
+      if (el._look !== look){
+        el._look = look;
+        el.innerHTML = petNode({ type:q.type, acc:q.acc || {} }) + (pl.ride === id ? `<div class="nametag friend">${esc(pl.n || '')}</div>` : '');
+        if (pl.ride === id){ addRider(el, { type:q.type }, pl.av); sayEl = el; }
+      }
+      if (pl.ride === id) sayEl = el;
+      el.classList.toggle('big', !!q.big);
+      placePet(el, { type:q.type, x:q.x, y:q.y }); setHeld(el, q.h, q.type);
+    }
+    if (!pl.ride || !pets[pl.ride]){
+      const key = `${pid}-me`; seen.add(key);
+      let el = wrap.querySelector(`[data-rid="${key}"]`);
+      if (!el){ el = document.createElement('div'); el.className = 'pet me remote'; el.dataset.rid = key; wrap.appendChild(el); }
+      const look = JSON.stringify([pl.av, pl.n]);
+      if (el._look !== look){ el._look = look; el.innerHTML = `<div class="inner"><div class="bob">${avatarSVG(pl.av)}</div></div><div class="nametag friend">${esc(pl.n || 'Freundin')}</div>`; }
+      placePet(el, { type:'me', x:pl.me?.x ?? 50, y:pl.me?.y ?? 74 }); setHeld(el, pl.me?.h, 'me');
+      sayEl = el;
+    }
+    // neue Chat-Nachricht als Sprechblase (alte Nachrichten beim Betreten nicht nochmal zeigen)
+    if (pl.say && pl.say.t !== NET.lastSay[pid]){
+      NET.lastSay[pid] = pl.say.t;
+      if (!NET.first && sayEl){ bubble(sayEl, pl.say.x, true); tone(988, .1, 'sine', 0, .08); tone(1319, .12, 'sine', .08, .08); }
+    }
+  }
+  wrap.querySelectorAll('.pet.remote').forEach(el => { if (!seen.has(el.dataset.rid)) el.remove(); });
+}
+// Chat
+function sendChat(text){
+  text = text.trim().slice(0, 120); if (!text) return;
+  NET.say = { x:text, t:Date.now() + Math.random() };
+  const T = together(), el = scene.querySelector(T.ride ? `[data-id="${T.ride}"]` : '.pet.me:not(.remote)');
+  if (el) bubble(el, text, true);
+  SFX.tap(); netPush(true);
+}
+$('#chatSend').addEventListener('click', () => { const i = $('#chatInput'); sendChat(i.value); i.value = ''; });
+$('#chatInput').addEventListener('keydown', e => { if (e.key === 'Enter'){ sendChat(e.target.value); e.target.value = ''; } });
+$('#chatbar').addEventListener('click', e => { const b = e.target.closest('.qe'); if (b) sendChat(b.dataset.q); });
+// Name und Weltcode
+function openTogether(){
+  const T = together();
+  $('#tName').value = T.name || S.av.name || '';
+  $('#tCode').value = T.code || '';
+  $('#togetherModal').classList.add('open');
+}
+$('#tNew').addEventListener('click', () => { $('#tCode').value = randomCode(); SFX.dress(); });
+$('#tCopy').addEventListener('click', async () => {
+  const c = cleanCode($('#tCode').value); if (!c) return;
+  try { await navigator.clipboard.writeText(c); toast('Code kopiert! Jetzt per Signal schicken 📋'); }
+  catch { $('#tCode').select(); toast('Markiert – jetzt kopieren und per Signal schicken 📋'); }
+});
+$('#tCancel').addEventListener('click', () => { $('#togetherModal').classList.remove('open'); if (HAB[S.hab].shared){ S.hab = 'haus'; renderWorld(); } });
+$('#tGo').addEventListener('click', () => {
+  const T = together(), name = $('#tName').value.trim().slice(0, 16), code = cleanCode($('#tCode').value);
+  if (!name){ toast('Wie heißt du? Schreib deinen Namen hin ✏️'); return; }
+  if (code.length < 12){ toast('Der Weltcode braucht mindestens 12 Zeichen – tipp auf 🎲!'); return; }
+  const changed = code !== T.code;
+  T.name = name; T.code = code;
+  if (!T.pets.length && S.pets.length) T.pets = [ (S.pets.find(p => p.id === S.sel) || S.pets[0]).id ]; // Lieblingstier kommt gleich mit
+  save(); $('#togetherModal').classList.remove('open');
+  if (changed) netLeave();
+  S.hab = 'schloss'; show('world');
+});
+// Tiere mitbringen
+function openBring(){ renderBring(); $('#bringModal').classList.add('open'); }
+function renderBring(){
+  const T = together();
+  $('#bringGrid').innerHTML = S.pets.map(p => `<button class="acard ${T.pets.includes(p.id) ? 'on' : ''}" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${esc(nameOf(p))}</b><span>${T.pets.includes(p.id) ? '✅ kommt mit' : A[p.type].label}</span></button>`).join('');
+}
+$('#bringGrid').addEventListener('click', e => {
+  const b = e.target.closest('.acard'); if (!b) return;
+  const T = together(), id = b.dataset.id;
+  if (T.pets.includes(id)){ T.pets = T.pets.filter(x => x !== id); if (T.ride === id) T.ride = null; }
+  else if (T.pets.length >= MAX_BRING){ SFX.no(); retrigger(b, 'shake'); toast(`Höchstens ${MAX_BRING} Tiere dürfen mit!`); return; }
+  else T.pets.push(id);
+  SFX.dress(); save(); renderBring();
+});
+$('#bringClose').addEventListener('click', () => { $('#bringModal').classList.remove('open'); renderWorld(); netPush(true); });
+document.addEventListener('visibilitychange', () => { // App im Hintergrund = nicht im Schloss
+  if (document.hidden) netLeave();
+  else if (HAB[S.hab]?.shared && $('#world').classList.contains('active')) netJoin();
+});
 function renderTreats(){
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
-  ).join('') + `<button class="treat tool ride ${level() < RIDE_LVL ? 'empty' : ''}" id="rideBtn" aria-label="Reiten">${avatarSVG(S.av, true)}</button>`
-    + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
+  ).join('') + `<button class="treat tool ride" id="rideBtn" aria-label="Avatar herholen oder reiten">${avatarSVG(S.av, true)}</button>`
+    + (HAB[S.hab].indoor ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '')
+    + (HAB[S.hab].shared ? `<button class="treat tool" id="bringBtn" aria-label="Tiere mitbringen">🐾</button><button class="treat tool" id="codeBtn" aria-label="Weltcode">🔑</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
 }
 $('#tray').addEventListener('pointerdown', e => {
   const btn = e.target.closest('.treat'); if (!btn) return;
@@ -1943,7 +2312,6 @@ $('#tray').addEventListener('pointerdown', e => {
   if (!ride && btn.classList.contains('tool')) return;
   e.preventDefault();
   const k = btn.dataset.t;
-  if (ride && level() < RIDE_LVL){ retrigger(btn, 'shake'); SFX.no(); toast(`Ab Level ${RIDE_LVL} kannst du auf deinen Tieren reiten! 🐴`); return; }
   if (!ride && !S.treats[k]){ retrigger(btn, 'shake'); SFX.no(); toast('Rechne Aufgaben, um Leckerlis zu verdienen! 🧮'); return; }
   btn.setPointerCapture(e.pointerId);
   const ghost = document.createElement('div');
@@ -1966,8 +2334,12 @@ $('#tray').addEventListener('pointerdown', e => {
     ghost.remove();
     const tap = Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 10;
     if (ride){
-      if (pet) mount(pet);
-      else if (tap) S.ride ? dismount() : toast('Zieh deinen Avatar auf ein Tier, dann reitest du! 👆');
+      if (pet && pet.dataset.id !== 'me' && !pet.classList.contains('remote')){
+        if (level() < RIDE_LVL){ retrigger(btn, 'shake'); SFX.no(); toast(`Ab Level ${RIDE_LVL} kannst du auf deinen Tieren reiten! 🐴`); }
+        else mount(pet);
+      }
+      else if (tap && HAB[S.hab].shared) together().ride ? dismount() : callMe();
+      else if (tap) ridePet() ? dismount() : callMe();
       return;
     }
     if (pet) feed(pet, k);
@@ -1980,9 +2352,13 @@ $('#tray').addEventListener('click', e => {
   if (e.target.closest('#wardBtn')){ SFX.tap(); openWard(); }
   if (e.target.closest('#inviteBtn')){ SFX.tap(); openInvite(); }
   if (e.target.closest('#buildBtn')) enterBuild();
+  if (e.target.closest('#bringBtn')){ SFX.tap(); openBring(); }
+  if (e.target.closest('#codeBtn')){ SFX.tap(); openTogether(); }
 });
 
 function feed(el, k){
+  if (el.classList.contains('remote')){ happy(el); SFX.tap(); bubble(el, 'Danke! Aber füttern darf nur meine Besitzerin 😄'); return; } // Tiere der Freundin
+  if (el.dataset.id === 'me'){ happy(el); SFX.tap(); bubble(el, 'Mmmh! Aber das ist doch für meine Tiere! 😄'); return; } // Avatar isst nichts weg
   const p = S.pets.find(x => x.id === el.dataset.id), t = A[p.type];
   const fav = t.fav === k;
   S.treats[k]--; p.love += fav ? 3 : 1;
@@ -1995,7 +2371,7 @@ function feed(el, k){
   sprinkle(el, ['❤️','💖','💕'], fav ? 6 : 3, 300);
   const [x, y] = centerOf(el);
   floatText(`+${fav ? 5 : 2} XP`, x, y - 60);
-  if (fav) setTimeout(() => favParty(el, p), 450);
+  if (fav) setTimeout(() => { favParty(el, p); netPush(true); }, 450);
   addXP(fav ? 5 : 2);
   renderTreats(); save();
 }
@@ -2005,7 +2381,7 @@ function makeBig(el, id){
   const left = BIG[id] - Date.now(); if (!(left > 0)) return;
   el.classList.add('big');
   clearTimeout(el._big);
-  el._big = setTimeout(() => { el.classList.remove('big'); SFX.pop(); }, left);
+  el._big = setTimeout(() => { el.classList.remove('big'); SFX.pop(); netPush(true); }, left);
 }
 function firework(x, y, delay){
   setTimeout(() => {
@@ -2132,6 +2508,7 @@ $('#avGrid').addEventListener('click', e => {
 $('#avClose').addEventListener('click', () => {
   $('#avModal').classList.remove('open');
   if ($('#world').classList.contains('active')) renderWorld(); // Reiter und Avatar-Knopf in der Welt auffrischen
+  netPush(true); // neues Outfit auch für die Freundin
 });
 
 /* ================= Album ================= */
@@ -2139,7 +2516,7 @@ function openAlbum(){
   const owned = Object.fromEntries(S.pets.map(p => [p.type, p]));
   $('#albumTitle').textContent = `Sammelalbum ${Object.keys(owned).length} / ${ORDER.length}`;
   $('#stats').innerHTML = `<div>✅ ${S.total} gerechnet</div><div>🔥 Beste Serie: ${S.best}</div><div>⭐ ${S.xp} XP</div><div>👗 ${ACC.filter(accOpen).length} / ${ACC.length}</div>`;
-  $('#album').innerHTML = HABS.filter(h => !h.indoor).map(h => {
+  $('#album').innerHTML = HABS.filter(h => !h.indoor && !h.shared).map(h => {
     const types = ORDER.filter(t => A[t].hab === h.id), have = types.filter(t => owned[t]).length;
     if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>ab Level ${h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
@@ -2168,6 +2545,7 @@ $('#resetBtn').addEventListener('click', () => {
 
 /* ================= Navigation ================= */
 function show(id){
+  if (id !== 'world') netLeave(); // beim Rechnen ist man nicht im Zauberschloss
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.go === id));
   if (id === 'world'){
