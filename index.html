@@ -105,6 +105,17 @@ main{flex:1;position:relative;min-height:0}
 @keyframes pitbob{50%{transform:translateY(-6%) rotate(3deg)}}
 .pet.slide svg{transform:scaleY(.9);transform-origin:50% 100%}
 .netstatus.below{top:98px}
+/* Wendeltreppe mit Tür zur Sternwarte oben, Turmfenster mit ziehenden Wolken */
+.stairs{position:absolute;top:8%;height:72%;aspect-ratio:1/2;transform:translateX(-50%);z-index:550;cursor:pointer}
+.stairs svg{display:block;width:100%;height:100%;overflow:visible}
+.stairdoor{position:absolute;left:50%;top:-1%;transform:translateX(-50%);width:26%;height:10%;padding:0;border:.9cqmin solid #fff;border-bottom:0;border-radius:6cqmin 6cqmin 0 0;
+  background:radial-gradient(#fff 1px,transparent 1.5px) 0 0/8px 8px,#3b4a8a;box-shadow:0 0 0 2px rgba(58,46,92,.15)}
+.stairdoor .sign{position:absolute;left:50%;top:-1cqmin;transform:translate(-50%,-110%);background:#fff;border-radius:10px;padding:3px 8px;font-size:clamp(10px,2.4cqmin,13px);font-weight:600;white-space:nowrap;box-shadow:0 3px 0 rgba(58,46,92,.12)}
+.towerwin{position:absolute;transform:translateX(-50%);width:10cqmin;height:17cqmin;border-radius:5cqmin 5cqmin 1cqmin 1cqmin;border:1.1cqmin solid #8f84bd;background:linear-gradient(#7fc8ff,#d6f4ff);overflow:hidden}
+.scene.dark .towerwin{background:linear-gradient(#141c44,#33407e)}
+.tcloud{position:absolute;top:28%;left:-70%;width:65%;height:20%;background:#fff;border-radius:999px;animation:tdrift 9s linear infinite}
+.tcloud.c2{top:62%;width:50%;animation-duration:13s;animation-delay:-6s}
+@keyframes tdrift{to{left:120%}}
 .hint.lower{top:140px}
 /* Zauberschloss: Freundin (live), Namensschilder, Chat */
 .pet.remote{transition:left .16s linear,top .16s linear;cursor:default}
@@ -781,9 +792,13 @@ Object.assign(ROOMS, {
               doors:[['k_halle',10],['k_grotte',90]],
               decos:[['baum',28,60,32],['brunnen',58,74,26],['stuhl',40,76],['stuhl',76,76,16,true],['blume',20,80],['sonnenblume',70,82],['blume',46,84],['pilz',62,84],['schmetterling',46,30],['schmetterling',72,22],['sonne',62,16,10]] },
   // Lucys neue Wunschzimmer: Wendeltreppe (zu Sternwarte, Lucyfer- und Cherry-Zimmer), Grotte, Ballsaal, Zuckerbäckerei
-  k_turm:   { castle:true, name:'Wendeltreppe', e:'🌀', in:'auf die Wendeltreppe', at:'auf der Wendeltreppe', dc:'#9a8bc9', wall:tiles('#a99ccf','#c8bde9',48,24), floor:'castle', rug:['#9b5de5','#c7a8ff'],
-              doors:[['k_halle',10],['k_stern',36],['k_lucyfer',63],['k_cherry',90]],
-              decos:[['bild',23,34,10],['bild',50,30,9],['bild',77,34,10],['kerze',24,66],['ruestung',50,70],['kerze',76,66]] },
+  // Wendeltreppe (Papas Wunsch: man soll etwas sehen und machen können): echte Treppe in der Mitte, oben die Tür zur Sternwarte.
+  // Treppe antippen/Tier draufziehen = hochklettern; aus der Sternwarte zurück = Geländer hinunterrutschen. Turmfenster mit Wolken.
+  k_turm:   { castle:true, name:'Wendeltreppe', e:'🌀', in:'auf die Wendeltreppe', at:'auf der Wendeltreppe', dc:'#9a8bc9',
+              wall:'linear-gradient(90deg,rgba(40,25,80,.28),transparent 22%,transparent 78%,rgba(40,25,80,.28)),' + tiles('#a99ccf','#c8bde9',48,24), floor:'castle', rug:['#9b5de5','#c7a8ff'],
+              stairs:[46, 'k_stern'], towerwin:[[20,10],[78,8]], lampX:24,
+              doors:[['k_halle',9],['k_lucyfer',76],['k_cherry',92]],
+              decos:[['kerze',22,70],['kerze',70,70],['bild',86,30,8]] },
   k_stern:  { castle:true, name:'Sternwarte', e:'🌌', in:'in die Sternwarte', at:'in der Sternwarte', dc:'#3b4a8a',
               wall:'radial-gradient(#fff 1px,transparent 1.6px) 0 0/34px 34px,radial-gradient(#ffe9a8 1.2px,transparent 1.8px) 17px 11px/52px 52px,linear-gradient(#141c44,#3b2f7a)', floor:'night', rug:['#3b4a8a','#5b6ab0'], lampX:14,
               doors:[['k_turm',10]],
@@ -1795,6 +1810,8 @@ function renderScene(){
     if (R.fridge) html += `<div class="fridge" style="left:${R.fridge}%"></div>`;
     if (R.board){ const [x, y, w] = R.board; html += `<button class="board" id="board" style="left:${x}%;top:${y}%;width:${w}cqmin" aria-label="Tafel"><span id="boardText"></span></button>`; }
     if (R.desks) html += R.desks.map(([x, y]) => `<div class="desk" style="left:${x}%;top:${y}%;z-index:${Math.round(y * 10) + 5}"></div>`).join('');
+    if (R.towerwin) html += R.towerwin.map(([x, y]) => `<div class="towerwin" style="left:${x}%;top:${y}%"><span class="tcloud"></span><span class="tcloud c2"></span></div>`).join('');
+    if (R.stairs){ const [x, to] = R.stairs; html += `<div class="stairs" id="stairs" style="left:${x}%">${stairsSVG()}<button class="stairdoor" id="stairDoor" aria-label="Tür ${ROOMS[to].in}"><span class="sign">${ROOMS[to].e} ${ROOMS[to].name}</span></button></div>`; }
     if (R.toybox){ const [x, y] = R.toybox; html += `<button class="toybox" id="toybox" style="left:${x}%;top:${y}%;z-index:${y * 10}" aria-label="Spielzeugkiste"><span class="lid"></span></button>`; }
     html += `<div class="night"></div>` + (R.nolamp ? '' : `<button class="lamp ceil" data-lamp="${curRoom()}"${R.lampX ? ` style="left:${R.lampX}%"` : ''} aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`);
     html += `<div class="roomname" data-base="${R.e} ${R.name}">${R.e} ${R.name}</div>`;
@@ -1921,7 +1938,9 @@ function updateLight(){
 }
 function goRoom(to){
   if (HAB[S.hab].shared){ // im Schloss geht die Spielfigur mit (und das Tier, auf dem sie reitet)
-    const T = together(); T.room = to; delete T.me.seat; floorSpot(T.me);
+    const T = together();
+    if (ROOMS[to]?.stairs?.[1] === T.room) NET.slideDown = true; // von oben (Sternwarte) zurück: Geländer hinunterrutschen
+    T.room = to; delete T.me.seat; floorSpot(T.me);
     if (T.ride && T.pos[T.ride]){ T.pos[T.ride].room = to; delete T.pos[T.ride].seat; floorSpot(T.pos[T.ride]); }
     netPush(true);
   } else S.room = to;
@@ -2233,6 +2252,10 @@ function attachPet(el, p){
       scene.querySelectorAll('.door.hot').forEach(d => d.classList.remove('hot'));
       const door = moved && doorAt(ev);
       if (door){ el.classList.remove('flying'); HAB[S.hab].shared ? sharedThroughDoor(el, p, door) : isMe(p) ? meThroughDoor(el, door) : goThroughDoor(el, p, door); return; }
+      if (moved && HAB[S.hab].shared && ROOMS[curRoom()]?.stairs && stairsAt(ev)){ // auf die Wendeltreppe gezogen: hochklettern
+        el.classList.remove('flying'); clearTimeout(el._land); el.style.transition = '';
+        isMe(p) ? meClimb() : petClimb(el, p); return;
+      }
       const seat = moved && seatAt(ev);
       if (seat){
         clearTimeout(el._land); el.classList.remove('flying'); el.style.transition = '';
@@ -2459,6 +2482,14 @@ function renderShared(wrap){
   }
   renderRemote(); renderToys(); renderBoard();
   if (ROOMS[T.room]?.editable && !T.myRoom && !T.askedOwn && T.code) setTimeout(askOwnRoom, 400); // einmal fragen, welches Zimmer einem gehört
+  if (NET.slideDown && ROOMS[T.room]?.stairs){ // Wiiii – das Geländer hinunter bis zum eigenen Platz
+    NET.slideDown = false;
+    const el = scene.querySelector(T.ride ? `[data-id="${T.ride}"]` : '.pet.me:not(.remote)'), p = T.ride ? T.pos[T.ride] : T.me;
+    if (el) requestAnimationFrame(() => climb(el, { down:true, rail:true, ms:1500, end:[p.x, p.y] }).then(() => {
+      [el, el.querySelector('.inner')].forEach(n => n.getAnimations().forEach(a => a.cancel())); placePet(el, p); retrigger(el.querySelector('.inner'), 'jump');
+      bubble(el, pick(['Wiiiii! 🌀','Geländer rutschen ist toll!','Nochmal! 😆']));
+    }));
+  }
 }
 // Schloss: Tier oder Spielfigur durch eine Tür ziehen
 function sharedThroughDoor(el, p, door){
@@ -2521,6 +2552,64 @@ function renderRemote(){
   }
   wrap.querySelectorAll('.pet.remote').forEach(el => { if (!seen.has(el.dataset.rid)) el.remove(); });
 }
+/* Wendeltreppe: Stufen winden sich um eine Säule (SVG 200×400). Stufe i liegt bei Winkel th, vorne wenn cos(th) > 0. */
+const STEPS = Array.from({ length:14 }, (_, i) => { const th = -1.3 + i * .62; return { x:100 + 64 * Math.sin(th), y:388 - i * 25.5, front:Math.cos(th) > 0, rx:100 + 92 * Math.sin(th) }; });
+function stairsSVG(){
+  const step = s => `<rect x="${(s.x - 25).toFixed(1)}" y="${(s.y - 10).toFixed(1)}" width="50" height="9" rx="3" fill="${s.front ? '#e6d8b8' : '#c9b994'}" stroke="#8f7a52" stroke-width="2"/>`
+                  + `<rect x="${(s.x - 25).toFixed(1)}" y="${(s.y - 1).toFixed(1)}" width="50" height="8" rx="2" fill="${s.front ? '#bfa57a' : '#a68f66'}" stroke="#8f7a52" stroke-width="2"/>`;
+  const rail = STEPS.map((s, i) => `${i ? 'L' : 'M'}${s.rx.toFixed(1)} ${(s.y - 28).toFixed(1)}`).join(' ') + ' L100 26';
+  const posts = STEPS.filter(s => s.front).map(s => `<line x1="${s.rx.toFixed(1)}" y1="${(s.y - 28).toFixed(1)}" x2="${((s.rx + s.x) / 2).toFixed(1)}" y2="${(s.y - 9).toFixed(1)}" stroke="#8f5627" stroke-width="3"/>`).join('');
+  return `<svg viewBox="0 0 200 400" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="col" x1="0" x2="1"><stop offset="0" stop-color="#8f84bd"/><stop offset=".5" stop-color="#d9d2f2"/><stop offset="1" stop-color="#8f84bd"/></linearGradient></defs>
+    ${STEPS.filter(s => !s.front).map(step).join('')}
+    <rect x="84" y="30" width="32" height="370" fill="url(#col)" stroke="#6f64a0" stroke-width="2"/>
+    <ellipse cx="100" cy="42" rx="78" ry="13" fill="#e6d8b8" stroke="#8f7a52" stroke-width="2"/>
+    ${STEPS.filter(s => s.front).map(step).join('')}
+    ${posts}<path d="${rail}" fill="none" stroke="#8f5627" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+// Stufen (bzw. Geländer) als Punkte im Spielfeld (%), von unten nach oben
+function stairPoints(rail){
+  const r = $('#stairs')?.getBoundingClientRect(), sr = scene.getBoundingClientRect(); if (!r) return [];
+  const pt = (x, y) => [(r.left + x / 200 * r.width - sr.left) / sr.width * 100, (r.top + y / 400 * r.height - sr.top) / sr.height * 100];
+  return [...STEPS.map(s => rail ? pt(s.rx, s.y - 22) : pt(s.x, s.y - 9)), pt(100, 36)];
+}
+// Figur oder Tier die Treppe hoch (oder das Geländer hinunter) bewegen
+function climb(el, { down = false, rail = false, ms = 2400, end } = {}){
+  let pts = stairPoints(rail); if (down) pts = pts.reverse();
+  if (end) pts.push(end);
+  if (!pts.length) return Promise.resolve();
+  el.style.zIndex = 2900; el.classList.remove('sit','lie','bath','pit','slide');
+  const kf = pts.map(([x, y]) => ({ left:x + '%', top:y + '%' }));
+  const inner = el.querySelector('.inner');
+  inner.animate(down ? [{ scale:.55 }, { scale:1 }] : [{ scale:1 }, { scale:.55 }], { duration:ms, easing:'linear', fill:'forwards' });
+  if (rail){ tone(1500, ms / 1000, 'sine', 0, .07, 300); inner.animate([{ rotate:'-20deg' }, { rotate:'20deg' }, { rotate:'-20deg' }], { duration:ms, iterations:1 }); }
+  else pts.forEach((_, i) => tone(400 + i * 40, .06, 'triangle', i * ms / pts.length / 1000, .05)); // tapp, tapp, tapp – immer höher
+  return new Promise(res => { el.animate(kf, { duration:ms, easing:rail ? 'ease-in' : 'linear', fill:'forwards' }).onfinish = res; });
+}
+const stairsAt = ev => { const r = $('#stairs')?.getBoundingClientRect(); return !!r && ev && ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom; };
+// Die eigene Figur (bzw. das Tier, auf dem sie reitet) klettert hoch in die Sternwarte
+async function meClimb(){
+  const T = together(), to = ROOMS[T.room].stairs?.[1]; if (!to || NET.climbing) return;
+  const el = scene.querySelector(T.ride ? `[data-id="${T.ride}"]` : '.pet.me:not(.remote)'); if (!el) return;
+  NET.climbing = true; delete T.me.seat;
+  bubble(el, 'Hoch in den Turm! 🌌');
+  await climb(el);
+  NET.climbing = false;
+  goRoom(to);
+}
+async function petClimb(el, p){
+  const to = ROOMS[together().room].stairs?.[1]; if (!to) return;
+  delete p.seat; delete p.pz;
+  await climb(el);
+  p.room = to; floorSpot(p); save(); netPush(true);
+  toast(`${nameOf(S.pets.find(q => q.id === p.id))} klettert hoch ${ROOMS[to].in} ${ROOMS[to].e}`);
+  renderWorld();
+}
+scene.addEventListener('click', e => {
+  if (!HAB[S.hab].shared) return;
+  if (e.target.closest('#stairDoor, #stairs')) meClimb();
+});
 /* Spielzeugkiste (Spielzimmer im Schloss): Spielzeug herausholen, herumziehen, in die Kiste zurücklegen – beide sehen es */
 const TOYS = ['⚽','🧸','🪀','🎲','🧩','🪁','🚂','🦆','🏀','🎾','🪅','🛼','🎨','🎺','🚗','🛸','🎈','🪆','🦖','🦄'];
 const MAX_TOYS = 16;
