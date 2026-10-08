@@ -2556,8 +2556,9 @@ document.addEventListener('visibilitychange', () => { // App im Hintergrund = ni
   else if (HAB[S.hab]?.shared && $('#world').classList.contains('active')) netJoin();
 });
 // Werkzeuge (Anziehen, Album, Einrichten …): je nach Welt. In der Testversion stecken sie im 🧰-Menü, sonst direkt in der Leiste.
-const TOOLMENU = true; // 🧰-Menü statt vieler Knöpfe (Lucy fand es gut, seit 08.10.2026 für alle)
-const NEWTOP = TEST;   // Weltenleiste + Zimmerzeile als eigener Streifen über dem Spielfeld – erstmal nur im Test
+// Testmodus (?test) schaltet nur alles frei – Aussehen und Bedienung sind überall gleich
+const TOOLMENU = true; // 🧰-Menü statt vieler Knöpfe
+const NEWTOP = true;   // Weltenleiste + Zimmerzeile als eigener Streifen über dem Spielfeld (nichts verdeckt mehr z. B. die Tafel)
 function toolList(){
   return [
     ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
