@@ -546,7 +546,15 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
     <button class="iconbtn" id="tCopy" aria-label="Code kopieren">📋</button>
   </div>
   <p style="font-size:14px">🎲 würfelt einen neuen Code. Schick ihn per Signal an deine Freundin, sie trägt ihn bei sich ein.</p>
+  <p style="margin:6px 0 4px">Welches Zimmer gehört dir?</p>
+  <div class="btns ownpick" id="tOwn"></div>
   <div class="btns"><button class="btn alt" id="tCancel">Später</button><button class="btn" id="tGo">Los geht’s! 🏰</button></div>
+</div></div>
+
+<div class="modal" id="ownModal"><div class="mcard">
+  <h2>Welches Zimmer gehört dir? 🏰</h2>
+  <p>Dein eigenes Zimmer kannst nur du einrichten. Deine Freundin sucht sich das andere aus.</p>
+  <div class="btns" id="ownGrid"></div>
 </div></div>
 
 <div class="modal" id="boardModal"><div class="mcard">
@@ -1811,13 +1819,15 @@ function renderScene(){
 }
 /* ================= Einrichten (Möbel selbst aufstellen) ================= */
 // Einrichten geht im Haus und in den Schlosszimmern Lucyfer/Cherry (dort nur mit Verbindung, weil beide dieselben Möbel sehen)
-const canBuild = () => S.hab === 'haus' || (HAB[S.hab].shared && !!ROOMS[curRoom()]?.editable);
+// Im Schloss darf jede nur ihr eigenes Zimmer einrichten (together().myRoom: auf diesem Handy gewählt)
+const canBuild = () => S.hab === 'haus' || (HAB[S.hab].shared && !!ROOMS[curRoom()]?.editable && together().myRoom === curRoom());
 function furnChanged(){
   save();
   const room = curRoom();
   if (ROOMS[room]?.editable && NET.meRef) NET.fb.set(NET.fb.ref(NET.db, `worlds/${together().code}/furn/${room}`), furnOf(room)).catch(e => console.warn(e));
 }
 function enterBuild(){
+  if (!canBuild()){ toast('Einrichten kannst du nur dein eigenes Zimmer 😊'); return; }
   if (HAB[S.hab].shared && !NET.meRef){ toast('Erst mit dem Zauberschloss verbinden 🔌'); return; }
   build = true; selI = null; SFX.dress();
   $('#tray').hidden = true; $('#buildbar').hidden = false;
@@ -2351,7 +2361,8 @@ function setNet(text){
 function renderTopInfo(){
   const el = $('#topInfo'); if (!el) return;
   const h = HAB[S.hab], R = h.indoor ? ROOMS[curRoom()] : null;
-  el.innerHTML = `<b>${R ? R.e + ' ' + R.name : h.e + ' ' + h.name}</b>` + (h.shared && NET.status ? `<span>${esc(NET.status)}</span>` : '');
+  const mine = h.shared && R && together().myRoom === curRoom();
+  el.innerHTML = `<b>${R ? R.e + ' ' + R.name : h.e + ' ' + h.name}${mine ? ' · dein Zimmer 💜' : ''}</b>` + (h.shared && NET.status ? `<span>${esc(NET.status)}</span>` : '');
 }
 function netStatusText(){
   const others = Object.values(NET.others).filter(o => o && o.av), here = together().room;
@@ -2447,6 +2458,7 @@ function renderShared(wrap){
     if (T.me.seat && !applySeat(el, T.me)) el.querySelector('.bob').innerHTML = avatarSVG(S.av);
   }
   renderRemote(); renderToys(); renderBoard();
+  if (ROOMS[T.room]?.editable && !T.myRoom && !T.askedOwn && T.code) setTimeout(askOwnRoom, 400); // einmal fragen, welches Zimmer einem gehört
 }
 // Schloss: Tier oder Spielfigur durch eine Tür ziehen
 function sharedThroughDoor(el, p, door){
@@ -2604,8 +2616,33 @@ function openTogether(){
   const T = together();
   $('#tName').value = T.name || S.av.name || '';
   $('#tCode').value = T.code || '';
+  renderOwnPick();
   $('#togetherModal').classList.add('open');
 }
+// „Mein Zimmer“: nur dort gibt es 🔨 Einrichten
+const OWN_ROOMS = () => Object.entries(ROOMS).filter(([, r]) => r.editable);
+function renderOwnPick(){
+  const T = together();
+  $('#tOwn').innerHTML = OWN_ROOMS().map(([id, r]) => `<button class="btn ${T.myRoom === id ? '' : 'alt'}" data-own="${id}">${r.e} ${r.name}</button>`).join('');
+}
+$('#tOwn').addEventListener('click', e => {
+  const b = e.target.closest('[data-own]'); if (!b) return;
+  const T = together(); T.myRoom = T.myRoom === b.dataset.own ? null : b.dataset.own; // nochmal tippen = abwählen
+  save(); SFX.dress(); renderOwnPick();
+});
+function askOwnRoom(){ // beim ersten Betreten von Lucyfer/Cherry
+  const T = together();
+  $('#ownGrid').innerHTML = OWN_ROOMS().map(([id, r]) => `<button class="btn" data-own2="${id}">${r.e} ${r.name}</button>`).join('') + `<button class="btn alt" data-own2="">Keins von beiden</button>`;
+  $('#ownModal').classList.add('open');
+  T.askedOwn = true; save();
+}
+$('#ownGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-own2]'); if (!b) return;
+  together().myRoom = b.dataset.own2 || null; save();
+  $('#ownModal').classList.remove('open'); SFX.dress();
+  if (b.dataset.own2) toast(`${ROOMS[b.dataset.own2].e} ${ROOMS[b.dataset.own2].name} ist jetzt dein Zimmer! Einrichten geht über 🧰 → 🔨`);
+  renderWorld();
+});
 $('#tNew').addEventListener('click', () => { $('#tCode').value = randomCode(); SFX.dress(); });
 $('#tCopy').addEventListener('click', async () => {
   const c = cleanCode($('#tCode').value); if (!c) return;
