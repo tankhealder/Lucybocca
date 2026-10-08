@@ -307,10 +307,15 @@ button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 .tm{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:16px;background:var(--soft);font-weight:600;font-size:13px}
 .tm span{font-size:28px;font-family:var(--emoji);line-height:1.1}
 .tm.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
-/* Testversion: oben links nur noch ein Schild (Zimmer + Freundin), Hinweise unten über der Leiste */
-body.newui .hint,body.newui .hint.low,body.newui .hint.lower{top:auto;bottom:94px}
-body.newui .roomname{display:flex;flex-direction:column;line-height:1.2;max-width:calc(100% - 24px)}
-body.newui .roomname small{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Testversion: Weltenleiste + Zimmerzeile als eigener Streifen ÜBER dem Spielfeld (nichts verdeckt mehr Tafel, Bilder, Lampen) */
+.topinfo{display:none}
+body.newtop #world .habs{top:0;left:0;right:0;padding:8px 12px 6px;background:rgba(255,255,255,.94);box-shadow:0 2px 0 rgba(58,46,92,.06)}
+body.newtop .topinfo{display:flex;position:absolute;left:0;right:0;top:50px;height:30px;z-index:3100;align-items:center;gap:10px;padding:0 14px;
+  background:rgba(255,255,255,.94);font-size:15px;white-space:nowrap;overflow:hidden;box-shadow:0 3px 0 rgba(58,46,92,.08)}
+body.newtop .topinfo span{font-weight:600;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis}
+body.newtop .scene{top:80px}
+body.newtop .roomname{display:none}
+body.newtop .hint,body.newtop .hint.low,body.newtop .hint.lower{top:auto;bottom:94px}
 .treat .n{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 5px;font-family:var(--font)}
 .treat.empty{filter:grayscale(1);opacity:.5}
 .treat.tool{background:#efe6ff}
@@ -478,6 +483,7 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
       <div class="habs" id="habs"></div>
       <div class="tray" id="tray"></div>
       <div class="toolmenu" id="toolMenu" hidden></div>
+      <div class="topinfo" id="topInfo"></div>
       <div class="netstatus" id="netStatus" hidden></div>
       <div class="chatbar" id="chatbar" hidden>
         <button class="qe" data-q="👋">👋</button><button class="qe" data-q="❤️">❤️</button><button class="qe" data-q="😂">😂</button><button class="qe" data-q="🐉">🐉</button>
@@ -737,10 +743,10 @@ Object.assign(ROOMS, {
   k_garten: { castle:true, name:'Schlossgarten', e:'🌳', in:'in den Schlossgarten', at:'im Schlossgarten', dc:'#5cc97b', wall:'linear-gradient(#8fd8ff,#d6f4ff 56%)', floor:'grass', nolamp:true,
               doors:[['k_halle',10]],
               decos:[['baum',26,60,34],['baum',92,60,30],['brunnen',58,72,28],['stuhl',36,76],['stuhl',80,76,16,true],['blume',20,80],['sonnenblume',70,82],['blume',44,84],['pilz',62,84],['schmetterling',46,30],['schmetterling',72,22],['sonne',86,18,10]] },
-  k_schule: { castle:true, name:'Schulzimmer', e:'📚', in:'ins Schulzimmer', at:'im Schulzimmer', dc:'#f2b84b', wall:stripes('#eef7e4','#e2f0d4'), floor:'wood', board:[52,13,50],
+  k_schule: { castle:true, name:'Schulzimmer', e:'📚', in:'ins Schulzimmer', at:'im Schulzimmer', dc:'#f2b84b', wall:stripes('#eef7e4','#e2f0d4'), floor:'wood', board:[52,13,50], lampX:88, // Lampe neben der Tafel, nicht davor
               doors:[['k_halle',10]],
               desks:[[32,70],[52,70],[72,70],[32,82],[52,82],[72,82]],
-              decos:[['stuhl',32,67,13],['stuhl',52,67,13],['stuhl',72,67,13],['stuhl',32,79,13],['stuhl',52,79,13],['stuhl',72,79,13],['globus',90,62],['buecher',90,74],['uhr',84,26]] },
+              decos:[['stuhl',32,67,13],['stuhl',52,67,13],['stuhl',72,67,13],['stuhl',32,79,13],['stuhl',52,79,13],['stuhl',72,79,13],['globus',90,62],['buecher',90,74],['uhr',90,42]] },
   k_spiel:  { castle:true, name:'Spielzimmer', e:'🎠', in:'ins Spielzimmer', at:'im Spielzimmer', dc:'#ff8fb8', wall:stripes('#ffe6f1','#fff3c9'), floor:'mat', toybox:[15,80],
               doors:[['k_halle',10]],
               decos:[['baellebad',44,80],['rutsche',78,72,30],['ballon',30,30],['stern',52,22],['ballon',66,34],['stern',88,20]] },
@@ -1720,7 +1726,7 @@ function renderScene(){
     if (R.board){ const [x, y, w] = R.board; html += `<button class="board" id="board" style="left:${x}%;top:${y}%;width:${w}cqmin" aria-label="Tafel"><span id="boardText"></span></button>`; }
     if (R.desks) html += R.desks.map(([x, y]) => `<div class="desk" style="left:${x}%;top:${y}%;z-index:${Math.round(y * 10) + 5}"></div>`).join('');
     if (R.toybox){ const [x, y] = R.toybox; html += `<button class="toybox" id="toybox" style="left:${x}%;top:${y}%;z-index:${y * 10}" aria-label="Spielzeugkiste"><span class="lid"></span></button>`; }
-    html += `<div class="night"></div>` + (R.nolamp ? '' : `<button class="lamp ceil" data-lamp="${curRoom()}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`);
+    html += `<div class="night"></div>` + (R.nolamp ? '' : `<button class="lamp ceil" data-lamp="${curRoom()}"${R.lampX ? ` style="left:${R.lampX}%"` : ''} aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`);
     html += `<div class="roomname" data-base="${R.e} ${R.name}">${R.e} ${R.name}</div>`;
   }
   html += curDecos().map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
@@ -2026,6 +2032,7 @@ function renderWorld(){
   if (!habOpen(HAB[S.hab])) S.hab = 'wiese';
   if (build && S.hab !== 'haus'){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten gibt es nur im Haus
   renderScene(); renderHabs();
+  if (NEWTOP) renderTopInfo();
   const wrap = $('#pets'); wrap.innerHTML = '';
   const indoor = HAB[S.hab].indoor;
   const here = S.pets.filter(p => where(p) === S.hab && (!indoor || roomOf(p) === S.room));
@@ -2048,7 +2055,7 @@ function renderWorld(){
   }
   // Zauberschloss: gemeinsam mit der Freundin
   const shared = !!HAB[S.hab].shared;
-  $('#chatbar').hidden = !shared || !NET.chatOpen; $('#netStatus').hidden = !shared || NEWUI; // Chat klappt über 💬 auf; Testversion: Status im Zimmerschild
+  $('#chatbar').hidden = !shared || !NET.chatOpen; $('#netStatus').hidden = !shared || NEWTOP; // Chat klappt über 💬 auf; Testversion: Status im Zimmerschild
   if (shared){ renderShared(wrap); setNet(NET.meRef ? netStatusText() : NET.status || '🔌 Verbinde …'); netJoin(); }
   else netLeave();
   const hint = $('#hint');
@@ -2256,9 +2263,13 @@ function randomCode(){
 }
 function setNet(text){
   NET.status = text; const el = $('#netStatus'); if (el) el.textContent = text;
-  // Testversion: Status steht mit im Zimmernamen-Schild statt in einem eigenen Kasten
-  const rn = NEWUI && HAB[S.hab]?.shared && scene.querySelector('.roomname');
-  if (rn) rn.innerHTML = `${rn.dataset.base}<small>${esc(text)}</small>`;
+  if (NEWTOP) renderTopInfo(); // Testversion: Status steht in der Zimmerzeile oben
+}
+// Testversion: Zeile unter der Weltenleiste (außerhalb des Spielfelds) mit Welt/Zimmer und Freundin-Status
+function renderTopInfo(){
+  const el = $('#topInfo'); if (!el) return;
+  const h = HAB[S.hab], R = h.indoor ? ROOMS[curRoom()] : null;
+  el.innerHTML = `<b>${R ? R.e + ' ' + R.name : h.e + ' ' + h.name}</b>` + (h.shared && NET.status ? `<span>${esc(NET.status)}</span>` : '');
 }
 function netStatusText(){
   const others = Object.values(NET.others).filter(o => o && o.av), here = together().room;
@@ -2545,7 +2556,8 @@ document.addEventListener('visibilitychange', () => { // App im Hintergrund = ni
   else if (HAB[S.hab]?.shared && $('#world').classList.contains('active')) netJoin();
 });
 // Werkzeuge (Anziehen, Album, Einrichten …): je nach Welt. In der Testversion stecken sie im 🧰-Menü, sonst direkt in der Leiste.
-const NEWUI = TEST; // Lucys Entscheidung steht noch aus: neue Leiste und Anzeigen oben links erstmal nur im Test
+const TOOLMENU = true; // 🧰-Menü statt vieler Knöpfe (Lucy fand es gut, seit 08.10.2026 für alle)
+const NEWTOP = TEST;   // Weltenleiste + Zimmerzeile als eigener Streifen über dem Spielfeld – erstmal nur im Test
 function toolList(){
   return [
     ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
@@ -2558,9 +2570,9 @@ function renderTreats(){
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
   ).join('') + `<button class="treat tool ride" id="rideBtn" aria-label="Avatar herholen oder reiten">${avatarSVG(S.av, true)}</button>`
-    + (NEWUI ? `<button class="treat tool ${$('#toolMenu')?.hidden === false ? 'on' : ''}" id="toolBtn" aria-label="Menü">🧰</button>`
+    + (TOOLMENU ? `<button class="treat tool ${$('#toolMenu')?.hidden === false ? 'on' : ''}" id="toolBtn" aria-label="Menü">🧰</button>`
              : tools.map(([id, e, l]) => `<button class="treat tool ${id === 'chatBtn' && NET.chatOpen ? 'on' : ''}" id="${id}" aria-label="${l}">${e}</button>`).join(''));
-  if (NEWUI) renderToolMenu();
+  if (TOOLMENU) renderToolMenu();
 }
 function renderToolMenu(){
   $('#toolMenu').innerHTML = toolList().map(([id, e, l]) => `<button class="tm ${id === 'chatBtn' && NET.chatOpen ? 'on' : ''}" data-tool="${id}"><span>${e}</span>${l}</button>`).join('');
@@ -2860,7 +2872,7 @@ document.addEventListener('keydown', e => {
 
 /* ================= Start ================= */
 load(); save();
-document.body.classList.toggle('newui', NEWUI);
+document.body.classList.toggle('newtop', NEWTOP);
 if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
 buildChips(); buildPad(); renderMascot(); renderAvatar(); renderHUD(); newTask();
 if (S.sinceGift >= 5) queueModal(openGift);
