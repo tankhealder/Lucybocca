@@ -780,11 +780,12 @@ Object.assign(ROOMS, {
               wall:'radial-gradient(#fff 1px,transparent 1.6px) 0 0/34px 34px,radial-gradient(#ffe9a8 1.2px,transparent 1.8px) 17px 11px/52px 52px,linear-gradient(#141c44,#3b2f7a)', floor:'night', rug:['#3b4a8a','#5b6ab0'], lampX:14,
               doors:[['k_turm',10]],
               decos:[['teleskop',70,72,24],['rakete',38,74,26],['planet',34,26,12],['mond',62,20,10],['stern',82,32,7],['stern',50,40,5],['kristallkugel',86,80],['globus',56,82]] },
-  k_lucyfer:{ castle:true, name:'Lucyfer-Zimmer', e:'😈', in:'ins Lucyfer-Zimmer', at:'im Lucyfer-Zimmer', dc:'#8a2a5c',
+  // Lucyfer und Cherry: die beiden dürfen sie selbst einrichten (Möbel werden über Firebase geteilt, siehe NET.furn)
+  k_lucyfer:{ castle:true, editable:true, name:'Lucyfer', e:'😈', in:'zu Lucyfer', at:'bei Lucyfer', dc:'#8a2a5c',
               wall:'radial-gradient(#ffd23f 1.5px,transparent 2.2px) 0 0/36px 36px,linear-gradient(#5a1f6e,#8a2a5c)', floor:'lucy', rug:['#3a1546','#9b5de5'],
               doors:[['k_turm',10]],
               decos:[['thron',36,68],['bett',70,76],['teufelchen',36,28],['fledermaus',60,22],['fledermaus',84,30,8,true],['drachenbild',70,42,11],['flamme',22,70],['flamme',50,70],['gitarre',90,52,10],['kristallkugel',56,86]] },
-  k_cherry: { castle:true, name:'Cherry-Zimmer', e:'🍒', in:'ins Cherry-Zimmer', at:'im Cherry-Zimmer', dc:'#e63968',
+  k_cherry: { castle:true, editable:true, name:'Cherry', e:'🍒', in:'zu Cherry', at:'bei Cherry', dc:'#e63968',
               wall:'radial-gradient(#e63946 3px,transparent 3.6px) 0 0/44px 44px,radial-gradient(#5cc97b 1.6px,transparent 2.2px) 4px -5px/44px 44px,#ffe3ee', floor:'carpet', rug:['#ff8fb8','#ffc4dd'],
               doors:[['k_turm',10]],
               decos:[['bett',34,76],['sofa',70,64,26],['kirsche',30,26,12],['kirschbluete',50,20],['herz',62,34],['einhornbild',82,28,12],['schleife',44,40],['cupcake',50,86],['teddy',88,86,10]] },
@@ -809,9 +810,15 @@ Object.assign(ROOMS, {
 const roomOf = p => ROOMS[p.room] ? p.room : 'wohn';
 // Möbel eines Zimmers (selbst eingerichtet oder die Start-Einrichtung): [{id, x, y, s?, f?}]
 const CASTLE_FURN = {};
+const defaultFurn = room => ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
 function furnOf(room){
+  if (ROOMS[room]?.editable){ // Lucyfer/Cherry: gemeinsame Einrichtung aus Firebase (oder die Start-Einrichtung)
+    NET.furn = NET.furn || {};
+    if (!Array.isArray(NET.furn[room])) NET.furn[room] = defaultFurn(room);
+    return NET.furn[room];
+  }
   if (ROOMS[room]?.castle) // Schloss: feste Einrichtung, bei beiden gleich (nicht im eigenen Spielstand)
-    return CASTLE_FURN[room] ||= ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
+    return CASTLE_FURN[room] ||= defaultFurn(room);
   S.furn = S.furn || {};
   if (!S.furn[room]) S.furn[room] = ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
   return S.furn[room];
@@ -1793,8 +1800,8 @@ function renderScene(){
         : `<button class="door in" data-to="${to}" style="left:${x}%;--dc:${ROOMS[to].dc}" aria-label="Tür ${ROOMS[to].in}"><span class="sign">${ROOMS[to].e} ${ROOMS[to].name}</span></button>`).join('')
     : h.shared ? '' : `<button class="door" data-to="haus" aria-label="Zum Haus">🏠<small>Haus</small></button>`;
   // Einrichten: kleine Werkzeugleiste über dem ausgewählten Möbelstück
-  if (R && build && selI != null && furnOf(S.room)[selI]){
-    const o = furnOf(S.room)[selI], f = FURN[o.id];
+  if (R && build && selI != null && furnOf(curRoom())[selI]){
+    const o = furnOf(curRoom())[selI], f = FURN[o.id];
     html += `<div class="ftools" style="left:${o.x}%;top:calc(${Math.min(o.y, 86)}% - ${o.s || f.s}cqmin - 8px)">`
       + [['flip','🔄','Spiegeln'],['small','➖','Kleiner'],['big','➕','Größer'],['del','🗑️','Wegräumen']].map(([a, e, l]) => `<button data-ft="${a}" aria-label="${l}">${e}</button>`).join('') + `</div>`;
   }
@@ -1803,7 +1810,15 @@ function renderScene(){
   updateLight();
 }
 /* ================= Einrichten (Möbel selbst aufstellen) ================= */
+// Einrichten geht im Haus und in den Schlosszimmern Lucyfer/Cherry (dort nur mit Verbindung, weil beide dieselben Möbel sehen)
+const canBuild = () => S.hab === 'haus' || (HAB[S.hab].shared && !!ROOMS[curRoom()]?.editable);
+function furnChanged(){
+  save();
+  const room = curRoom();
+  if (ROOMS[room]?.editable && NET.meRef) NET.fb.set(NET.fb.ref(NET.db, `worlds/${together().code}/furn/${room}`), furnOf(room)).catch(e => console.warn(e));
+}
 function enterBuild(){
+  if (HAB[S.hab].shared && !NET.meRef){ toast('Erst mit dem Zauberschloss verbinden 🔌'); return; }
   build = true; selI = null; SFX.dress();
   $('#tray').hidden = true; $('#buildbar').hidden = false;
   renderWorld(); renderBuildbar();
@@ -1825,7 +1840,10 @@ function renderBuildbar(){
 }
 // Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
 function furnRemoved(i){
-  [...S.pets.filter(p => where(p) === 'haus' && roomOf(p) === S.room), ...(meHere() ? [S.me] : [])].forEach(p => {
+  const T = HAB[S.hab].shared && together();
+  const who = T ? [...T.pets.map(id => T.pos[id]).filter(q => q && q.room === T.room), T.me] // Schloss: eigene Tiere + Spielfigur
+                : [...S.pets.filter(p => where(p) === 'haus' && roomOf(p) === S.room), ...(meHere() ? [S.me] : [])];
+  who.forEach(p => {
     if (!p.seat) return;
     if (p.seat.i === i) delete p.seat; else if (p.seat.i > i) p.seat.i--;
   });
@@ -1834,30 +1852,38 @@ $('#fcat').addEventListener('click', e => {
   const b = e.target.closest('.fitem'); if (!b) return;
   const f = FURN[b.dataset.f];
   if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
-  const list = furnOf(S.room);
+  const list = furnOf(curRoom());
   list.push({ id:f.id, x:rnd(30, 70), y:f.wall ? rnd(24, 36) : rnd(66, 80) });
-  selI = list.length - 1; SFX.dress(); save(); renderWorld();
+  selI = list.length - 1; SFX.dress(); furnChanged(); renderWorld();
 });
 $('#buildDone').addEventListener('click', exitBuild);
 let resetArmedRoom = null;
 $('#buildReset').addEventListener('click', () => {
   if (!resetArmedRoom){ toast('Nochmal tippen: Das Zimmer bekommt wieder seine Start-Möbel.'); resetArmedRoom = setTimeout(() => resetArmedRoom = null, 3000); return; }
   clearTimeout(resetArmedRoom); resetArmedRoom = null;
-  delete S.furn[S.room];
-  S.pets.forEach(p => { if (where(p) === 'haus' && roomOf(p) === S.room) delete p.seat; });
-  if (meHere()) delete S.me.seat;
+  if (HAB[S.hab].shared){ // Schloss: zurück zur Start-Einrichtung, für beide
+    const T = together(), room = curRoom();
+    NET.furn[room] = defaultFurn(room);
+    [...T.pets.map(id => T.pos[id]).filter(q => q && q.room === room), T.me].forEach(q => { delete q.seat; delete q.pz; });
+    furnChanged();
+  } else {
+    delete S.furn[S.room];
+    S.pets.forEach(p => { if (where(p) === 'haus' && roomOf(p) === S.room) delete p.seat; });
+    if (meHere()) delete S.me.seat;
+  }
   selI = null; SFX.pop(); save(); renderWorld();
 });
 // Möbel ziehen (nur im Einrichten-Modus); antippen = auswählen
 scene.addEventListener('pointerdown', e => {
-  if (!build || S.hab !== 'haus' || e.target.closest('.ftools, .door, .lamp')) return;
+  if (!build || !canBuild() || e.target.closest('.ftools, .door, .lamp')) return;
   const d = e.target.closest('.deco[data-i]');
   if (!d){ if (selI != null){ selI = null; renderWorld(); } return; }
   e.preventDefault();
-  const i = +d.dataset.i, o = furnOf(S.room)[i], f = FURN[o.id];
+  const i = +d.dataset.i, o = furnOf(curRoom())[i], f = FURN[o.id];
   const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, ox = o.x, oy = Math.min(o.y, 86);
   let moved = false;
   d.setPointerCapture(e.pointerId);
+  NET.dragFurn = true; // solange man zieht, nicht von Änderungen der Freundin unterbrechen lassen
   const move = ev => {
     if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6){ moved = true; d.classList.add('sel'); scene.querySelector('.ftools')?.remove(); hideHint(); }
     if (!moved) return;
@@ -1868,7 +1894,8 @@ scene.addEventListener('pointerdown', e => {
   const up = () => {
     d.removeEventListener('pointermove', move); d.removeEventListener('pointerup', up); d.removeEventListener('pointercancel', up);
     selI = i;
-    if (moved){ SFX.pop(); save(); } else SFX.tap();
+    NET.dragFurn = false;
+    if (moved){ SFX.pop(); furnChanged(); } else SFX.tap();
     renderWorld(); // Tiere auf dem Möbelstück ziehen mit um
   };
   d.addEventListener('pointermove', move); d.addEventListener('pointerup', up); d.addEventListener('pointercancel', up);
@@ -1896,13 +1923,13 @@ function goRoom(to){
 scene.addEventListener('click', e => {
   const ft = e.target.closest('[data-ft]');
   if (ft && selI != null){ // Werkzeugleiste beim Einrichten
-    const list = furnOf(S.room), o = list[selI], f = FURN[o.id], a = ft.dataset.ft;
+    const list = furnOf(curRoom()), o = list[selI], f = FURN[o.id], a = ft.dataset.ft;
     if (a === 'flip'){ o.f = !o.f; if (!o.f) delete o.f; }
     if (a === 'small') o.s = Math.max(f.s * .6, (o.s || f.s) / 1.15);
     if (a === 'big')   o.s = Math.min(f.s * 1.8, (o.s || f.s) * 1.15);
     if (a === 'del'){ list.splice(selI, 1); furnRemoved(selI); selI = null; SFX.pop(); }
     else SFX.dress();
-    save(); renderWorld();
+    furnChanged(); renderWorld();
     return;
   }
   if (e.target.closest('.lamp')){
@@ -2085,7 +2112,7 @@ function placePet(el, p){
 }
 function renderWorld(){
   if (!habOpen(HAB[S.hab])) S.hab = 'wiese';
-  if (build && S.hab !== 'haus'){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten gibt es nur im Haus
+  if (build && !canBuild()){ build = false; selI = null; $('#tray').hidden = false; $('#buildbar').hidden = true; } // Einrichten nur im Haus und bei Lucyfer/Cherry
   renderScene(); renderHabs();
   if (NEWTOP) renderTopInfo();
   const wrap = $('#pets'); wrap.innerHTML = '';
@@ -2367,12 +2394,18 @@ async function netJoin(){
   // gemeinsames Spielzeug (Spielzeugkiste) und die Tafel im Schulzimmer
   NET.unsubToys = onValue(ref(NET.db, `worlds/${T.code}/toys`), snap => { NET.toys = snap.val() || {}; renderToys(); });
   NET.unsubBoard = onValue(ref(NET.db, `worlds/${T.code}/board`), snap => { NET.board = snap.val()?.x ?? null; renderBoard(); });
+  // Einrichtung von Lucyfer/Cherry: wer etwas umstellt, die andere sieht es sofort
+  NET.unsubFurn = onValue(ref(NET.db, `worlds/${T.code}/furn`), snap => {
+    const v = snap.val() || {};
+    NET.furn = Object.fromEntries(Object.entries(v).map(([room, list]) => [room, Object.values(list || {})]));
+    if (HAB[S.hab].shared && ROOMS[curRoom()]?.editable && !NET.dragFurn) renderWorld();
+  });
 }
 function netLeave(){
   if (!NET.meRef) return;
   NET.fb.remove(NET.meRef).catch(() => {});
-  NET.unsub?.(); NET.unsubToys?.(); NET.unsubBoard?.();
-  NET.unsub = NET.unsubToys = NET.unsubBoard = null; NET.meRef = null; NET.others = {}; NET.held = {}; NET.toys = {};
+  NET.unsub?.(); NET.unsubToys?.(); NET.unsubBoard?.(); NET.unsubFurn?.();
+  NET.unsub = NET.unsubToys = NET.unsubBoard = NET.unsubFurn = null; NET.meRef = null; NET.others = {}; NET.held = {}; NET.toys = {};
   document.querySelectorAll('.pet.remote, .toy').forEach(el => el.remove());
 }
 const toyRef = id => NET.fb.ref(NET.db, `worlds/${together().code}/toys/${id}`);
@@ -2617,6 +2650,7 @@ const NEWTOP = true;   // Weltenleiste + Zimmerzeile als eigener Streifen über 
 function toolList(){
   return [
     ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
+    ...(HAB[S.hab].shared && canBuild() ? [['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
     ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],
   ];
