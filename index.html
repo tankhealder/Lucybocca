@@ -299,7 +299,18 @@ button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 @keyframes pop{from{transform:translateX(-50%) scale(0)}}
 
 .tray{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;background:rgba(255,255,255,.92);padding:8px;border-radius:24px;box-shadow:0 5px 0 rgba(58,46,92,.12);z-index:3000}
-.treat{position:relative;width:52px;height:52px;border-radius:18px;background:#fff6e5;font-size:30px;display:grid;place-items:center;touch-action:none;font-family:var(--emoji)}
+.treat{position:relative;width:52px;height:52px;border-radius:18px;background:#fff6e5;font-size:30px;display:grid;place-items:center;touch-action:pan-x;font-family:var(--emoji)} /* pan-x: seitlich wischen scrollt die Leiste */
+/* 🧰-Menü (Testversion): Werkzeuge über der Leiste */
+.toolmenu{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);z-index:3100;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  background:rgba(255,255,255,.97);padding:10px;border-radius:22px;box-shadow:0 6px 0 rgba(58,46,92,.15);width:min(360px,calc(100% - 24px));animation:mpop .25s cubic-bezier(.3,1.6,.5,1)}
+.toolmenu[hidden]{display:none}
+.tm{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:16px;background:var(--soft);font-weight:600;font-size:13px}
+.tm span{font-size:28px;font-family:var(--emoji);line-height:1.1}
+.tm.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
+/* Testversion: oben links nur noch ein Schild (Zimmer + Freundin), Hinweise unten über der Leiste */
+body.newui .hint,body.newui .hint.low,body.newui .hint.lower{top:auto;bottom:94px}
+body.newui .roomname{display:flex;flex-direction:column;line-height:1.2;max-width:calc(100% - 24px)}
+body.newui .roomname small{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .treat .n{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 5px;font-family:var(--font)}
 .treat.empty{filter:grayscale(1);opacity:.5}
 .treat.tool{background:#efe6ff}
@@ -466,6 +477,7 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
       </div>
       <div class="habs" id="habs"></div>
       <div class="tray" id="tray"></div>
+      <div class="toolmenu" id="toolMenu" hidden></div>
       <div class="netstatus" id="netStatus" hidden></div>
       <div class="chatbar" id="chatbar" hidden>
         <button class="qe" data-q="👋">👋</button><button class="qe" data-q="❤️">❤️</button><button class="qe" data-q="😂">😂</button><button class="qe" data-q="🐉">🐉</button>
@@ -1709,7 +1721,7 @@ function renderScene(){
     if (R.desks) html += R.desks.map(([x, y]) => `<div class="desk" style="left:${x}%;top:${y}%;z-index:${Math.round(y * 10) + 5}"></div>`).join('');
     if (R.toybox){ const [x, y] = R.toybox; html += `<button class="toybox" id="toybox" style="left:${x}%;top:${y}%;z-index:${y * 10}" aria-label="Spielzeugkiste"><span class="lid"></span></button>`; }
     html += `<div class="night"></div>` + (R.nolamp ? '' : `<button class="lamp ceil" data-lamp="${curRoom()}" aria-label="Lampe an oder aus"><span class="shade"></span><span class="bulb"></span></button>`);
-    html += `<div class="roomname">${R.e} ${R.name}</div>`;
+    html += `<div class="roomname" data-base="${R.e} ${R.name}">${R.e} ${R.name}</div>`;
   }
   html += curDecos().map(([e,x,y,s,seat,flip], i) => (y = Math.min(y, 86),
     `<div class="deco${R && build && i === selI ? ' sel' : ''}"${R ? ` data-i="${i}"` : ''}${seat ? ' data-seat' : ''} style="left:${x}%;top:${y}%;font-size:${s}${R ? 'cqmin' : 'px'};z-index:${Math.round(y*10)}${flip ? ';transform:translate(-50%,-100%) scaleX(-1)' : ''}">${e}</div>`)).join('');
@@ -2036,7 +2048,7 @@ function renderWorld(){
   }
   // Zauberschloss: gemeinsam mit der Freundin
   const shared = !!HAB[S.hab].shared;
-  $('#chatbar').hidden = !shared || !NET.chatOpen; $('#netStatus').hidden = !shared; // Chat klappt über 💬 auf
+  $('#chatbar').hidden = !shared || !NET.chatOpen; $('#netStatus').hidden = !shared || NEWUI; // Chat klappt über 💬 auf; Testversion: Status im Zimmerschild
   if (shared){ renderShared(wrap); setNet(NET.meRef ? netStatusText() : NET.status || '🔌 Verbinde …'); netJoin(); }
   else netLeave();
   const hint = $('#hint');
@@ -2242,7 +2254,12 @@ function randomCode(){
   const w = ['stern','drache','einhorn','krone','zauber','wolke','mond','funkel','regen','perle','feder','glitzer','kiwi','blume','komet','pirat'];
   return `${pick(w)}-${pick(w)}-${rnd(1000, 9999)}-${pick(w)}`;
 }
-function setNet(text){ NET.status = text; const el = $('#netStatus'); if (el) el.textContent = text; }
+function setNet(text){
+  NET.status = text; const el = $('#netStatus'); if (el) el.textContent = text;
+  // Testversion: Status steht mit im Zimmernamen-Schild statt in einem eigenen Kasten
+  const rn = NEWUI && HAB[S.hab]?.shared && scene.querySelector('.roomname');
+  if (rn) rn.innerHTML = `${rn.dataset.base}<small>${esc(text)}</small>`;
+}
 function netStatusText(){
   const others = Object.values(NET.others).filter(o => o && o.av), here = together().room;
   return others.length
@@ -2527,30 +2544,71 @@ document.addEventListener('visibilitychange', () => { // App im Hintergrund = ni
   if (document.hidden) netLeave();
   else if (HAB[S.hab]?.shared && $('#world').classList.contains('active')) netJoin();
 });
+// Werkzeuge (Anziehen, Album, Einrichten …): je nach Welt. In der Testversion stecken sie im 🧰-Menü, sonst direkt in der Leiste.
+const NEWUI = TEST; // Lucys Entscheidung steht noch aus: neue Leiste und Anzeigen oben links erstmal nur im Test
+function toolList(){
+  return [
+    ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
+    ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
+    ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],
+  ];
+}
 function renderTreats(){
+  const tools = toolList();
   $('#tray').innerHTML = Object.entries(TREATS).map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
   ).join('') + `<button class="treat tool ride" id="rideBtn" aria-label="Avatar herholen oder reiten">${avatarSVG(S.av, true)}</button>`
-    + (S.hab === 'haus' ? `<button class="treat tool" id="inviteBtn" aria-label="Tiere einladen">📨</button><button class="treat tool" id="buildBtn" aria-label="Einrichten">🔨</button>` : '')
-    + (HAB[S.hab].shared ? `<button class="treat tool ${NET.chatOpen ? 'on' : ''}" id="chatBtn" aria-label="Chat">💬</button><button class="treat tool" id="bringBtn" aria-label="Tiere mitbringen">🐾</button><button class="treat tool" id="codeBtn" aria-label="Weltcode">🔑</button>` : '') + `<button class="treat tool" id="wardBtn" aria-label="Anziehen">👗</button><button class="treat tool" id="albumBtn" aria-label="Sammelalbum">📖</button>`;
+    + (NEWUI ? `<button class="treat tool ${$('#toolMenu')?.hidden === false ? 'on' : ''}" id="toolBtn" aria-label="Menü">🧰</button>`
+             : tools.map(([id, e, l]) => `<button class="treat tool ${id === 'chatBtn' && NET.chatOpen ? 'on' : ''}" id="${id}" aria-label="${l}">${e}</button>`).join(''));
+  if (NEWUI) renderToolMenu();
 }
+function renderToolMenu(){
+  $('#toolMenu').innerHTML = toolList().map(([id, e, l]) => `<button class="tm ${id === 'chatBtn' && NET.chatOpen ? 'on' : ''}" data-tool="${id}"><span>${e}</span>${l}</button>`).join('');
+}
+function runTool(id){
+  SFX.tap();
+  if (id === 'albumBtn') openAlbum();
+  if (id === 'wardBtn') openWard();
+  if (id === 'inviteBtn') openInvite();
+  if (id === 'buildBtn') enterBuild();
+  if (id === 'bringBtn') openBring();
+  if (id === 'codeBtn') openTogether();
+  if (id === 'chatBtn'){
+    NET.chatOpen = !NET.chatOpen;
+    $('#chatbar').hidden = !NET.chatOpen; $('#chatBtn')?.classList.toggle('on', NET.chatOpen);
+    if (NET.chatOpen) $('#chatInput').focus();
+  }
+}
+$('#toolMenu').addEventListener('click', e => {
+  const b = e.target.closest('[data-tool]'); if (!b) return;
+  $('#toolMenu').hidden = true; $('#toolBtn')?.classList.remove('on');
+  runTool(b.dataset.tool); renderToolMenu();
+});
+// Leckerli/Avatar-Knopf: zur Seite wischen = Leiste scrollen, nach oben ziehen = zum Tier bringen, antippen = Hinweis bzw. Avatar
 $('#tray').addEventListener('pointerdown', e => {
   const btn = e.target.closest('.treat'); if (!btn) return;
   const ride = btn.id === 'rideBtn'; // Avatar-Knopf: auf ein Tier ziehen = aufsteigen, antippen = absteigen
   if (!ride && btn.classList.contains('tool')) return;
-  e.preventDefault();
-  const k = btn.dataset.t;
-  if (!ride && !S.treats[k]){ retrigger(btn, 'shake'); SFX.no(); toast('Rechne Aufgaben, um Leckerlis zu verdienen! 🧮'); return; }
-  btn.setPointerCapture(e.pointerId);
-  const ghost = document.createElement('div');
-  ghost.className = 'ghost' + (ride ? ' rideghost' : '');
-  if (ride) ghost.innerHTML = avatarSVG(S.av, true); else ghost.textContent = TREATS[k];
-  ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
-  document.body.appendChild(ghost);
-  SFX.tap();
-  let target = null;
+  const k = btn.dataset.t, sx = e.clientX, sy = e.clientY;
+  let ghost = null, target = null, gone = false;
   const findPet = ev => document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.pet');
+  const start = () => { // erst wenn der Finger nach oben zieht, wird es ein Ziehen
+    if (!ride && !S.treats[k]){ retrigger(btn, 'shake'); SFX.no(); toast('Rechne Aufgaben, um Leckerlis zu verdienen! 🧮'); gone = true; return; }
+    try { btn.setPointerCapture(e.pointerId); } catch {}
+    ghost = document.createElement('div');
+    ghost.className = 'ghost' + (ride ? ' rideghost' : '');
+    if (ride) ghost.innerHTML = avatarSVG(S.av, true); else ghost.textContent = TREATS[k];
+    document.body.appendChild(ghost);
+    SFX.tap();
+  };
   const move = ev => {
+    if (gone) return;
+    if (!ghost){
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)){ gone = true; return; } // seitlich: der Browser scrollt die Leiste
+      if (Math.abs(dy) > 8) start();
+      if (!ghost) return;
+    }
     ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
     const t = findPet(ev);
     if (t !== target){ target?.classList.remove('target'); target = t; target?.classList.add('target'); }
@@ -2558,9 +2616,10 @@ $('#tray').addEventListener('pointerdown', e => {
   const up = ev => {
     btn.removeEventListener('pointermove', move); btn.removeEventListener('pointerup', up); btn.removeEventListener('pointercancel', up);
     target?.classList.remove('target');
-    const pet = findPet(ev);
-    ghost.remove();
-    const tap = Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 10;
+    const pet = ghost && ev.type === 'pointerup' && findPet(ev);
+    ghost?.remove();
+    if (gone || ev.type === 'pointercancel') return;
+    const tap = !ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 10;
     if (ride){
       if (pet && pet.dataset.id !== 'me' && !pet.classList.contains('remote')){
         if (level() < RIDE_LVL){ retrigger(btn, 'shake'); SFX.no(); toast(`Ab Level ${RIDE_LVL} kannst du auf deinen Tieren reiten! 🐴`); }
@@ -2576,17 +2635,13 @@ $('#tray').addEventListener('pointerdown', e => {
   btn.addEventListener('pointermove', move); btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', up);
 });
 $('#tray').addEventListener('click', e => {
-  if (e.target.closest('#albumBtn')){ SFX.tap(); openAlbum(); }
-  if (e.target.closest('#wardBtn')){ SFX.tap(); openWard(); }
-  if (e.target.closest('#inviteBtn')){ SFX.tap(); openInvite(); }
-  if (e.target.closest('#buildBtn')) enterBuild();
-  if (e.target.closest('#bringBtn')){ SFX.tap(); openBring(); }
-  if (e.target.closest('#chatBtn')){
-    SFX.tap(); NET.chatOpen = !NET.chatOpen;
-    $('#chatbar').hidden = !NET.chatOpen; $('#chatBtn').classList.toggle('on', NET.chatOpen);
-    if (NET.chatOpen) $('#chatInput').focus();
+  const b = e.target.closest('.treat.tool'); if (!b || b.id === 'rideBtn') return;
+  if (b.id === 'toolBtn'){ // 🧰-Menü auf/zu (Testversion)
+    SFX.tap(); const m = $('#toolMenu'); m.hidden = !m.hidden; b.classList.toggle('on', !m.hidden); renderToolMenu();
+    if (!m.hidden) $('#hint').style.opacity = 0; // Hinweis und Menü liegen an derselben Stelle
+    return;
   }
-  if (e.target.closest('#codeBtn')){ SFX.tap(); openTogether(); }
+  runTool(b.id);
 });
 
 function feed(el, k){
@@ -2805,6 +2860,7 @@ document.addEventListener('keydown', e => {
 
 /* ================= Start ================= */
 load(); save();
+document.body.classList.toggle('newui', NEWUI);
 if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
 buildChips(); buildPad(); renderMascot(); renderAvatar(); renderHUD(); newTask();
 if (S.sinceGift >= 5) queueModal(openGift);
