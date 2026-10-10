@@ -114,6 +114,9 @@ main{flex:1;position:relative;min-height:0}
 .row{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:8px 12px;font-weight:600}
 .row .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .p{font-family:var(--emoji)}
+.code{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:18px;letter-spacing:1px;background:#fff;border:2px dashed var(--purple);border-radius:10px;padding:3px 8px;user-select:all;-webkit-user-select:all}
+.row.locked{opacity:.6}
+.row .copy{padding:6px 10px;border-radius:10px;background:var(--purple);color:#fff;font-weight:600;font-size:14px}
 .row.me{background:#efeaff;box-shadow:inset 0 0 0 2px var(--purple)}
 .prog h3{text-align:left;margin:14px 0 6px;font-size:18px}
 .prog .row{font-size:15px;padding:6px 10px}
@@ -145,6 +148,8 @@ main{flex:1;position:relative;min-height:0}
         <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Zeigen oder benennen, Kategorien wählbar</small></button>
         <button class="mode" data-mode="test"><span class="e">🏆</span><b>Probetest</b><small>20 Fragen mit Punkten und Bestenliste</small></button>
         <button class="mode" data-mode="progress"><span class="e">⭐</span><b>Fortschritt</b><small>Was kannst du schon?</small></button>
+        <button class="mode" data-mode="big"><span class="e">🌍</span><b>Großer Test</b><small>Alle 52 Fragen – mit Codes für MathPets 🎁</small></button>
+        <button class="mode" data-mode="codes"><span class="e">🎁</span><b>Meine Codes</b><small>Belohnungen für MathPets</small></button>
         <button class="mode" data-mode="scores" style="grid-column:1/-1"><span class="e">🥇</span><b>Bestenliste</b><small>Wer ist die Geo-Legende?</small></button>
       </div>
     </section>
@@ -184,7 +189,16 @@ main{flex:1;position:relative;min-height:0}
   <h2 id="endTitle">Geschafft!</h2>
   <div class="score" id="endScore">0</div>
   <p id="endInfo"></p>
+  <div class="list" id="endCodes"></div>
   <div class="btns"><button class="btn alt" id="endHome">Startseite</button><button class="btn gold" id="endScores">🥇 Bestenliste</button><button class="btn" id="endAgain">Nochmal</button></div>
+</div></div>
+
+<div class="modal" id="codesModal"><div class="mcard">
+  <div class="big">🎁</div>
+  <h2>Codes für MathPets</h2>
+  <p>Schaff den <b>Großen Test</b> (alle 52 Fragen) – dann gibt es Codes für superspezielle Sachen in MathPets. Dort: 🧰 → <b>🎁 Code einlösen</b>.</p>
+  <div class="list" id="codesList"></div>
+  <div class="btns"><button class="btn" data-close>Schließen</button></div>
 </div></div>
 
 <div class="modal" id="scoreModal"><div class="mcard">
@@ -229,7 +243,7 @@ const showName = it => it.id === 'ural' ? 'Ural (Fluss)' : it.name;
 const KEY = 'geo-v1';
 let G;
 try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
-G = Object.assign({ name:'', sound:true, best:0, k:{}, cats:CATS.map(c => c[0]), type:'mix' }, G);
+G = Object.assign({ name:'', sound:true, best:0, k:{}, cats:CATS.map(c => c[0]), type:'mix', codes:[] }, G); // codes: verdiente MathPets-Codes
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
 const know = id => G.k[id] ||= { show:0, name:0, row:0 };
 const starsOf = id => { const k = know(id); return (k.show > 0) + (k.name > 0) + (k.row >= 3); };
@@ -446,6 +460,12 @@ function startTest(){
   round.list = shuffle(round.list);
   showGame(); nextQuestion();
 }
+// Großer Test: alle 52 Dinge einmal, Zeigen und Benennen gemischt, ohne 💡 – danach Codes für MathPets
+function startBig(){
+  mode = 'big';
+  round = { score:0, streak:0, n:0, list:shuffle(ITEMS).map(it => ({ it, type:Math.random() < .5 ? 'show' : 'name' })), results:[] };
+  showGame(); nextQuestion();
+}
 function startExplore(){ mode = 'explore'; round = null; showGame(); clearHL(); setPanel('Tippe irgendwo auf die Karte – ich sage dir, was dort ist! 🦉', '🗺️ Entdecken'); }
 function showGame(){
   show('game'); drawMap(); vb = { ...FULL }; setVB();
@@ -457,16 +477,16 @@ function setPanel(text, modeLabel){
   renderDots();
 }
 function renderDots(){
-  if (mode !== 'test'){ $('#dots').innerHTML = ''; $('#qScore').textContent = mode === 'practice' ? `⭐ ${round.score} Punkte · 🔥 ${round.streak}` : ''; return; }
+  if (mode !== 'test' && mode !== 'big'){ $('#dots').innerHTML = ''; $('#qScore').textContent = mode === 'practice' ? `⭐ ${round.score} Punkte · 🔥 ${round.streak}` : ''; return; }
   $('#dots').innerHTML = round.list.map((q, i) => `<i class="${round.results[i] === true ? 'ok' : round.results[i] === false ? 'no' : i === round.n ? 'now' : ''}"></i>`).join('');
   $('#qScore').textContent = `${round.score} Punkte · 🔥 ${round.streak}`;
 }
 function nextQuestion(){
   clearHL();
   $('#nextRow').hidden = true; $('#answer').hidden = true;
-  if (mode === 'test' && round.n >= round.list.length) return finishTest();
+  if ((mode === 'test' || mode === 'big') && round.n >= round.list.length) return finishTest();
   let it, type;
-  if (mode === 'test'){ ({ it, type } = round.list[round.n]); }
+  if (mode === 'test' || mode === 'big'){ ({ it, type } = round.list[round.n]); }
   else {
     const pool = ITEMS.filter(i => G.cats.includes(i.cat));
     it = nextItem(pool, round.last); round.last = it.id;
@@ -474,11 +494,11 @@ function nextQuestion(){
   }
   Q = { it, type, tries:0, done:false };
   if (type === 'show'){
-    setPanel(`<span class="cat">${it.catLabel}</span>Zeig mir: <u>${esc(showName(it))}</u> 👆`, mode === 'test' ? '🏆 Probetest' : '🎯 Zeigen');
+    setPanel(`<span class="cat">${it.catLabel}</span>Zeig mir: <u>${esc(showName(it))}</u> 👆`, testLabel() || '🎯 Zeigen');
     if (vb.w < FULL.w * .9) animateTo({ ...FULL }, 400);
   } else {
-    setPanel(`<span class="cat">${it.catLabel}</span>Was ist hier markiert? ✏️`, mode === 'test' ? '🏆 Probetest' : '🎯 Benennen');
-    $('#answer').hidden = false; $('#ansInput').value = ''; $('#ansShow').hidden = mode === 'test';
+    setPanel(`<span class="cat">${it.catLabel}</span>Was ist hier markiert? ✏️`, testLabel() || '🎯 Benennen');
+    $('#answer').hidden = false; $('#ansInput').value = ''; $('#ansShow').hidden = mode === 'test' || mode === 'big';
     highlight(it.id); focusTarget(it.id);
     setTimeout(() => $('#ansInput').focus({ preventScroll:true }), 350);
   }
@@ -490,7 +510,7 @@ function right(how){
   if (Q.type === 'show') k.show++; else k.name++;
   k.row = first ? k.row + 1 : 0;
   const p = points(first); round.score += p;
-  if (mode === 'test') round.results[round.n] = true;
+  if (mode === 'test' || mode === 'big') round.results[round.n] = true;
   save(); updateHUD();
   highlight(it.id, true);
   $('#panel').className = 'panel good';
@@ -507,7 +527,7 @@ function wrong(reveal){
     SFX.no(); return;
   }
   Q.done = true; round.streak = 0; k.row = 0;
-  if (mode === 'test') round.results[round.n] = false;
+  if (mode === 'test' || mode === 'big') round.results[round.n] = false;
   save();
   highlight(it.id);
   if (Q.type === 'show') focusTarget(it.id);
@@ -517,7 +537,7 @@ function wrong(reveal){
   afterAnswer();
 }
 function afterAnswer(){ $('#answer').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
-$('#nextBtn').onclick = () => { if (mode === 'test') round.n++; nextQuestion(); };
+$('#nextBtn').onclick = () => { if (mode === 'test' || mode === 'big') round.n++; nextQuestion(); };
 function mapTap(cx, cy){
   const [x, y] = toMap(cx, cy);
   if (mode === 'explore'){
@@ -540,8 +560,35 @@ $('#ansOk').onclick = submitName;
 $('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
 $('#ansShow').onclick = () => { if (Q && !Q.done){ $('#ansInput').value = Q.it.name; wrong(true); } };
 
+const testLabel = () => mode === 'test' ? '🏆 Probetest' : mode === 'big' ? `🌍 Großer Test ${round.n + 1}/${round.list.length}` : '';
+/* Codes für MathPets (gleiche Codes wie dort in UNLOCKS) – ab 50 %, 75 %, 100 % richtig im Großen Test */
+const GEO_CODES = [
+  { key:'globus', need:.5,  code:'GLOBUS-7341', e:'🌍', what:'Zauberglobus fürs Haus' },
+  { key:'welt',   need:.75, code:'REISE-5826',  e:'🧳', what:'Neue Welt „Europa-Reise“' },
+  { key:'tier',   need:1,   code:'ELLA-9147',   e:'🦉', what:'Ella, die Entdecker-Eule' },
+];
+const codeRows = () => GEO_CODES.map(c => (G.codes || []).includes(c.key)
+  ? `<div class="row"><span class="p">${c.e}</span><span class="n">${c.what}<br><span class="code">${c.code}</span></span><button class="copy" data-code="${c.code}">📋</button></div>`
+  : `<div class="row locked"><span class="p">🔒</span><span class="n">${c.what}<br><small>Großer Test mit ${c.need * 100} % richtig</small></span></div>`).join('');
+function openCodes(){ $('#codesList').innerHTML = codeRows(); $('#codesModal').classList.add('open'); }
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-code]'); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.code); toast('Code kopiert! 📋 Jetzt in MathPets einlösen'); } catch { toast('Code: ' + b.dataset.code); }
+});
 function finishTest(){
   const ok = round.results.filter(Boolean).length, total = round.list.length;
+  $('#endCodes').innerHTML = '';
+  if (mode === 'big'){ // Großer Test: Codes statt Bestenliste
+    const pct = ok / total, earned = GEO_CODES.filter(c => pct >= c.need), fresh = earned.filter(c => !(G.codes || []).includes(c.key));
+    G.codes = [...new Set([...(G.codes || []), ...earned.map(c => c.key)])]; save();
+    $('#endEmoji').textContent = pct === 1 ? '🦉' : pct >= .75 ? '🧳' : pct >= .5 ? '🌍' : '💪';
+    $('#endTitle').textContent = pct === 1 ? 'ALLES RICHTIG! Wahnsinn!' : pct >= .75 ? 'Super stark!' : pct >= .5 ? 'Geschafft!' : 'Weiter üben – du schaffst das!';
+    $('#endScore').textContent = Math.round(pct * 100) + ' %';
+    $('#endInfo').textContent = `${ok} von ${total} richtig` + (fresh.length ? ' · Neue Codes für MathPets! 🎁' : earned.length ? '' : ' · Ab 50 % gibt es den ersten Code 🎁');
+    $('#endCodes').innerHTML = codeRows();
+    $('#endModal').classList.add('open'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 40 + earned.length * 30);
+    return;
+  }
   const best = round.score > G.best; if (best) G.best = round.score; save();
   $('#endEmoji').textContent = ok >= 18 ? '🏆' : ok >= 14 ? '🥇' : ok >= 10 ? '🥈' : '💪';
   $('#endTitle').textContent = ok >= 18 ? 'Geo-Profi!' : ok >= 14 ? 'Super gemacht!' : ok >= 10 ? 'Gut gemacht!' : 'Weiter üben – du schaffst das!';
@@ -552,7 +599,7 @@ function finishTest(){
   submitScore(round.score);
 }
 $('#endHome').onclick = () => { closeModals(); show('menu'); };
-$('#endAgain').onclick = () => { closeModals(); startTest(); };
+$('#endAgain').onclick = () => { closeModals(); mode === 'big' ? startBig() : startTest(); };
 $('#endScores').onclick = () => { closeModals(); openScores(); };
 
 /* ================= Übungs-Auswahl ================= */
@@ -642,7 +689,7 @@ function closeModals(){ document.querySelectorAll('.modal.open').forEach(m => m.
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModals);
 document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
   SFX.tap();
-  ({ explore:startExplore, practice:openSetup, test:startTest, progress:openProgress, scores:openScores })[b.dataset.mode]();
+  ({ explore:startExplore, practice:openSetup, test:startTest, big:startBig, codes:openCodes, progress:openProgress, scores:openScores })[b.dataset.mode]();
 });
 $('#homeBtn').onclick = () => { closeModals(); show('menu'); };
 $('#soundBtn').onclick = () => { G.sound = !G.sound; save(); updateHUD(); };

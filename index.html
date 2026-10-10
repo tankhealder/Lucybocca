@@ -135,6 +135,16 @@ main{flex:1;position:relative;min-height:0}
 .codebox .iconbtn{width:44px;height:44px}
 @media (max-width:480px){.chatbar .qe:nth-of-type(n+3){display:none}}
 .scene.urzeit{background:linear-gradient(#ffb47a,#ffe0b5 44%,#a8cf6e 44%,#7fb24f)}
+.scene.reise{background:linear-gradient(#7fc8ff,#d8f1ff 44%,#b8e6a0 44%,#93cf7a)}
+/* Zauberglobus (Möbelstück, nur mit Code): dreht sich und leuchtet */
+.zglobe{display:block;width:.9em;height:1.18em;position:relative}
+.zglobe i{position:absolute;left:.05em;top:0;width:.8em;height:.8em;border-radius:50%;z-index:1;
+  background:radial-gradient(ellipse .16em .12em at 20% 35%,#5cc97b 98%,transparent),radial-gradient(ellipse .1em .16em at 55% 55%,#7bcf63 98%,transparent),
+  radial-gradient(ellipse .18em .1em at 85% 30%,#5cc97b 98%,transparent),radial-gradient(ellipse .08em .06em at 40% 80%,#8fd16b 98%,transparent) 0 0/1.1em 100% repeat-x,#3fa9e8;
+  box-shadow:inset -.12em -.08em .16em rgba(0,0,40,.35),0 0 .12em .03em #ffe27a;animation:zspin 7s linear infinite}
+@keyframes zspin{to{background-position:1.1em 0}}
+.zglobe::before{content:"";position:absolute;left:0;top:-.05em;width:.9em;height:.9em;border-radius:50%;border:.04em solid #e6a800;border-left-color:transparent;transform:rotate(20deg)}
+.zglobe::after{content:"";position:absolute;left:.25em;right:.25em;bottom:0;height:.36em;background:linear-gradient(#ffd23f,#e6a800);clip-path:polygon(42% 0,58% 0,62% 70%,100% 80%,100% 100%,0 100%,0 80%,38% 70%)}
 .fx.ash{top:-20px;width:7px;height:7px;border-radius:50%;background:rgba(120,90,80,.45);animation:fall linear infinite}
 /* ---------- Haus: Zimmer (Wand = Hintergrund der Szene, Boden = .floor) ---------- */
 .scene.haus{container-type:size}
@@ -562,6 +572,14 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
   <div class="btns"><button class="btn alt" id="tCancel">Später</button><button class="btn" id="tGo">Los geht’s! 🏰</button></div>
 </div></div>
 
+<div class="modal" id="redeemModal"><div class="mcard">
+  <div class="big" style="font-size:64px">🎁</div>
+  <h2>Code einlösen</h2>
+  <p>Codes bekommst du im <b>Europa-Entdecker</b> 🧭 beim Großen Test.</p>
+  <label class="namebox"><input id="redeemInput" maxlength="24" autocomplete="off" placeholder="z. B. ABCD-1234" style="text-transform:uppercase"></label>
+  <div class="btns"><button class="btn alt" id="redeemCancel">Abbrechen</button><button class="btn" id="redeemGo">Einlösen</button></div>
+</div></div>
+
 <div class="modal" id="ownModal"><div class="mcard">
   <h2>Welches Zimmer gehört dir? 🏰</h2>
   <p>Dein eigenes Zimmer kannst nur du einrichten. Deine Freundin sucht sich das andere aus.</p>
@@ -627,6 +645,9 @@ const HABS = [
     decos:[['🌈',24,45,92],['🏰',74,47,62],['🍭',90,72,40],['🍄',10,82,34],['🍭',32,97,30],['💎',58,95,24]] },
   { id:'urzeit', name:'Urzeit',     e:'🦕', lvl:16, hills:['#9bc46a','#88b55a'], fx:'ash',
     decos:[['🌋',78,46,110],['🌴',8,54,96],['🌴',94,58,70],['🌿',20,90,40],['🦴',64,94,30],['🥚',36,84,26],['🥚',40,86,20],['🪨',86,88,34],['🌿',50,58,28]] },
+  // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (geo.html, Großer Test ab 75 %); code statt Level
+  { id:'reise', name:'Europa-Reise', e:'🧳', lvl:99, code:'welt', hills:['#9fdc8a','#8fd17a'], sun:true, fx:'clouds',
+    decos:[['🗼',14,52,96],['🏟️',36,56,62],['🏛️',58,52,58],['🕌',84,52,78],['🎡',70,58,52],['⛵',48,47,26],['🌷',22,88,30],['🚂',62,90,36],['🧳',90,92,30],['🗺️',8,90,30]] },
 ];
 const HAB = Object.fromEntries(HABS.map(h => [h.id, h]));
 
@@ -752,6 +773,8 @@ const FURN_LIST = [
   {id:'zirkus', e:'🎪', name:'Zirkuszelt', s:30, gift:true, seat:SIT([0], .7)},
   {id:'ufo', e:'🛸', name:'UFO', s:16, gift:true, wall:true},
   {id:'schneemann', e:'⛄', name:'Schneemann', s:18, gift:true},
+  // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (Großer Test ab 50 %)
+  {id:'zauberglobus', e:'🌍', html:'<span class="zglobe"><i></i></span>', name:'Zauberglobus', s:26, code:'globus'},
 ];
 const FURN = Object.fromEntries(FURN_LIST.map(f => [f.id, f]));
 // Einrichtung, mit der jedes Zimmer startet: [Möbel-id, x%, y%, Größe?, gespiegelt?]
@@ -846,7 +869,7 @@ function furnOf(room){
   if (!S.furn[room]) S.furn[room] = ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
   return S.furn[room];
 }
-const furnOpen = f => f.lvl ? level() >= f.lvl : (S.furnOwned || []).includes(f.id);
+const furnOpen = f => f.code ? (S.unlocks || []).includes(f.code) : f.lvl ? level() >= f.lvl : (S.furnOwned || []).includes(f.id);
 
 /* Tiere: c = Fellfarbe, b = Bauch/Schnauze, weitere Felder steuern Ohren, Mund usw. */
 const A = {
@@ -902,6 +925,10 @@ Object.assign(A, {
   koala:    {hab:'wald', name:'Kuschel', label:'Koala', g:'der', c:'#a9b3bf', b:'#e8ecf0', ears:'koala', nose:'koala', mouth:'smile', fav:'muffin', say:'Ich liebe Eukalyptus! 🌿'},
   panda:    {hab:'wald', name:'Pandi', label:'Panda', g:'der', c:'#ffffff', b:'#ffffff', ears:'round', earC:'#3a3446', earIn:'#3a3446', patches:'#3a3446', limb:'#3a3446', nose:'dot', mouth:'smile', fav:'apfel', say:'Hast du Bambus für mich? 🎋'},
 });
+// Superspecial: Ella, die Entdecker-Eule (Maskottchen aus dem Europa-Entdecker) – nur mit Code (Großer Test 100 %)
+Object.assign(A, {
+  ella: {hab:'reise', name:'Ella', label:'Entdecker-Eule', g:'die', c:'#3fb6a8', b:'#fff3d6', ears:'owl', eyeRing:true, bigEyes:true, mouth:'beak', arms:'wing', limb:'#2f9a8e', feet:'#ffa94d', explorer:true, fav:'apfel', say:'Auf zur nächsten Entdeckung! 🧭'},
+});
 // Urzeit (ab Level 16)
 Object.assign(A, {
   mammut:   {hab:'urzeit', name:'Manni', label:'Mammut', g:'das', c:'#a0704a', b:'#c99a72', ears:'round', earC:'#8a5c38', earIn:'#c99a72', hair:'#6e4528', trunk:true, mouth:'none', fav:'apfel', say:'Töröö! 🦣'},
@@ -919,7 +946,7 @@ const MOVE = {
   einhorn:'gallop', schildi:'slow', pferd:'gallop',
   greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
   trex:'stomp', mammut:'stomp', brachio:'slow',
-  kaenguru:'hop', capybara:'slow', koala:'slow',
+  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
 const moveOf = type => MOVE[type] || 'walk';
@@ -997,6 +1024,15 @@ const CLOTHES = [
   {id:'ballon',     slot:'extra', name:'Luftballon',       gift:true, style:'balloon'},
 ];
 const CL = Object.fromEntries(CLOTHES.map(c => [c.id, c]));
+
+/* ---------- Freischaltcodes aus dem Europa-Entdecker (geo.html, Großer Test) ----------
+   Gleiche Codes stehen in geo.html (GEO_CODES). Groß/klein, Leerzeichen und Striche sind egal. */
+const UNLOCKS = {
+  globus:{ code:'GLOBUS-7341', e:'🌍', title:'Der Zauberglobus!', msg:'Ein leuchtender, sich drehender Globus für dein Haus. Du findest ihn beim Einrichten 🔨 im Möbel-Katalog.' },
+  welt:  { code:'REISE-5826',  e:'🧳', title:'Neue Welt: Europa-Reise!', msg:'Eiffelturm, Kolosseum, Akropolis und mehr – besuch die neue Welt oben in der Weltenleiste.' },
+  tier:  { code:'ELLA-9147',   e:'🦉', title:'Ella, die Entdecker-Eule!', msg:'Ella wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie fliegt mit Weltkugeln und Landkarten!' },
+};
+const codeKey = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const AV_SLOTS = [['top','👕 Oben'],['bottom','👖 Unten'],['shoes','👟 Schuhe'],['hat','🎩 Kopf'],['extra','✨ Extra']];
 
 const PRAISE = ['Super! 🎉','Klasse! ⭐','Richtig! 👏','Wow, toll! 🌟','Spitze! 💪','Genau! 🥳','Du bist ein Rechen-Profi! 🏆'];
@@ -1010,7 +1046,7 @@ const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
   treats:{apfel:2, karotte:1, fisch:1, muffin:1}, pets:[], range:10, ops:['+','-'],
   sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{},
-  av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true,
+  av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true, unlocks:[], // unlocks: mit Freischaltcodes aus dem Europa-Entdecker geholt
   me:{ id:'me', type:'me', hab:'haus', room:'wohn', x:50, y:72 } }; // me = der Avatar als Spielfigur, zu Hause im Haus
 let S;
 function load(){
@@ -1023,7 +1059,8 @@ function load(){
     S.treats = { apfel:99, karotte:99, fisch:99, muffin:99 };
   }
   // Im Test mindestens das höchste Level, das etwas freischaltet (Welten, Accessoires) – auch wenn neue dazukommen
-  if (TEST){ const max = Math.max(...HABS.map(h => h.lvl), ...ACC.map(a => a.lvl), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
+  if (TEST) S.unlocks = Object.keys(UNLOCKS); // im Test auch alle Code-Belohnungen
+  if (TEST){ const max = Math.max(...HABS.filter(h => !h.code).map(h => h.lvl), ...ACC.map(a => a.lvl), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
   // Im Test immer alle Tiere da – auch neu eingebaute
   if (TEST) ORDER.forEach(type => { if (!(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); });
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
@@ -1080,7 +1117,7 @@ function oldLevelInfo(xp){
   return { l, cur:xp, need };
 }
 const level = () => levelInfo(S.xp).l;
-const habOpen = h => level() >= h.lvl || S.pets.some(p => A[p.type].hab === h.id);
+const habOpen = h => (h.code ? S.unlocks.includes(h.code) : level() >= h.lvl) || S.pets.some(p => A[p.type].hab === h.id);
 const nameOf = p => p.name || A[p.type].name; // eigener Name (selbst vergeben) oder der Standardname
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
 function setName(p, v){ v = v.trim().slice(0, 16); if (!v || v === A[p.type].name) delete p.name; else p.name = v; save(); }
@@ -1131,7 +1168,7 @@ const SFX = {
 };
 /* Geräusch-Takt und Glitzer beim Tragen: [ms, Sound, Partikel] */
 const STEP = {
-  fly:[320, SFX.flap], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
+  fly:[320, SFX.flap], explore:[300, SFX.flap, ['🌍','✨','🗺️','🧭']], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
   gold:[280, () => { SFX.flap(); tone(1760, .08, 'sine', 0, .03); }, el => { const [x, y] = centerOf(el); confetti(x, y, 9, GOLD); sprinkle(el, ['🪙','✨'], 1); }], blaze:[320, SFX.flap, ['🔥','✨']], stomp:[500, SFX.stomp], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
   hop:[500, SFX.hop], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
@@ -1364,6 +1401,8 @@ function petSVG(type, acc = {}){
   if (t.narhorn) front += P(`M57 ${top+4} L60 ${top-34} L63 ${top+4}Z`, '#fff3d6') + S_(`M57.8 ${top-6} L62.2 ${top-9} M58.6 ${top-18} L61.4 ${top-20}`, '#d8c39a', 1.6);
   if (t.spout) front += S_(`M60 ${top+2} C60 ${top-8} 52 ${top-12} 47 ${top-18} M60 ${top+2} C60 ${top-8} 68 ${top-12} 73 ${top-18}`, '#bfe9ff', 4) + `<circle cx="45" cy="${top-22}" r="3" fill="#bfe9ff"/><circle cx="75" cy="${top-22}" r="3" fill="#bfe9ff"/>`;
   if (t.moon) front += star(92, 12, 6, '#ffe27a') + star(26, 6, 4, '#ffe27a');
+  if (t.explorer) front += E(60, top + 3, 36, 7, '#a0703f') + P(`M38 ${top + 3} C38 ${top - 20} 82 ${top - 20} 82 ${top + 3}Z`, '#c8925a')
+    + S_(`M39 ${top - 3} Q60 ${top - 8} 81 ${top - 3}`, '#7a4f2a', 3.5) + E(76, top - 6, 4, 4, '#ffd23f'); // Forscherhut mit Band und Abzeichen
   if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
 
   /* --- Accessoires --- */
@@ -1768,7 +1807,7 @@ function revealGift(){
     giftPet = null;
     const got = []; for (let i=0; i<5; i++){ const k = pick(Object.keys(TREATS)); S.treats[k]++; got.push(TREATS[k]); }
     $('#giftStage').innerHTML = `<div class="reveal-pet" style="font-size:56px;width:auto">${got.join('')}</div>`;
-    const nextHab = HABS.find(h => level() < h.lvl);
+    const nextHab = HABS.find(h => !h.code && level() < h.lvl); // Code-Welten kommen nicht über Level
     $('#giftTitle').textContent = 'Leckerli-Paket!';
     $('#giftMsg').textContent = nextHab
       ? `Alle Tiere hier sind schon da! Ab Level ${nextHab.lvl} öffnet sich die Welt „${nextHab.name}“ ${nextHab.e}.`
@@ -1862,7 +1901,7 @@ function exitBuild(){
 function renderBuildbar(){
   $('#fcat').innerHTML = FURN_LIST.map(f => {
     const open = furnOpen(f);
-    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${f.e}</span><small>${open ? f.name : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
+    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${f.e}</span><small>${open ? f.name : f.code ? '🔑 Code' : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
   }).join('');
 }
 // Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
@@ -1878,7 +1917,7 @@ function furnRemoved(i){
 $('#fcat').addEventListener('click', e => {
   const b = e.target.closest('.fitem'); if (!b) return;
   const f = FURN[b.dataset.f];
-  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
+  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.code ? `${f.e} ${f.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
   const list = furnOf(curRoom());
   list.push({ id:f.id, x:rnd(30, 70), y:f.wall ? rnd(24, 36) : rnd(66, 80) });
   selI = list.length - 1; SFX.dress(); furnChanged(); renderWorld();
@@ -2123,14 +2162,14 @@ $('#inviteClose').addEventListener('click', () => $('#inviteModal').classList.re
 function renderHabs(){
   $('#habs').innerHTML = HABS.map(h => {
     const open = habOpen(h), n = h.shared ? '👭 ' + (NET.meRef ? 1 + Object.keys(NET.others).length : '–') : S.pets.filter(p => where(p) === h.id).length;
-    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : ` · Lv ${h.lvl}`}</button>`;
+    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : h.code ? ' · 🔑 Code' : ` · Lv ${h.lvl}`}</button>`;
   }).join('');
   $('#habs .hchip.on')?.scrollIntoView({ inline:'center', block:'nearest' });
 }
 $('#habs').addEventListener('click', e => {
   const b = e.target.closest('.hchip'); if (!b) return;
   const h = HAB[b.dataset.h];
-  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(`${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
+  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(h.code ? `${h.e} ${h.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : `${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
   SFX.tap(); S.hab = h.id; save(); renderWorld();
 });
 function placePet(el, p){
@@ -2214,7 +2253,7 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold'].includes(mode);
+    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore'].includes(mode);
     let moved = false, stepper = null;
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
@@ -2508,7 +2547,7 @@ function renderRemote(){
   const wrap = $('#pets'), seen = new Set();
   const setHeld = (el, h, type) => {
     el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
-    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold'].includes(moveOf(type)));
+    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore'].includes(moveOf(type)));
   };
   const here = together().room;
   const setPose = (el, pz) => { // sitzt/liegt/badet die Freundin oder ihr Tier gerade?
@@ -2778,7 +2817,7 @@ function toolList(){
     ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared && canBuild() ? [['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
-    ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],
+    ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],['redeemBtn','🎁','Code einlösen'],
   ];
 }
 function renderTreats(){
@@ -2801,6 +2840,7 @@ function runTool(id){
   if (id === 'buildBtn') enterBuild();
   if (id === 'bringBtn') openBring();
   if (id === 'codeBtn') openTogether();
+  if (id === 'redeemBtn') openRedeem();
   if (id === 'chatBtn'){
     NET.chatOpen = !NET.chatOpen;
     $('#chatbar').hidden = !NET.chatOpen; $('#chatBtn')?.classList.toggle('on', NET.chatOpen);
@@ -3027,6 +3067,32 @@ $('#avClose').addEventListener('click', () => {
   netPush(true); // neues Outfit auch für die Freundin
 });
 
+/* ================= Freischaltcodes einlösen ================= */
+function openRedeem(){ $('#redeemInput').value = ''; $('#redeemModal').classList.add('open'); setTimeout(() => $('#redeemInput').focus(), 200); }
+$('#redeemCancel').addEventListener('click', () => $('#redeemModal').classList.remove('open'));
+$('#redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#redeemGo').click(); });
+$('#redeemGo').addEventListener('click', () => {
+  const key = Object.keys(UNLOCKS).find(k => codeKey(UNLOCKS[k].code) === codeKey($('#redeemInput').value));
+  if (!key){ SFX.no(); retrigger($('#redeemInput'), 'shake'); toast('Diesen Code kenne ich nicht 🤔 Schau nochmal genau hin!'); return; }
+  if (S.unlocks.includes(key) && (key !== 'tier' || S.pets.some(p => p.type === 'ella'))){ toast('Den hast du schon eingelöst! 😊'); return; }
+  if (!S.unlocks.includes(key)) S.unlocks.push(key);
+  const u = UNLOCKS[key];
+  giftPet = null;
+  if (key === 'tier' && !S.pets.some(p => p.type === 'ella')){ const p = newPet('ella'); S.pets.push(p); S.newPet = p.id; giftPet = p; }
+  save(); renderHUD();
+  $('#redeemModal').classList.remove('open');
+  // wie ein Geschenk auspacken
+  $('#giftStage').innerHTML = key === 'tier' ? `<div class="reveal-pet">${petNode(giftPet, 0)}</div>`
+    : key === 'globus' ? `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1">${FURN.zauberglobus.html}</div>`
+    : `<div class="reveal-pet" style="font-size:96px;width:auto;line-height:1;font-family:var(--emoji)">${u.e}</div>`;
+  $('#giftTitle').textContent = u.title; $('#giftMsg').textContent = u.msg;
+  $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button>` + (key === 'globus'
+    ? `<button class="btn" data-a="build">Einrichten 🔨</button>` : `<button class="btn" data-a="world">Hinreisen 🧳</button>`);
+  if (key === 'welt') giftPet = { type:'ella' }; // „Hinreisen“ führt in die Europa-Reise
+  $('#giftModal').classList.add('open');
+  SFX.gift(); confetti(innerWidth / 2, innerHeight / 3, 60);
+});
+
 /* ================= Album ================= */
 function openAlbum(){
   const owned = Object.fromEntries(S.pets.map(p => [p.type, p]));
@@ -3034,7 +3100,7 @@ function openAlbum(){
   $('#stats').innerHTML = `<div>✅ ${S.total} gerechnet</div><div>🔥 Beste Serie: ${S.best}</div><div>⭐ ${S.xp} XP</div><div>👗 ${ACC.filter(accOpen).length} / ${ACC.length}</div>`;
   $('#album').innerHTML = HABS.filter(h => !h.indoor && !h.shared).map(h => {
     const types = ORDER.filter(t => A[t].hab === h.id), have = types.filter(t => owned[t]).length;
-    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>ab Level ${h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
+    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>${h.code ? 'mit Code aus dem Europa-Entdecker 🧭' : 'ab Level ' + h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
       const t = A[type], p = owned[type];
       return p
