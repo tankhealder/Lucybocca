@@ -205,7 +205,8 @@ main{flex:1;position:relative;min-height:0}
   <h2>Bestenliste 🥇</h2>
   <p>Die besten Probetests aller Entdecker.</p>
   <div class="list" id="scoreList"></div>
-  <div class="btns"><button class="btn" data-close>Schließen</button></div>
+  <p id="myName"></p>
+  <div class="btns"><button class="btn alt" id="nameChange">✏️ Name ändern</button><button class="btn" data-close>Schließen</button></div>
 </div></div>
 
 <div class="modal" id="nameModal"><div class="mcard">
@@ -663,7 +664,13 @@ async function submitScore(score){
     if (!old || score > old.s || old.n !== G.name) await set(r, { n:G.name, s:Math.max(score, old?.n === G.name ? old.s : 0), t:Date.now() });
   } catch (e){ console.warn(e); }
 }
+// Name ändern: gilt auch für den eigenen Eintrag in der Bestenliste (Punkte bleiben)
+$('#nameChange').onclick = () => { closeModals(); openName(async () => {
+  if (G.best && await net()){ try { await NET.fb.set(NET.fb.ref(NET.db, `geo/scores/${NET.uid}`), { n:G.name, s:G.best, t:Date.now() }); } catch (e){ console.warn(e); } }
+  openScores();
+}); };
 async function openScores(){
+  $('#myName').textContent = G.name ? `Dein Name: ${G.name}` : 'Du hast noch keinen Namen – den fragt der erste Probetest ab.';
   $('#scoreList').innerHTML = '<p>Lade …</p>'; $('#scoreModal').classList.add('open');
   if (!await net()){ $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar. Bist du im Internet?</p>'; return; }
   try {
