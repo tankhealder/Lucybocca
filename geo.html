@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Europa-Entdecker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Geo-Lernapp: stumme Europakarte, zwei Aufgabentypen (zeigen / benennen), Bestenliste. Ein helles Theme wie MathPets. */
+:root{
+  --ink:#2f3b4a; --ink-soft:#6a7685; --sea:#a9d9f2; --sea-deep:#8cc8ea; --land:#d7ecb8; --land-line:#8fb07a;
+  --mount:#b98a5a; --river:#2b86d6; --gold:#ffd23f; --green:#4cbf74; --red:#ff6b6b; --purple:#7b6cf0; --card:#fff; --soft:#f2f6fb;
+  --font:Fredoka,"Segoe UI",system-ui,sans-serif; --emoji:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);color:var(--ink);background:#e8f3fb;overflow:hidden;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;color:inherit;border:0;cursor:pointer;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+#app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:0 0 22px 22px;box-shadow:0 4px 0 rgba(47,59,74,.07);z-index:5}
+.logo{font-weight:700;font-size:20px;white-space:nowrap}
+.logo span{font-family:var(--emoji)}
+.grow{flex:1;min-width:0}
+.pill{background:#fff4d6;border-radius:14px;padding:6px 10px;font-weight:600;font-size:16px;white-space:nowrap}
+.iconbtn{width:40px;height:40px;border-radius:14px;background:#eef2f8;font-size:19px;flex:none}
+main{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* ---------- Startseite ---------- */
+#menu{overflow-y:auto;padding:16px;gap:14px;align-items:center}
+.hero{display:flex;align-items:center;gap:12px;max-width:620px;width:100%}
+.owl{font-size:64px;font-family:var(--emoji);line-height:1;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.speech{background:#fff;border-radius:18px;padding:10px 14px;font-weight:600;font-size:17px;box-shadow:0 3px 0 rgba(47,59,74,.08)}
+.rank{max-width:620px;width:100%;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 5px 0 rgba(47,59,74,.08)}
+.rank b{font-size:19px}
+.bar{height:14px;background:#eef2f8;border-radius:8px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff9f43);border-radius:8px;transition:width .6s}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:620px;width:100%}
+.mode{background:#fff;border-radius:22px;padding:16px 12px;text-align:center;box-shadow:0 5px 0 rgba(47,59,74,.1)}
+.mode .e{font-size:40px;font-family:var(--emoji);display:block;line-height:1.1}
+.mode b{display:block;font-size:19px;margin-top:4px}
+.mode small{color:var(--ink-soft);font-size:14px}
+.mode:active{transform:translateY(3px)}
+
+/* ---------- Spiel: Karte ---------- */
+#game{background:var(--sea)}
+/* Karte oben, Aufgabe darunter (nichts verdeckt die Karte) */
+.mapwrap{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;cursor:crosshair}
+#map{width:100%;height:100%;display:block}
+#map .land{fill:var(--land);stroke:var(--land-line);stroke-width:.8;stroke-linejoin:round}
+#map .lakes{fill:var(--sea-deep);stroke:#5aa7d6;stroke-width:.6}
+#map .borders{fill:none;stroke:#b6c79b;stroke-width:.6;stroke-dasharray:3 2}
+#map .mount{fill:var(--mount);opacity:.5;stroke:#9c6f45;stroke-width:.4}
+#map .rivers{fill:none;stroke:var(--river);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#map .city{fill:#2f3b4a;stroke:#fff;stroke-width:1.2}
+#map .hl-area{fill:rgba(255,210,63,.45);stroke:#ff9f1c;stroke-width:2.5;vector-effect:non-scaling-stroke;animation:pulse 1.1s ease-in-out infinite alternate}
+#map .hl-line{fill:none;stroke:#ff4d8d;stroke-width:6;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:pulse 1.1s ease-in-out infinite alternate}
+#map .hl-pt{fill:none;stroke:#ff4d8d;stroke-width:3;vector-effect:non-scaling-stroke;animation:ring 1.1s ease-out infinite}
+#map .hl-ok{fill:rgba(76,191,116,.4);stroke:var(--green)}
+#map .hl-ok.hl-line{stroke:var(--green)}
+#map .tapx{stroke:var(--red);stroke-width:3;vector-effect:non-scaling-stroke}
+@keyframes pulse{from{opacity:.55}to{opacity:1}}
+@keyframes ring{from{opacity:1;stroke-width:4}to{opacity:.2;stroke-width:1}}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.zoom button{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.95);font-size:22px;font-weight:700;box-shadow:0 3px 0 rgba(47,59,74,.12)}
+.compass{position:absolute;left:10px;top:10px;font-size:34px;font-family:var(--emoji);opacity:.8;pointer-events:none}
+.label{position:absolute;transform:translate(-50%,-130%);background:#fff;border-radius:12px;padding:5px 10px;font-weight:700;font-size:16px;white-space:nowrap;box-shadow:0 3px 0 rgba(47,59,74,.15);pointer-events:none;animation:pop .25s cubic-bezier(.3,1.6,.5,1);z-index:4}
+.label small{display:block;font-weight:500;font-size:12px;color:var(--ink-soft)}
+@keyframes pop{from{transform:translate(-50%,-130%) scale(0)}}
+
+/* ---------- Spiel: Aufgabe unten ---------- */
+.panel{position:relative;margin:0 8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5;background:#fff;border-radius:22px;padding:12px 14px;box-shadow:0 -3px 0 rgba(47,59,74,.06),0 6px 0 rgba(47,59,74,.12);transition:background .2s;flex:none}
+.panel.good{background:#e6f9ec}
+.panel.bad{background:#ffecec}
+.qtop{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-soft);font-weight:600}
+.dots{display:flex;gap:3px;flex-wrap:wrap}
+.dots i{width:9px;height:9px;border-radius:50%;background:#e3e9f2}
+.dots i.ok{background:var(--green)}
+.dots i.no{background:var(--red)}
+.dots i.now{background:var(--purple)}
+.qtext{font-size:22px;font-weight:700;margin:6px 0 8px;line-height:1.2}
+.qtext .cat{font-size:14px;font-weight:600;color:var(--ink-soft);display:block}
+.answer{display:flex;gap:8px}
+.answer input{flex:1;min-width:0;font:inherit;font-size:19px;font-weight:600;color:var(--ink);border:3px solid #dfe6f0;border-radius:14px;padding:9px 12px;background:var(--soft);user-select:text;-webkit-user-select:text}
+.answer input:focus{outline:none;border-color:var(--purple);background:#fff}
+.btn{padding:11px 16px;border-radius:14px;font-size:17px;font-weight:600;background:var(--purple);color:#fff;box-shadow:0 4px 0 #5546c9;white-space:nowrap}
+.btn.alt{background:#eef2f8;color:var(--ink);box-shadow:0 4px 0 #d3dbe7}
+.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #d9ab1c}
+.btn:active{transform:translateY(3px)}
+.feedback{font-size:17px;font-weight:600;margin-top:6px;min-height:1.3em}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* ---------- Auswahl, Ergebnis, Bestenliste, Fortschritt ---------- */
+.modal{position:fixed;inset:0;background:rgba(47,59,74,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+.modal.open{display:flex}
+.mcard{background:#fff;border-radius:26px;padding:20px 18px;max-width:460px;width:100%;max-height:92vh;overflow-y:auto;text-align:center;animation:mpop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mpop{from{transform:scale(.7);opacity:0}}
+.mcard h2{margin:4px 0 8px;font-size:25px}
+.mcard p{color:var(--ink-soft);margin:4px 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 14px}
+.chip{padding:8px 13px;border-radius:999px;background:#eef2f8;font-weight:600;font-size:16px}
+.chip.on{background:var(--purple);color:#fff;box-shadow:0 3px 0 #5546c9}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.big{font-size:60px;font-family:var(--emoji);line-height:1.1}
+.score{font-size:44px;font-weight:700;color:var(--purple)}
+.list{text-align:left;margin:8px 0;display:grid;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:8px 12px;font-weight:600}
+.row .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .p{font-family:var(--emoji)}
+.row.me{background:#efeaff;box-shadow:inset 0 0 0 2px var(--purple)}
+.prog h3{text-align:left;margin:14px 0 6px;font-size:18px}
+.prog .row{font-size:15px;padding:6px 10px}
+.stars{font-family:var(--emoji);font-size:15px;letter-spacing:1px}
+.namebox{display:flex;gap:8px;margin:8px 0 12px}
+.namebox input{flex:1;min-width:0;font:inherit;font-size:18px;font-weight:600;border:3px solid #dfe6f0;border-radius:14px;padding:9px 12px;background:var(--soft);text-align:center;user-select:text;-webkit-user-select:text}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);background:var(--gold);padding:10px 18px;border-radius:18px;font-weight:700;font-size:17px;box-shadow:0 4px 0 #d9ab1c;z-index:60;animation:toast 2.4s forwards;max-width:calc(100% - 28px);text-align:center}
+@keyframes toast{0%{transform:translate(-50%,-120px)}12%,85%{transform:translate(-50%,0)}100%{transform:translate(-50%,-140px)}}
+.confetti{position:fixed;width:9px;height:13px;border-radius:3px;pointer-events:none;z-index:55}
+@media (max-width:420px){.qtext{font-size:19px}.btn{padding:10px 12px;font-size:16px}.logo{font-size:17px}}
+@media (prefers-reduced-motion:reduce){.owl,#map .hl-area,#map .hl-line,#map .hl-pt{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"><span>🧭</span> Europa-Entdecker</div>
+    <div class="grow"></div>
+    <div class="pill" id="hudStars" title="Sterne">⭐ 0</div>
+    <button class="iconbtn" id="soundBtn" aria-label="Ton an/aus">🔊</button>
+    <button class="iconbtn" id="homeBtn" aria-label="Startseite">🏠</button>
+  </header>
+  <main>
+    <section class="screen active" id="menu">
+      <div class="hero"><div class="owl">🦉</div><div class="speech" id="owlSay">Hallo! Ich bin Ella, die Entdecker-Eule. Lass uns Europa erkunden!</div></div>
+      <div class="rank"><b id="rankName">Kartenleser</b> · <span id="rankInfo">0 von 156 Sternen</span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
+      <div class="modes">
+        <button class="mode" data-mode="explore"><span class="e">🗺️</span><b>Entdecken</b><small>Tippe auf die Karte – ich sage dir, was dort ist</small></button>
+        <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Zeigen oder benennen, Kategorien wählbar</small></button>
+        <button class="mode" data-mode="test"><span class="e">🏆</span><b>Probetest</b><small>20 Fragen mit Punkten und Bestenliste</small></button>
+        <button class="mode" data-mode="progress"><span class="e">⭐</span><b>Fortschritt</b><small>Was kannst du schon?</small></button>
+        <button class="mode" data-mode="scores" style="grid-column:1/-1"><span class="e">🥇</span><b>Bestenliste</b><small>Wer ist die Geo-Legende?</small></button>
+      </div>
+    </section>
+
+    <section class="screen" id="game">
+      <div class="mapwrap" id="mapwrap">
+        <svg id="map" xmlns="http://www.w3.org/2000/svg" aria-label="Stumme Karte von Europa"></svg>
+        <div class="compass">🧭</div>
+        <div class="zoom"><button id="zIn" aria-label="Hineinzoomen">+</button><button id="zOut" aria-label="Herauszoomen">−</button><button id="zReset" aria-label="Ganze Karte">⌂</button></div>
+      </div>
+      <div class="panel" id="panel">
+        <div class="qtop"><span id="qMode"></span><div class="dots" id="dots"></div><div class="grow"></div><span id="qScore"></span></div>
+        <div class="qtext" id="qText"></div>
+        <div class="answer" id="answer" hidden>
+          <input id="ansInput" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Wie heißt das?" enterkeyhint="done">
+          <button class="btn" id="ansOk">✔</button>
+          <button class="btn alt" id="ansShow">💡 Anzeigen</button>
+        </div>
+        <div class="btns" id="nextRow" hidden><button class="btn" id="nextBtn">Weiter ➜</button></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="setupModal"><div class="mcard">
+  <h2>Was möchtest du üben? 🎯</h2>
+  <p>Kategorien</p>
+  <div class="chips" id="catChips"></div>
+  <p>Aufgaben</p>
+  <div class="chips" id="typeChips"></div>
+  <div class="btns"><button class="btn alt" data-close>Zurück</button><button class="btn" id="setupGo">Los geht’s!</button></div>
+</div></div>
+
+<div class="modal" id="endModal"><div class="mcard">
+  <div class="big" id="endEmoji">🏆</div>
+  <h2 id="endTitle">Geschafft!</h2>
+  <div class="score" id="endScore">0</div>
+  <p id="endInfo"></p>
+  <div class="btns"><button class="btn alt" id="endHome">Startseite</button><button class="btn gold" id="endScores">🥇 Bestenliste</button><button class="btn" id="endAgain">Nochmal</button></div>
+</div></div>
+
+<div class="modal" id="scoreModal"><div class="mcard">
+  <h2>Bestenliste 🥇</h2>
+  <p>Die besten Probetests aller Entdecker.</p>
+  <div class="list" id="scoreList"></div>
+  <div class="btns"><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<div class="modal" id="nameModal"><div class="mcard">
+  <div class="big">🦉</div>
+  <h2>Wie heißt du?</h2>
+  <p>Dein Name steht in der Bestenliste – alle, die die App benutzen, können ihn sehen. Nimm am besten einen Spitznamen.</p>
+  <div class="namebox"><input id="nameInput" maxlength="16" autocomplete="off" placeholder="Spitzname"><button class="btn" id="nameOk">OK</button></div>
+</div></div>
+
+<div class="modal" id="progModal"><div class="mcard prog">
+  <h2>Dein Fortschritt ⭐</h2>
+  <p>⭐ gezeigt · ⭐ benannt · ⭐ dreimal hintereinander richtig</p>
+  <div id="progList"></div>
+  <div class="btns"><button class="btn alt" id="progReset">Zurücksetzen</button><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<script src="geo-data.js"></script>
+<script>
+/* ================= Was im Test abgefragt wird ================= */
+// id = Ziel in geo-data.js; alt = weitere richtige Schreibweisen
+const CATS = [
+  ['meere','🌊 Meere', [['atlantik','Atlantik',['Atlantischer Ozean','Atlantic']],['nordsee','Nordsee'],['ostsee','Ostsee'],['schwarzesmeer','Schwarzes Meer'],['mittelmeer','Mittelmeer']]],
+  ['inseln','🏝️ Inseln', [['island','Island'],['irland','Irland'],['zypern','Zypern'],['kreta','Kreta'],['sizilien','Sizilien'],['sardinien','Sardinien'],['korsika','Korsika'],['balearen','Balearen']]],
+  ['halbinseln','🦵 Halbinseln', [['iberisch','Iberische Halbinsel',['Iberien']],['skandinavisch','Skandinavische Halbinsel',['Skandinavien']],['kola','Kola',['Halbinsel Kola','Kolahalbinsel']],['balkan','Balkanhalbinsel',['Balkan','Balkan-Halbinsel']],['apennin','Apenninhalbinsel',['Apenninenhalbinsel','Apennin-Halbinsel','Italienische Halbinsel']]]],
+  ['fluesse','💧 Flüsse und Seen', [['ebro','Ebro'],['rhone','Rhône',['Rhone']],['po','Po'],['loire','Loire'],['themse','Themse'],['rhein','Rhein'],['elbe','Elbe'],['oder','Oder'],['weichsel','Weichsel'],['donau','Donau'],['dnipro','Dnipro',['Dnjepr','Dnepr']],['ladoga','Ladogasee',['Ladoga','Ladoga-See']],['onega','Onegasee',['Onega','Onega-See']],['wolga','Wolga'],['ural','Ural',['Uralfluss','Fluss Ural']],['kaspisches','Kaspisches Meer',['Kaspisee']]]],
+  ['gebirge','⛰️ Gebirge', [['pyrenaeen','Pyrenäen'],['alpen','Alpen'],['karpaten','Karpaten'],['skanden','Skanden'],['uralgebirge','Uralgebirge',['Ural']],['apenninen','Apenninen',['Apennin']],['kaukasus','Kaukasus']]],
+  ['staedte','🏙️ Städte', [['madrid','Madrid'],['london','London'],['paris','Paris'],['berlin','Berlin'],['rom','Rom'],['wien','Wien'],['budapest','Budapest'],['athen','Athen'],['istanbul','Istanbul'],['moskau','Moskau'],['stockholm','Stockholm']]],
+];
+const ITEMS = CATS.flatMap(([cat, label, list]) => list.map(([id, name, alt]) => ({ id, name, alt:alt || [], cat, catLabel:label })));
+const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+// eindeutige Frage, wo derselbe Name doppelt vorkommen könnte
+const showName = it => it.id === 'ural' ? 'Ural (Fluss)' : it.name;
+
+/* ================= Spielstand (nur auf diesem Gerät) ================= */
+const KEY = 'geo-v1';
+let G;
+try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
+G = Object.assign({ name:'', sound:true, best:0, k:{}, cats:CATS.map(c => c[0]), type:'mix' }, G);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
+const know = id => G.k[id] ||= { show:0, name:0, row:0 };
+const starsOf = id => { const k = know(id); return (k.show > 0) + (k.name > 0) + (k.row >= 3); };
+const totalStars = () => ITEMS.reduce((s, i) => s + starsOf(i.id), 0);
+const RANKS = [[0,'Kartenleser 🗺️'],[20,'Pfadfinder 🥾'],[50,'Entdecker 🧭'],[85,'Kapitän ⛵'],[120,'Weltreisende ✈️'],[150,'Geo-Legende 🏆']];
+
+/* ================= Kleinkram ================= */
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+let AC;
+function tone(f, d = .12, type = 'sine', when = 0, vol = .12, f2){
+  if (!G.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02);
+  } catch {}
+}
+const SFX = {
+  ok: () => [523,659,784,1047].forEach((f, i) => tone(f, .15, 'triangle', i * .07)),
+  no: () => tone(260, .22, 'triangle', 0, .1, 170),
+  tap: () => tone(700, .05, 'triangle', 0, .06),
+  win: () => [523,659,784,1047,1319,1568].forEach((f, i) => tone(f, .2, 'triangle', i * .09)),
+};
+function toast(t){ const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2500); }
+function confetti(x, y, n = 30){
+  const cols = ['#ff7eb6','#ffd23f','#4cc9f0','#4cbf74','#7b6cf0','#ff9f43'];
+  for (let i = 0; i < n; i++){
+    const el = document.createElement('div'); el.className = 'confetti';
+    el.style.cssText = `left:${x}px;top:${y}px;background:${pick(cols)}`; document.body.appendChild(el);
+    const a = Math.random() * Math.PI * 2, v = 70 + Math.random() * 140;
+    el.animate([{ transform:'translate(0,0)', opacity:1 }, { transform:`translate(${Math.cos(a) * v}px,${Math.sin(a) * v - 50}px) rotate(${rnd(-300,300)}deg)`, opacity:1, offset:.6 },
+      { transform:`translate(${Math.cos(a) * v * 1.2}px,${Math.sin(a) * v + 110}px) rotate(${rnd(-600,600)}deg)`, opacity:0 }], { duration:1100 + Math.random() * 400 }).onfinish = () => el.remove();
+  }
+}
+
+/* ================= Tippen prüfen: kleine Tippfehler werden verziehen ================= */
+const norm = s => s.toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[éèê]/g,'e').replace(/ô/g,'o').replace(/[^a-z]/g,'');
+function lev(a, b){
+  const d = Array.from({ length:a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+// 'exact' = richtig geschrieben, 'close' = fast (Tippfehler), sonst false
+const namesOf = it => [it.name, ...it.alt].map(norm);
+const bestDist = (it, v) => Math.min(...namesOf(it).map(a => lev(a, v)));
+function checkName(it, input){
+  const v = norm(input); if (!v) return false;
+  if (namesOf(it).includes(v)) return 'exact';
+  const tol = v.length > 7 ? 2 : v.length > 3 ? 1 : 0, mine = bestDist(it, v);
+  if (mine > tol) return false;
+  // „Island“ ist kein Tippfehler von „Irland“: passt die Eingabe genauso gut oder besser zu etwas anderem, ist sie falsch
+  if (ITEMS.some(o => o !== it && bestDist(o, v) <= mine)) return false;
+  return 'close';
+}
+
+/* ================= Karte zeichnen, zoomen, verschieben ================= */
+const svg = $('#map'), NS = 'http://www.w3.org/2000/svg';
+const FULL = { x:0, y:0, w:GEO.w, h:GEO.h };
+let vb = { ...FULL };
+const ringD = rings => rings.map(r => 'M' + r.map(p => p.join(' ')).join('L') + 'Z').join('');
+const lineD = parts => parts.map(r => 'M' + r.map(p => p.join(' ')).join('L')).join('');
+function drawMap(){
+  const cities = ITEMS.filter(i => GEO.targets[i.id].k === 'p').map(i => { const [x, y] = GEO.targets[i.id].pt; return `<circle class="city" cx="${x}" cy="${y}" r="3.2"/>`; }).join('');
+  svg.innerHTML = `<rect x="-500" y="-500" width="${GEO.w + 1000}" height="${GEO.h + 1000}" fill="var(--sea)"/>
+    <path class="land" d="${GEO.land}"/><path class="borders" d="${GEO.borders}"/><path class="mount" d="${GEO.mountains}"/>
+    <path class="lakes" d="${GEO.lakes}"/><path class="rivers" d="${GEO.rivers}"/><g id="cities">${cities}</g><g id="hl"></g><g id="marks"></g>`;
+  setVB();
+}
+function setVB(){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
+// Bildschirmpunkt → Kartenpunkt
+function toMap(cx, cy){ const p = svg.createSVGPoint(); p.x = cx; p.y = cy; const q = p.matrixTransform(svg.getScreenCTM().inverse()); return [q.x, q.y]; }
+const unitsPerPx = () => Math.max(vb.w / svg.clientWidth, vb.h / svg.clientHeight); // Karte wird ganz eingepasst („meet“)
+function zoomAt(factor, mx, my){
+  const nw = Math.min(FULL.w * 1.2, Math.max(FULL.w / 12, vb.w / factor)), k = nw / vb.w;
+  vb = { x:mx - (mx - vb.x) * k, y:my - (my - vb.y) * k, w:nw, h:vb.h * k };
+  clampVB(); setVB();
+}
+function clampVB(){
+  vb.x = Math.min(Math.max(vb.x, -vb.w * .4), FULL.w - vb.w * .6);
+  vb.y = Math.min(Math.max(vb.y, -vb.h * .4), FULL.h - vb.h * .6);
+}
+function animateTo(target, ms = 600){
+  const from = { ...vb }, t0 = performance.now();
+  const step = t => {
+    const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+    vb = { x:from.x + (target.x - from.x) * e, y:from.y + (target.y - from.y) * e, w:from.w + (target.w - from.w) * e, h:from.h + (target.h - from.h) * e };
+    setVB(); if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+// Ansicht so wählen, dass ein Ziel gut zu sehen ist (fürs Benennen)
+function focusTarget(id){
+  const t = GEO.targets[id];
+  const pts = t.k === 'p' ? [t.pt] : t.k === 'l' ? t.p.flat() : t.r.flat();
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
+  const aspect = svg.clientWidth / Math.max(1, svg.clientHeight);
+  let w = Math.max(x1 - x0, (y1 - y0) * aspect) * 2.4; w = Math.min(FULL.w, Math.max(w, 160));
+  const h = w / aspect;
+  animateTo({ x:(x0 + x1) / 2 - w / 2, y:(y0 + y1) / 2 - h / 2, w, h });
+}
+// Ziehen (eine Hand) und Zoomen (zwei Finger, Mausrad)
+const pointers = new Map(); let panStart = null, pinch = null, moved = false;
+const wrap = $('#mapwrap');
+wrap.addEventListener('pointerdown', e => {
+  if (e.target.closest('.zoom')) return;
+  wrap.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pointers.size === 1){ panStart = { cx:e.clientX, cy:e.clientY, vb:{ ...vb } }; moved = false; }
+  if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinch = { d:Math.hypot(a[0] - b[0], a[1] - b[1]), vb:{ ...vb }, mid:toMap((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) }; moved = true; }
+});
+wrap.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && pointers.size === 2){
+    const [a, b] = [...pointers.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    vb = { ...pinch.vb }; zoomAt(d / pinch.d, pinch.mid[0], pinch.mid[1]);
+  } else if (panStart){
+    const dx = e.clientX - panStart.cx, dy = e.clientY - panStart.cy;
+    if (!moved && Math.hypot(dx, dy) > 8) moved = true;
+    if (moved){ const u = unitsPerPx(); vb.x = panStart.vb.x - dx * u; vb.y = panStart.vb.y - dy * u; clampVB(); setVB(); }
+  }
+});
+const endPtr = e => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 0){ if (!moved && e.type === 'pointerup') mapTap(e.clientX, e.clientY); panStart = null; }
+};
+wrap.addEventListener('pointerup', endPtr); wrap.addEventListener('pointercancel', endPtr);
+wrap.addEventListener('wheel', e => { e.preventDefault(); const [mx, my] = toMap(e.clientX, e.clientY); zoomAt(e.deltaY < 0 ? 1.25 : 1 / 1.25, mx, my); }, { passive:false });
+$('#zIn').onclick = () => zoomAt(1.5, vb.x + vb.w / 2, vb.y + vb.h / 2);
+$('#zOut').onclick = () => zoomAt(1 / 1.5, vb.x + vb.w / 2, vb.y + vb.h / 2);
+$('#zReset').onclick = () => animateTo({ ...FULL });
+
+/* ================= Treffer: Wo wurde getippt? ================= */
+function distSeg(px, py, [ax, ay], [bx, by]){
+  const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy;
+  const t = l ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l)) : 0;
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+}
+function inRing(px, py, r){
+  let inside = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++){
+    const [xi, yi] = r[i], [xj, yj] = r[j];
+    if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+// Abstand vom Tipp zum Ziel in Bildschirmpixeln (0 = mitten drin)
+function hitDist(id, x, y){
+  const t = GEO.targets[id], u = unitsPerPx();
+  if (t.k === 'p') return Math.hypot(x - t.pt[0], y - t.pt[1]) / u;
+  if (t.k === 'l'){ let m = Infinity; t.p.forEach(part => { for (let i = 1; i < part.length; i++) m = Math.min(m, distSeg(x, y, part[i-1], part[i])); }); return m / u; }
+  if (t.r.some(r => inRing(x, y, r))) return 0;
+  let m = Infinity; t.r.forEach(r => { for (let i = 0; i < r.length; i++) m = Math.min(m, distSeg(x, y, r[i], r[(i + 1) % r.length])); });
+  return m / u;
+}
+const TOL = { p:26, l:18, a:14 }; // wie nah man tippen muss (Pixel)
+const isHit = (id, x, y) => hitDist(id, x, y) <= TOL[GEO.targets[id].k];
+// Beim Entdecken: was liegt hier? Kleine Dinge (Städte, Flüsse, Inseln) zuerst, große Meere zuletzt
+function whatIsHere(x, y){
+  const order = { p:0, l:1, a:2 };
+  const hits = ITEMS.filter(i => isHit(i.id, x, y)).map(i => ({ i, d:hitDist(i.id, x, y), k:order[GEO.targets[i.id].k],
+    size:GEO.targets[i.id].k === 'a' ? GEO.targets[i.id].r.reduce((s, r) => s + r.length, 0) : 0 }));
+  hits.sort((a, b) => a.k - b.k || (a.k === 2 ? a.size - b.size : a.d - b.d));
+  return hits[0]?.i;
+}
+
+/* ================= Markieren ================= */
+function highlight(id, ok){
+  const t = GEO.targets[id], g = $('#hl');
+  const cls = ok ? ' hl-ok' : '';
+  if (t.k === 'p') g.innerHTML = `<circle class="hl-pt${cls}" cx="${t.pt[0]}" cy="${t.pt[1]}" r="9"/><circle class="hl-pt${cls}" cx="${t.pt[0]}" cy="${t.pt[1]}" r="16"/>`;
+  else if (t.k === 'l') g.innerHTML = `<path class="hl-line${cls}" d="${lineD(t.p)}"/>`;
+  else g.innerHTML = `<path class="hl-area${cls}" d="${ringD(t.r)}"/>`;
+}
+const clearHL = () => { $('#hl').innerHTML = ''; $('#marks').innerHTML = ''; document.querySelectorAll('.label').forEach(l => l.remove()); };
+function markTap(x, y){
+  const s = 7 * unitsPerPx();
+  $('#marks').innerHTML = `<path class="tapx" d="M${x - s} ${y - s}L${x + s} ${y + s}M${x + s} ${y - s}L${x - s} ${y + s}"/>`;
+}
+function label(cx, cy, text, sub){
+  document.querySelectorAll('.label').forEach(l => l.remove());
+  const r = wrap.getBoundingClientRect(), el = document.createElement('div');
+  el.className = 'label'; el.innerHTML = esc(text) + (sub ? `<small>${esc(sub)}</small>` : '');
+  el.style.left = (cx - r.left) + 'px'; el.style.top = (cy - r.top) + 'px';
+  wrap.appendChild(el); setTimeout(() => el.remove(), 2600);
+}
+
+/* ================= Spielablauf ================= */
+let mode = null, Q = null, round = null;
+// Übungs-Auswahl: Dinge mit wenig Sternen kommen öfter dran
+function nextItem(pool, avoid){
+  const w = pool.map(i => (4 - starsOf(i.id)) ** 2 + (i.id === avoid ? -100 : 0));
+  let r = Math.random() * w.reduce((s, v) => s + Math.max(0, v), 0);
+  for (let k = 0; k < pool.length; k++){ r -= Math.max(0, w[k]); if (r <= 0) return pool[k]; }
+  return pool[0];
+}
+function startPractice(){ mode = 'practice'; round = { score:0, streak:0, n:0, last:null, results:[] }; showGame(); nextQuestion(); }
+function startTest(){
+  if (!G.name){ openName(startTest); return; }
+  mode = 'test';
+  const items = shuffle(ITEMS).slice(0, 20);
+  round = { score:0, streak:0, n:0, list:items.map((it, i) => ({ it, type:i % 2 ? 'name' : 'show' })), results:[] };
+  round.list = shuffle(round.list);
+  showGame(); nextQuestion();
+}
+function startExplore(){ mode = 'explore'; round = null; showGame(); clearHL(); setPanel('Tippe irgendwo auf die Karte – ich sage dir, was dort ist! 🦉', '🗺️ Entdecken'); }
+function showGame(){
+  show('game'); drawMap(); vb = { ...FULL }; setVB();
+  $('#answer').hidden = true; $('#nextRow').hidden = true; $('#feedback').textContent = '';
+}
+function setPanel(text, modeLabel){
+  $('#qText').innerHTML = text; $('#qMode').textContent = modeLabel || '';
+  $('#panel').className = 'panel'; $('#feedback').textContent = '';
+  renderDots();
+}
+function renderDots(){
+  if (mode !== 'test'){ $('#dots').innerHTML = ''; $('#qScore').textContent = mode === 'practice' ? `⭐ ${round.score} Punkte · 🔥 ${round.streak}` : ''; return; }
+  $('#dots').innerHTML = round.list.map((q, i) => `<i class="${round.results[i] === true ? 'ok' : round.results[i] === false ? 'no' : i === round.n ? 'now' : ''}"></i>`).join('');
+  $('#qScore').textContent = `${round.score} Punkte · 🔥 ${round.streak}`;
+}
+function nextQuestion(){
+  clearHL();
+  $('#nextRow').hidden = true; $('#answer').hidden = true;
+  if (mode === 'test' && round.n >= round.list.length) return finishTest();
+  let it, type;
+  if (mode === 'test'){ ({ it, type } = round.list[round.n]); }
+  else {
+    const pool = ITEMS.filter(i => G.cats.includes(i.cat));
+    it = nextItem(pool, round.last); round.last = it.id;
+    type = G.type === 'mix' ? (Math.random() < .5 ? 'show' : 'name') : G.type;
+  }
+  Q = { it, type, tries:0, done:false };
+  if (type === 'show'){
+    setPanel(`<span class="cat">${it.catLabel}</span>Zeig mir: <u>${esc(showName(it))}</u> 👆`, mode === 'test' ? '🏆 Probetest' : '🎯 Zeigen');
+    if (vb.w < FULL.w * .9) animateTo({ ...FULL }, 400);
+  } else {
+    setPanel(`<span class="cat">${it.catLabel}</span>Was ist hier markiert? ✏️`, mode === 'test' ? '🏆 Probetest' : '🎯 Benennen');
+    $('#answer').hidden = false; $('#ansInput').value = ''; $('#ansShow').hidden = mode === 'test';
+    highlight(it.id); focusTarget(it.id);
+    setTimeout(() => $('#ansInput').focus({ preventScroll:true }), 350);
+  }
+}
+const points = first => (first ? 10 : 5) + Math.min(round.streak * 2, 10); // Serien-Bonus bis +10
+function right(how){
+  const it = Q.it, k = know(it.id), first = Q.tries === 0;
+  Q.done = true; round.streak++;
+  if (Q.type === 'show') k.show++; else k.name++;
+  k.row = first ? k.row + 1 : 0;
+  const p = points(first); round.score += p;
+  if (mode === 'test') round.results[round.n] = true;
+  save(); updateHUD();
+  highlight(it.id, true);
+  $('#panel').className = 'panel good';
+  $('#feedback').textContent = (how === 'close' ? `Fast richtig geschrieben! Es heißt „${it.name}“. ` : pick(['Super! ','Richtig! ','Klasse! ','Spitze! '])) + `+${p} Punkte`;
+  SFX.ok(); const r = $('#panel').getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 26);
+  afterAnswer();
+}
+function wrong(reveal){
+  const it = Q.it, k = know(it.id);
+  Q.tries++;
+  if (!reveal && Q.tries < 2){ // erster Fehler: nochmal probieren
+    $('#panel').className = 'panel bad'; $('#panel').classList.add('shake'); setTimeout(() => $('#panel').classList.remove('shake'), 400);
+    $('#feedback').textContent = Q.type === 'show' ? 'Nicht ganz – versuch’s nochmal! 🤔' : 'Hmm, nicht ganz. Nochmal? 🤔';
+    SFX.no(); return;
+  }
+  Q.done = true; round.streak = 0; k.row = 0;
+  if (mode === 'test') round.results[round.n] = false;
+  save();
+  highlight(it.id);
+  if (Q.type === 'show') focusTarget(it.id);
+  $('#panel').className = 'panel bad';
+  $('#feedback').innerHTML = `Das ist: <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`;
+  if (!reveal) SFX.no();
+  afterAnswer();
+}
+function afterAnswer(){ $('#answer').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
+$('#nextBtn').onclick = () => { if (mode === 'test') round.n++; nextQuestion(); };
+function mapTap(cx, cy){
+  const [x, y] = toMap(cx, cy);
+  if (mode === 'explore'){
+    const it = whatIsHere(x, y);
+    clearHL();
+    if (it){ highlight(it.id, true); label(cx, cy, showName(it), it.catLabel); SFX.tap(); const k = know(it.id); save(); }
+    else { const land = GEO.targets; label(cx, cy, 'Hier ist nichts aus deinem Test', 'Probier woanders!'); }
+    return;
+  }
+  if (!Q || Q.done || Q.type !== 'show') return;
+  if (isHit(Q.it.id, x, y)) right('exact');
+  else { markTap(x, y); const it = whatIsHere(x, y); if (it && it.id !== Q.it.id && Q.tries === 0) label(cx, cy, 'Das ist ' + showName(it)); wrong(false); }
+}
+function submitName(){
+  if (!Q || Q.done || Q.type !== 'name') return;
+  const res = checkName(Q.it, $('#ansInput').value);
+  if (res) right(res); else { wrong(false); $('#ansInput').select(); }
+}
+$('#ansOk').onclick = submitName;
+$('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+$('#ansShow').onclick = () => { if (Q && !Q.done){ $('#ansInput').value = Q.it.name; wrong(true); } };
+
+function finishTest(){
+  const ok = round.results.filter(Boolean).length, total = round.list.length;
+  const best = round.score > G.best; if (best) G.best = round.score; save();
+  $('#endEmoji').textContent = ok >= 18 ? '🏆' : ok >= 14 ? '🥇' : ok >= 10 ? '🥈' : '💪';
+  $('#endTitle').textContent = ok >= 18 ? 'Geo-Profi!' : ok >= 14 ? 'Super gemacht!' : ok >= 10 ? 'Gut gemacht!' : 'Weiter üben – du schaffst das!';
+  $('#endScore').textContent = round.score + ' Punkte';
+  $('#endInfo').textContent = `${ok} von ${total} richtig` + (best ? ' · Neuer eigener Rekord! 🎉' : ` · Dein Rekord: ${G.best}`);
+  $('#endModal').classList.add('open');
+  SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 70);
+  submitScore(round.score);
+}
+$('#endHome').onclick = () => { closeModals(); show('menu'); };
+$('#endAgain').onclick = () => { closeModals(); startTest(); };
+$('#endScores').onclick = () => { closeModals(); openScores(); };
+
+/* ================= Übungs-Auswahl ================= */
+function openSetup(){
+  $('#catChips').innerHTML = CATS.map(([id, label]) => `<button class="chip ${G.cats.includes(id) ? 'on' : ''}" data-cat="${id}">${label}</button>`).join('');
+  $('#typeChips').innerHTML = [['show','👆 Zeigen'],['name','✏️ Benennen'],['mix','🔀 Gemischt']].map(([id, l]) => `<button class="chip ${G.type === id ? 'on' : ''}" data-type="${id}">${l}</button>`).join('');
+  $('#setupModal').classList.add('open');
+}
+$('#catChips').onclick = e => { const b = e.target.closest('[data-cat]'); if (!b) return; const c = b.dataset.cat;
+  G.cats = G.cats.includes(c) ? (G.cats.length > 1 ? G.cats.filter(x => x !== c) : G.cats) : [...G.cats, c]; save(); SFX.tap(); openSetup(); };
+$('#typeChips').onclick = e => { const b = e.target.closest('[data-type]'); if (!b) return; G.type = b.dataset.type; save(); SFX.tap(); openSetup(); };
+$('#setupGo').onclick = () => { closeModals(); startPractice(); };
+
+/* ================= Fortschritt und Rang ================= */
+function updateHUD(){
+  const s = totalStars(), max = ITEMS.length * 3;
+  $('#hudStars').textContent = `⭐ ${s}`;
+  const r = [...RANKS].reverse().find(([min]) => s >= min);
+  $('#rankName').textContent = r[1];
+  const next = RANKS.find(([min]) => min > s);
+  $('#rankInfo').textContent = `${s} von ${max} Sternen` + (next ? ` · noch ${next[0] - s} bis „${next[1]}“` : '');
+  $('#rankBar').style.width = (s / max * 100) + '%';
+  $('#soundBtn').textContent = G.sound ? '🔊' : '🔇';
+}
+function openProgress(){
+  $('#progList').innerHTML = CATS.map(([cat, label, list]) => `<h3>${label}</h3><div class="list">` + list.map(([id, name]) => {
+    const s = starsOf(id);
+    return `<div class="row"><span class="n">${esc(id === 'ural' ? 'Ural (Fluss)' : name)}</span><span class="stars">${'⭐'.repeat(s)}${'☆'.repeat(3 - s)}</span></div>`;
+  }).join('') + `</div>`).join('');
+  $('#progModal').classList.add('open');
+}
+let resetArmed = false;
+$('#progReset').onclick = () => {
+  if (!resetArmed){ resetArmed = true; $('#progReset').textContent = 'Wirklich? Nochmal tippen'; setTimeout(() => { resetArmed = false; $('#progReset').textContent = 'Zurücksetzen'; }, 3000); return; }
+  G.k = {}; G.best = 0; save(); updateHUD(); openProgress(); resetArmed = false; $('#progReset').textContent = 'Zurücksetzen';
+};
+
+/* ================= Bestenliste (Firebase, gleiches Projekt wie MathPets) =================
+   geo/scores/<Gerät> = { n:Name, s:beste Punktzahl, t:Zeit } – jedes Gerät hat einen Eintrag mit seinem Rekord */
+const FB_CONFIG = {
+  apiKey:'AIzaSyAIueUvh1GZoLb_5zdZ5VaUAvTn476IgAY', authDomain:'mathpets-fbbab.firebaseapp.com',
+  databaseURL:'https://mathpets-fbbab-default-rtdb.europe-west1.firebasedatabase.app', projectId:'mathpets-fbbab',
+  storageBucket:'mathpets-fbbab.firebasestorage.app', messagingSenderId:'928845564235', appId:'1:928845564235:web:ad8c688183450d566bc0ce',
+};
+const NET = {};
+async function net(){
+  if (NET.db) return true;
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    const [appM, authM, dbM] = await Promise.all(['firebase-app.js','firebase-auth.js','firebase-database.js'].map(f => import(base + f)));
+    const app = appM.initializeApp(FB_CONFIG);
+    NET.uid = (await authM.signInAnonymously(authM.getAuth(app))).user.uid; NET.fb = dbM; NET.db = dbM.getDatabase(app);
+    return true;
+  } catch (e){ console.warn('Firebase', e); return false; }
+}
+async function submitScore(score){
+  if (!G.name || !await net()) return;
+  const { ref, get, set } = NET.fb, r = ref(NET.db, `geo/scores/${NET.uid}`);
+  try {
+    const old = (await get(r)).val();
+    if (!old || score > old.s || old.n !== G.name) await set(r, { n:G.name, s:Math.max(score, old?.n === G.name ? old.s : 0), t:Date.now() });
+  } catch (e){ console.warn(e); }
+}
+async function openScores(){
+  $('#scoreList').innerHTML = '<p>Lade …</p>'; $('#scoreModal').classList.add('open');
+  if (!await net()){ $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar. Bist du im Internet?</p>'; return; }
+  try {
+    const { ref, query, orderByChild, limitToLast, get } = NET.fb;
+    const snap = await get(query(ref(NET.db, 'geo/scores'), orderByChild('s'), limitToLast(15)));
+    const rows = []; snap.forEach(c => { rows.push({ uid:c.key, ...c.val() }); });
+    rows.reverse();
+    $('#scoreList').innerHTML = rows.length ? rows.map((r, i) => `<div class="row ${r.uid === NET.uid ? 'me' : ''}"><span class="p">${['🥇','🥈','🥉'][i] || (i + 1) + '.'}</span><span class="n">${esc(r.n)}</span><b>${r.s}</b></div>`).join('')
+      : '<p>Noch niemand da – mach den ersten Probetest! 🏆</p>';
+  } catch (e){ console.warn(e); $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar.</p>'; }
+}
+let afterName = null;
+function openName(then){ afterName = then; $('#nameInput').value = G.name || ''; $('#nameModal').classList.add('open'); setTimeout(() => $('#nameInput').focus(), 200); }
+$('#nameOk').onclick = () => {
+  const v = $('#nameInput').value.trim().slice(0, 16); if (!v){ toast('Schreib einen Spitznamen hin ✏️'); return; }
+  G.name = v; save(); closeModals(); const f = afterName; afterName = null; f?.();
+};
+$('#nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#nameOk').click(); });
+
+/* ================= Navigation ================= */
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); if (id === 'menu'){ updateHUD(); owlHello(); } }
+function closeModals(){ document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open')); }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModals);
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  SFX.tap();
+  ({ explore:startExplore, practice:openSetup, test:startTest, progress:openProgress, scores:openScores })[b.dataset.mode]();
+});
+$('#homeBtn').onclick = () => { closeModals(); show('menu'); };
+$('#soundBtn').onclick = () => { G.sound = !G.sound; save(); updateHUD(); };
+function owlHello(){
+  const s = totalStars();
+  $('#owlSay').textContent = s === 0 ? 'Hallo! Ich bin Ella, die Entdecker-Eule. Lass uns Europa erkunden! 🌍'
+    : pick([`Du hast schon ${s} Sterne gesammelt! 🌟`, 'Heute ein Probetest? 🏆', 'Weißt du noch, wo die Donau fließt? 💧', 'Jeden Tag ein bisschen – dann klappt der Test! 💪']);
+}
+updateHUD(); owlHello();
+</script>
+</body>
+</html>
