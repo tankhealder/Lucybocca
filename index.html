@@ -1059,10 +1059,17 @@ function load(){
     S.treats = { apfel:99, karotte:99, fisch:99, muffin:99 };
   }
   // Im Test mindestens das höchste Level, das etwas freischaltet (Welten, Accessoires) – auch wenn neue dazukommen
-  if (TEST) S.unlocks = Object.keys(UNLOCKS); // im Test auch alle Code-Belohnungen
+  // Code-Belohnungen (Europa-Reise, Ella, Zauberglobus) gibt es auch im Test NICHT geschenkt – Lucy soll sie selbst freischalten.
+  // Falls ein älterer Test-Stand sie schon hatte: wieder herausnehmen.
+  if (TEST){
+    S.unlocks = [];
+    S.pets = (S.pets || []).filter(p => !HAB[A[p.type]?.hab]?.code);
+    Object.values(S.furn || {}).forEach(list => { for (let i = list.length - 1; i >= 0; i--) if (FURN[list[i].id]?.code) list.splice(i, 1); });
+    if (HAB[S.hab]?.code) S.hab = 'wiese';
+  }
   if (TEST){ const max = Math.max(...HABS.filter(h => !h.code).map(h => h.lvl), ...ACC.map(a => a.lvl), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
   // Im Test immer alle Tiere da – auch neu eingebaute
-  if (TEST) ORDER.forEach(type => { if (!(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); });
+  if (TEST) ORDER.forEach(type => { if (!HAB[A[type].hab].code && !(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); }); // Code-Tiere nicht
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
   S.av = Object.assign({...DEFAULT.av}, S.av);
   S.me = Object.assign({...DEFAULT.me}, S.me, { id:'me', type:'me' });
