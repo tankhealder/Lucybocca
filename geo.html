@@ -47,6 +47,11 @@ main{flex:1;position:relative;min-height:0}
 .mode b{display:block;font-size:19px;margin-top:4px}
 .mode small{color:var(--ink-soft);font-size:14px}
 .mode:active{transform:translateY(3px)}
+.lvl{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:620px;width:100%;background:#fff;border-radius:22px;padding:6px;box-shadow:0 5px 0 rgba(47,59,74,.08)}
+.lvl button{border-radius:17px;padding:8px 6px;font-size:17px;font-weight:700}
+.lvl button small{display:block;font-size:13px;font-weight:500;color:var(--ink-soft)}
+.lvl button.on{background:var(--purple);color:#fff;box-shadow:0 3px 0 #5546c9}
+.lvl button.on small{color:#e6e2ff}
 
 /* ---------- Spiel: Karte ---------- */
 #game{background:var(--sea)}
@@ -64,11 +69,18 @@ main{flex:1;position:relative;min-height:0}
 #map .hl-pt{fill:none;stroke:#ff4d8d;stroke-width:3;vector-effect:non-scaling-stroke;animation:ring 1.1s ease-out infinite}
 #map .hl-ok{fill:rgba(76,191,116,.4);stroke:var(--green)}
 #map .hl-ok.hl-line{stroke:var(--green)}
+#map .drawn{fill:none;stroke:var(--purple);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+#map .drawn.old{opacity:.3}
+#map .pin{fill:var(--purple);stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
+#map .pin.old{opacity:.35}
+#map .miss{stroke:var(--ink);stroke-width:2;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
 #map .tapx{stroke:var(--red);stroke-width:3;vector-effect:non-scaling-stroke}
 @keyframes pulse{from{opacity:.55}to{opacity:1}}
 @keyframes ring{from{opacity:1;stroke-width:4}to{opacity:.2;stroke-width:1}}
 .zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:3}
 .zoom button{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.95);font-size:22px;font-weight:700;box-shadow:0 3px 0 rgba(47,59,74,.12)}
+.zoom #penBtn{font-family:var(--emoji);background:var(--purple);margin-top:8px}
+.zoom #penBtn.move{background:#fff4d6}
 .compass{position:absolute;left:10px;top:10px;font-size:34px;font-family:var(--emoji);opacity:.8;pointer-events:none}
 .label{position:absolute;transform:translate(-50%,-130%);background:#fff;border-radius:12px;padding:5px 10px;font-weight:700;font-size:16px;white-space:nowrap;box-shadow:0 3px 0 rgba(47,59,74,.15);pointer-events:none;animation:pop .25s cubic-bezier(.3,1.6,.5,1);z-index:4}
 .label small{display:block;font-weight:500;font-size:12px;color:var(--ink-soft)}
@@ -85,6 +97,7 @@ main{flex:1;position:relative;min-height:0}
 .dots i.no{background:var(--red)}
 .dots i.now{background:var(--purple)}
 .qtext{font-size:22px;font-weight:700;margin:6px 0 8px;line-height:1.2}
+.qtext .how{display:block;font-size:14px;font-weight:500;color:var(--ink-soft);margin-top:3px}
 .qtext .cat{font-size:14px;font-weight:600;color:var(--ink-soft);display:block}
 .answer{display:flex;gap:8px}
 .answer input{flex:1;min-width:0;font:inherit;font-size:19px;font-weight:600;color:var(--ink);border:3px solid #dfe6f0;border-radius:14px;padding:9px 12px;background:var(--soft);user-select:text;-webkit-user-select:text}
@@ -93,6 +106,7 @@ main{flex:1;position:relative;min-height:0}
 .btn.alt{background:#eef2f8;color:var(--ink);box-shadow:0 4px 0 #d3dbe7}
 .btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #d9ab1c}
 .btn:active{transform:translateY(3px)}
+.btn:disabled{opacity:.45;transform:none}
 .feedback{font-size:17px;font-weight:600;margin-top:6px;min-height:1.3em}
 .shake{animation:shake .4s}
 @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
@@ -143,6 +157,7 @@ main{flex:1;position:relative;min-height:0}
     <section class="screen active" id="menu">
       <div class="hero"><div class="owl">🦉</div><div class="speech" id="owlSay">Hallo! Ich bin Ella, die Entdecker-Eule. Lass uns Europa erkunden!</div></div>
       <div class="rank"><b id="rankName">Kartenleser</b> · <span id="rankInfo">0 von 156 Sternen</span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
+      <div class="lvl" id="lvlSwitch"><button data-lvl="1">Stufe 1<small>Zeigen &amp; Benennen</small></button><button data-lvl="2">Stufe 2 ✍️<small>Leere Karte: Städte &amp; Flüsse einzeichnen</small></button></div>
       <div class="modes">
         <button class="mode" data-mode="explore"><span class="e">🗺️</span><b>Entdecken</b><small>Tippe auf die Karte – ich sage dir, was dort ist</small></button>
         <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Zeigen oder benennen, Kategorien wählbar</small></button>
@@ -158,7 +173,7 @@ main{flex:1;position:relative;min-height:0}
       <div class="mapwrap" id="mapwrap">
         <svg id="map" xmlns="http://www.w3.org/2000/svg" aria-label="Stumme Karte von Europa"></svg>
         <div class="compass">🧭</div>
-        <div class="zoom"><button id="zIn" aria-label="Hineinzoomen">+</button><button id="zOut" aria-label="Herauszoomen">−</button><button id="zReset" aria-label="Ganze Karte">⌂</button></div>
+        <div class="zoom"><button id="zIn" aria-label="Hineinzoomen">+</button><button id="zOut" aria-label="Herauszoomen">−</button><button id="zReset" aria-label="Ganze Karte">⌂</button><button id="penBtn" hidden aria-label="Zeichnen oder Karte verschieben">✏️</button></div>
       </div>
       <div class="panel" id="panel">
         <div class="qtop"><span id="qMode"></span><div class="dots" id="dots"></div><div class="grow"></div><span id="qScore"></span></div>
@@ -168,6 +183,7 @@ main{flex:1;position:relative;min-height:0}
           <button class="btn" id="ansOk">✔</button>
           <button class="btn alt" id="ansShow">💡 Anzeigen</button>
         </div>
+        <div class="btns" id="drawRow" hidden><button class="btn alt" id="drawClear">🧽 Löschen</button><button class="btn alt" id="drawShow">💡</button><button class="btn" id="drawOk">✔ Fertig</button></div>
         <div class="btns" id="nextRow" hidden><button class="btn" id="nextBtn">Weiter ➜</button></div>
         <div class="feedback" id="feedback"></div>
       </div>
@@ -181,6 +197,7 @@ main{flex:1;position:relative;min-height:0}
   <div class="chips" id="catChips"></div>
   <p>Aufgaben</p>
   <div class="chips" id="typeChips"></div>
+  <p id="setupNote" hidden>✍️ <b>Stufe 2:</b> Städte und Flüsse zeichnest du auf der leeren Karte selbst ein.</p>
   <div class="btns"><button class="btn alt" data-close>Zurück</button><button class="btn" id="setupGo">Los geht’s!</button></div>
 </div></div>
 
@@ -204,6 +221,7 @@ main{flex:1;position:relative;min-height:0}
 <div class="modal" id="scoreModal"><div class="mcard">
   <h2>Bestenliste 🥇</h2>
   <p>Die besten Probetests aller Entdecker.</p>
+  <div class="chips" id="scoreTabs"></div>
   <div class="list" id="scoreList"></div>
   <p id="myName"></p>
   <div class="btns"><button class="btn alt" id="nameChange">✏️ Name ändern</button><button class="btn" data-close>Schließen</button></div>
@@ -218,7 +236,7 @@ main{flex:1;position:relative;min-height:0}
 
 <div class="modal" id="progModal"><div class="mcard prog">
   <h2>Dein Fortschritt ⭐</h2>
-  <p>⭐ gezeigt · ⭐ benannt · ⭐ dreimal hintereinander richtig</p>
+  <p>⭐ gezeigt · ⭐ benannt · ⭐ dreimal hintereinander richtig · bei Städten und Flüssen: ⭐ eingezeichnet (Stufe 2)</p>
   <div id="progList"></div>
   <div class="btns"><button class="btn alt" id="progReset">Zurücksetzen</button><button class="btn" data-close>Schließen</button></div>
 </div></div>
@@ -244,11 +262,15 @@ const showName = it => it.id === 'ural' ? 'Ural (Fluss)' : it.name;
 const KEY = 'geo-v1';
 let G;
 try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
-G = Object.assign({ name:'', sound:true, best:0, k:{}, cats:CATS.map(c => c[0]), type:'mix', codes:[] }, G); // codes: verdiente MathPets-Codes
+G = Object.assign({ name:'', sound:true, best:0, best2:0, lvl:1, k:{}, cats:CATS.map(c => c[0]), type:'mix', codes:[] }, G); // codes: verdiente MathPets-Codes, lvl: Stufe 1 (zeigen/benennen) oder 2 (einzeichnen), best2: Rekord Stufe 2
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
 const know = id => G.k[id] ||= { show:0, name:0, row:0 };
-const starsOf = id => { const k = know(id); return (k.show > 0) + (k.name > 0) + (k.row >= 3); };
+// Städte und Flüsse kann man in Stufe 2 einzeichnen – dafür gibt es einen vierten Stern
+const drawable = id => GEO.targets[id].k !== 'a';
+const starsOf = id => { const k = know(id); return (k.show > 0) + (k.name > 0) + (k.row >= 3) + (drawable(id) && k.draw > 0); };
+const maxStarsOf = id => drawable(id) ? 4 : 3;
 const totalStars = () => ITEMS.reduce((s, i) => s + starsOf(i.id), 0);
+const maxStars = () => ITEMS.reduce((s, i) => s + maxStarsOf(i.id), 0);
 const RANKS = [[0,'Kartenleser 🗺️'],[20,'Pfadfinder 🥾'],[50,'Entdecker 🧭'],[85,'Kapitän ⛵'],[120,'Weltreisende ✈️'],[150,'Geo-Legende 🏆']];
 
 /* ================= Kleinkram ================= */
@@ -274,7 +296,7 @@ const SFX = {
   tap: () => tone(700, .05, 'triangle', 0, .06),
   win: () => [523,659,784,1047,1319,1568].forEach((f, i) => tone(f, .2, 'triangle', i * .09)),
 };
-function toast(t){ const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2500); }
+function toast(t){ document.querySelectorAll('.toast').forEach(o => o.remove()); const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2500); }
 function confetti(x, y, n = 30){
   const cols = ['#ff7eb6','#ffd23f','#4cc9f0','#4cbf74','#7b6cf0','#ff9f43'];
   for (let i = 0; i < n; i++){
@@ -314,11 +336,11 @@ const FULL = { x:0, y:0, w:GEO.w, h:GEO.h };
 let vb = { ...FULL };
 const ringD = rings => rings.map(r => 'M' + r.map(p => p.join(' ')).join('L') + 'Z').join('');
 const lineD = parts => parts.map(r => 'M' + r.map(p => p.join(' ')).join('L')).join('');
-function drawMap(){
-  const cities = ITEMS.filter(i => GEO.targets[i.id].k === 'p').map(i => { const [x, y] = GEO.targets[i.id].pt; return `<circle class="city" cx="${x}" cy="${y}" r="3.2"/>`; }).join('');
+function drawMap(blank){ // blank = leere Karte (Stufe 2): ohne Flüsse und Stadtpunkte
+  const cities = blank ? '' : ITEMS.filter(i => GEO.targets[i.id].k === 'p').map(i => { const [x, y] = GEO.targets[i.id].pt; return `<circle class="city" cx="${x}" cy="${y}" r="3.2"/>`; }).join('');
   svg.innerHTML = `<rect x="-500" y="-500" width="${GEO.w + 1000}" height="${GEO.h + 1000}" fill="var(--sea)"/>
     <path class="land" d="${GEO.land}"/><path class="borders" d="${GEO.borders}"/><path class="mount" d="${GEO.mountains}"/>
-    <path class="lakes" d="${GEO.lakes}"/><path class="rivers" d="${GEO.rivers}"/><g id="cities">${cities}</g><g id="hl"></g><g id="marks"></g>`;
+    <path class="lakes" d="${GEO.lakes}"/>${blank ? '' : `<path class="rivers" d="${GEO.rivers}"/>`}<g id="cities">${cities}</g><g id="draw"></g><g id="hl"></g><g id="marks"></g>`;
   setVB();
 }
 function setVB(){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
@@ -326,6 +348,7 @@ function setVB(){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`)
 function toMap(cx, cy){ const p = svg.createSVGPoint(); p.x = cx; p.y = cy; const q = p.matrixTransform(svg.getScreenCTM().inverse()); return [q.x, q.y]; }
 const unitsPerPx = () => Math.max(vb.w / svg.clientWidth, vb.h / svg.clientHeight); // Karte wird ganz eingepasst („meet“)
 function zoomAt(factor, mx, my){
+  animId++;
   const nw = Math.min(FULL.w * 1.2, Math.max(FULL.w / 12, vb.w / factor)), k = nw / vb.w;
   vb = { x:mx - (mx - vb.x) * k, y:my - (my - vb.y) * k, w:nw, h:vb.h * k };
   clampVB(); setVB();
@@ -334,9 +357,11 @@ function clampVB(){
   vb.x = Math.min(Math.max(vb.x, -vb.w * .4), FULL.w - vb.w * .6);
   vb.y = Math.min(Math.max(vb.y, -vb.h * .4), FULL.h - vb.h * .6);
 }
+let animId = 0; // neue Kamerafahrt bricht die alte ab
 function animateTo(target, ms = 600){
-  const from = { ...vb }, t0 = performance.now();
+  const from = { ...vb }, t0 = performance.now(), id = ++animId;
   const step = t => {
+    if (id !== animId) return;
     const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);
     vb = { x:from.x + (target.x - from.x) * e, y:from.y + (target.y - from.y) * e, w:from.w + (target.w - from.w) * e, h:from.h + (target.h - from.h) * e };
     setVB(); if (k < 1) requestAnimationFrame(step);
@@ -355,14 +380,23 @@ function focusTarget(id){
   animateTo({ x:(x0 + x1) / 2 - w / 2, y:(y0 + y1) / 2 - h / 2, w, h });
 }
 // Ziehen (eine Hand) und Zoomen (zwei Finger, Mausrad)
-const pointers = new Map(); let panStart = null, pinch = null, moved = false;
+// Beim Fluss-Einzeichnen malt ein Finger (✏️), zwei Finger zoomen und verschieben; mit ✋ verschiebt auch ein Finger
+const pointers = new Map(); let panStart = null, pinch = null, moved = false, stroke = null;
 const wrap = $('#mapwrap');
+const penOn = () => Q && !Q.done && Q.type === 'draw' && GEO.targets[Q.it.id].k === 'l' && Q.pen;
 wrap.addEventListener('pointerdown', e => {
   if (e.target.closest('.zoom')) return;
-  wrap.setPointerCapture(e.pointerId);
+  wrap.setPointerCapture(e.pointerId); animId++;
   pointers.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pointers.size === 1){ panStart = { cx:e.clientX, cy:e.clientY, vb:{ ...vb } }; moved = false; }
-  if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinch = { d:Math.hypot(a[0] - b[0], a[1] - b[1]), vb:{ ...vb }, mid:toMap((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) }; moved = true; }
+  if (pointers.size === 1){
+    moved = false;
+    if (penOn()){ stroke = [toMap(e.clientX, e.clientY)]; Q.strokes.push(stroke); panStart = null; }
+    else panStart = { cx:e.clientX, cy:e.clientY, vb:{ ...vb } };
+  }
+  if (pointers.size === 2){
+    if (stroke){ Q.strokes.pop(); stroke = null; renderDrawing(); } // war doch kein Strich, sondern Zoomen
+    const [a, b] = [...pointers.values()]; pinch = { d:Math.hypot(a[0] - b[0], a[1] - b[1]), vb:{ ...vb }, mid:toMap((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) }; moved = true;
+  }
 });
 wrap.addEventListener('pointermove', e => {
   if (!pointers.has(e.pointerId)) return;
@@ -370,6 +404,11 @@ wrap.addEventListener('pointermove', e => {
   if (pinch && pointers.size === 2){
     const [a, b] = [...pointers.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
     vb = { ...pinch.vb }; zoomAt(d / pinch.d, pinch.mid[0], pinch.mid[1]);
+    const now = toMap((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); // Finger-Mitte bleibt auf derselben Stelle der Karte
+    vb.x += pinch.mid[0] - now[0]; vb.y += pinch.mid[1] - now[1]; clampVB(); setVB();
+  } else if (stroke){
+    const p = toMap(e.clientX, e.clientY), l = stroke[stroke.length - 1];
+    if (Math.hypot(p[0] - l[0], p[1] - l[1]) > 1.5 * unitsPerPx()){ stroke.push(p); renderDrawing(); }
   } else if (panStart){
     const dx = e.clientX - panStart.cx, dy = e.clientY - panStart.cy;
     if (!moved && Math.hypot(dx, dy) > 8) moved = true;
@@ -380,7 +419,12 @@ const endPtr = e => {
   if (!pointers.has(e.pointerId)) return;
   pointers.delete(e.pointerId);
   if (pointers.size < 2) pinch = null;
-  if (pointers.size === 0){ if (!moved && e.type === 'pointerup') mapTap(e.clientX, e.clientY); panStart = null; }
+  if (pointers.size === 1 && !stroke){ const [p] = [...pointers.values()]; panStart = { cx:p[0], cy:p[1], vb:{ ...vb } }; } // nach dem Zoomen mit dem übrigen Finger weiterschieben
+  if (pointers.size === 0){
+    if (stroke){ if (stroke.length < 2) Q.strokes.pop(); stroke = null; renderDrawing(); }
+    else if (!moved && e.type === 'pointerup') mapTap(e.clientX, e.clientY);
+    panStart = null;
+  }
 };
 wrap.addEventListener('pointerup', endPtr); wrap.addEventListener('pointercancel', endPtr);
 wrap.addEventListener('wheel', e => { e.preventDefault(); const [mx, my] = toMap(e.clientX, e.clientY); zoomAt(e.deltaY < 0 ? 1.25 : 1 / 1.25, mx, my); }, { passive:false });
@@ -430,7 +474,7 @@ function highlight(id, ok){
   else if (t.k === 'l') g.innerHTML = `<path class="hl-line${cls}" d="${lineD(t.p)}"/>`;
   else g.innerHTML = `<path class="hl-area${cls}" d="${ringD(t.r)}"/>`;
 }
-const clearHL = () => { $('#hl').innerHTML = ''; $('#marks').innerHTML = ''; document.querySelectorAll('.label').forEach(l => l.remove()); };
+const clearHL = () => { $('#hl').innerHTML = ''; $('#marks').innerHTML = ''; $('#draw').innerHTML = ''; document.querySelectorAll('.label').forEach(l => l.remove()); };
 function markTap(x, y){
   const s = 7 * unitsPerPx();
   $('#marks').innerHTML = `<path class="tapx" d="M${x - s} ${y - s}L${x + s} ${y + s}M${x + s} ${y - s}L${x - s} ${y + s}"/>`;
@@ -443,6 +487,77 @@ function label(cx, cy, text, sub){
   wrap.appendChild(el); setTimeout(() => el.remove(), 2600);
 }
 
+/* ================= Stufe 2: Einzeichnen – mit Toleranz wie bei der Lehrerin auf Papier =================
+   Gemessen wird in Kilometern auf der Karte, egal wie weit hineingezoomt ist. */
+const KM = 6.84; // km pro Karteneinheit (Paris–Berlin 878 km ≙ 128 Einheiten)
+const TOL_KM = {
+  cityGreat:40, city:100,   // Stadt: bis 40 km „super genau“, bis 100 km richtig
+  river:90, riverOff:120,   // Fluss: jede Flussstelle höchstens 90 km von der Linie, jede Linienstelle höchstens 120 km vom Fluss …
+  cover:.7, onRiver:.75,    // … richtig, wenn 70 % des Flusses getroffen sind und 75 % der Linie am Fluss liegen
+};
+function renderDrawing(){
+  if (!Q || Q.type !== 'draw') return;
+  const u = unitsPerPx(), r = (isFinite(u) ? 6 * u : 5).toFixed(1); // Punkt immer gleich groß auf dem Bildschirm
+  const lines = (list, cls) => list.filter(st => st.length > 1).map(st => `<path class="${cls}" d="M${st.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L')}"/>`).join('');
+  $('#draw').innerHTML = lines(Q.old || [], 'drawn old') + (Q.oldPin ? `<circle class="pin old" cx="${Q.oldPin[0]}" cy="${Q.oldPin[1]}" r="${r}"/>` : '')
+    + lines(Q.strokes, 'drawn') + (Q.pin ? `<circle class="pin" cx="${Q.pin[0]}" cy="${Q.pin[1]}" r="${r}"/>` : '');
+  $('#drawOk').disabled = !(Q.pin || Q.strokes.some(st => st.length > 1));
+}
+function penUI(){
+  const show = !!(Q && !Q.done && Q.type === 'draw' && GEO.targets[Q.it.id].k === 'l');
+  $('#penBtn').hidden = !show; if (!show) return;
+  $('#penBtn').textContent = Q.pen ? '✏️' : '✋'; $('#penBtn').classList.toggle('move', !Q.pen);
+}
+$('#penBtn').onclick = () => { if (!Q) return; Q.pen = !Q.pen; penUI(); toast(Q.pen ? '✏️ Ein Finger malt' : '✋ Ein Finger verschiebt die Karte'); };
+// Linie in gleichmäßige Punkte zerlegen (alle 2 Einheiten ≈ 14 km)
+function sample(parts, step = 2){
+  const out = [];
+  parts.forEach(p => {
+    for (let i = 1; i < p.length; i++){
+      const [ax, ay] = p[i-1], [bx, by] = p[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / step));
+      for (let k = 0; k < n; k++) out.push([ax + (bx - ax) * k / n, ay + (by - ay) * k / n]);
+    }
+    out.push(p[p.length - 1]);
+  });
+  return out;
+}
+const nearKm = (pt, parts) => { let m = Infinity; parts.forEach(p => { for (let i = 1; i < p.length; i++) m = Math.min(m, distSeg(pt[0], pt[1], p[i-1], p[i])); }); return m * KM; };
+function gradeDraw(){
+  const t = GEO.targets[Q.it.id];
+  if (t.k === 'p'){
+    if (!Q.pin) return null;
+    const km = Math.hypot(Q.pin[0] - t.pt[0], Q.pin[1] - t.pt[1]) * KM;
+    return { ok:km <= TOL_KM.city, great:km <= TOL_KM.cityGreat, km:Math.round(km / 10) * 10 || 5 };
+  }
+  const drawn = Q.strokes.filter(st => st.length > 1); if (!drawn.length) return null;
+  const ds = sample(drawn), rs = sample(t.p);
+  const onRiver = ds.filter(p => nearKm(p, t.p) <= TOL_KM.riverOff).length / ds.length; // wie viel der Linie am Fluss liegt
+  const cover = rs.filter(p => nearKm(p, drawn) <= TOL_KM.river).length / rs.length;     // wie viel vom Fluss gezeichnet ist
+  return { ok:cover >= TOL_KM.cover && onRiver >= TOL_KM.onRiver, great:cover >= .85 && onRiver >= .9, cover, onRiver };
+}
+// Himmelsrichtung von a nach b (Norden ist oben)
+function dirWord([ax, ay], [bx, by]){
+  const a = Math.atan2(ay - by, bx - ax) * 180 / Math.PI;
+  return ['östlich','nordöstlich','nördlich','nordwestlich','westlich','südwestlich','südlich','südöstlich'][((Math.round(a / 45) % 8) + 8) % 8];
+}
+const MALE_RIVERS = ['rhein','po','ebro','ural','dnipro'];
+$('#drawClear').onclick = () => { if (!Q || Q.done || Q.type !== 'draw') return; Q.strokes = []; Q.pin = null; renderDrawing(); SFX.tap(); };
+$('#drawShow').onclick = () => { if (Q && !Q.done && Q.type === 'draw') wrong(true); };
+$('#drawOk').onclick = () => {
+  if (!Q || Q.done || Q.type !== 'draw') return;
+  const g = gradeDraw(); if (!g) return;
+  const it = Q.it, t = GEO.targets[it.id];
+  if (t.k === 'p'){
+    if (g.ok) right('draw', (g.great ? 'Super genau! ' : 'Richtig! ') + `Nur ${g.km} km daneben. `);
+    else wrong(false, `${g.km} km daneben – ${it.name} liegt weiter ${dirWord(Q.pin, t.pt)}. Nochmal? 🤔`);
+  } else {
+    if (g.ok) right('draw', g.great ? 'Super genau gezeichnet! ' : 'Richtig! So würde es auch die Lehrerin zählen. ✅ ');
+    else wrong(false, g.onRiver < .4 ? `Hmm, da fließt ${MALE_RIVERS.includes(it.id) ? 'der' : 'die'} ${it.name} nicht. Nochmal? 🤔`
+      : g.cover < TOL_KM.cover ? 'Da fehlt noch ein Stück – zeichne den ganzen Fluss, von der Quelle bis zur Mündung. Nochmal? 🤔'
+      : 'Ein Teil deiner Linie ist zu weit weg vom Fluss. Nochmal? 🤔');
+  }
+};
+
 /* ================= Spielablauf ================= */
 let mode = null, Q = null, round = null;
 // Übungs-Auswahl: Dinge mit wenig Sternen kommen öfter dran
@@ -452,25 +567,25 @@ function nextItem(pool, avoid){
   for (let k = 0; k < pool.length; k++){ r -= Math.max(0, w[k]); if (r <= 0) return pool[k]; }
   return pool[0];
 }
-function startPractice(){ mode = 'practice'; round = { score:0, streak:0, n:0, last:null, results:[] }; showGame(); nextQuestion(); }
+function startPractice(){ mode = 'practice'; round = { lvl:G.lvl, score:0, streak:0, n:0, last:null, results:[] }; showGame(); nextQuestion(); }
 function startTest(){
   if (!G.name){ openName(startTest); return; }
   mode = 'test';
   const items = shuffle(ITEMS).slice(0, 20);
-  round = { score:0, streak:0, n:0, list:items.map((it, i) => ({ it, type:i % 2 ? 'name' : 'show' })), results:[] };
+  round = { lvl:G.lvl, score:0, streak:0, n:0, list:items.map((it, i) => ({ it, type:i % 2 ? 'name' : 'show' })), results:[] };
   round.list = shuffle(round.list);
   showGame(); nextQuestion();
 }
 // Großer Test: alle 52 Dinge einmal, Zeigen und Benennen gemischt, ohne 💡 – danach Codes für MathPets
 function startBig(){
   mode = 'big';
-  round = { score:0, streak:0, n:0, list:shuffle(ITEMS).map(it => ({ it, type:Math.random() < .5 ? 'show' : 'name' })), results:[] };
+  round = { lvl:G.lvl, score:0, streak:0, n:0, list:shuffle(ITEMS).map(it => ({ it, type:Math.random() < .5 ? 'show' : 'name' })), results:[] };
   showGame(); nextQuestion();
 }
 function startExplore(){ mode = 'explore'; round = null; showGame(); clearHL(); setPanel('Tippe irgendwo auf die Karte – ich sage dir, was dort ist! 🦉', '🗺️ Entdecken'); }
 function showGame(){
-  show('game'); drawMap(); vb = { ...FULL }; setVB();
-  $('#answer').hidden = true; $('#nextRow').hidden = true; $('#feedback').textContent = '';
+  show('game'); drawMap(round?.lvl === 2); vb = { ...FULL }; setVB();
+  $('#answer').hidden = true; $('#nextRow').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true; $('#feedback').textContent = '';
 }
 function setPanel(text, modeLabel){
   $('#qText').innerHTML = text; $('#qMode').textContent = modeLabel || '';
@@ -484,7 +599,7 @@ function renderDots(){
 }
 function nextQuestion(){
   clearHL();
-  $('#nextRow').hidden = true; $('#answer').hidden = true;
+  $('#nextRow').hidden = true; $('#answer').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true;
   if ((mode === 'test' || mode === 'big') && round.n >= round.list.length) return finishTest();
   let it, type;
   if (mode === 'test' || mode === 'big'){ ({ it, type } = round.list[round.n]); }
@@ -493,10 +608,18 @@ function nextQuestion(){
     it = nextItem(pool, round.last); round.last = it.id;
     type = G.type === 'mix' ? (Math.random() < .5 ? 'show' : 'name') : G.type;
   }
-  Q = { it, type, tries:0, done:false };
-  if (type === 'show'){
+  if (round.lvl === 2 && drawable(it.id)) type = 'draw'; // Stufe 2: Städte und Flüsse werden eingezeichnet
+  Q = { it, type, tries:0, done:false, strokes:[], pin:null, pen:true };
+  if (type === 'draw'){
+    const river = GEO.targets[it.id].k === 'l';
+    setPanel(`<span class="cat">${it.catLabel}</span>Zeichne ein: <u>${esc(showName(it))}</u> ${river ? '✍️' : '📍'}<span class="how">${river
+      ? 'Mal den Fluss mit dem Finger – von der Quelle bis zur Mündung. Zwei Finger zoomen.' : 'Tippe dorthin, wo die Stadt liegt.'}</span>`, testLabel() || '✍️ Einzeichnen');
+    $('#drawRow').hidden = false; $('#drawShow').hidden = mode === 'test' || mode === 'big';
+    renderDrawing(); penUI();
+    animateTo({ ...FULL }, 400);
+  } else if (type === 'show'){
     setPanel(`<span class="cat">${it.catLabel}</span>Zeig mir: <u>${esc(showName(it))}</u> 👆`, testLabel() || '🎯 Zeigen');
-    if (vb.w < FULL.w * .9) animateTo({ ...FULL }, 400);
+    animateTo({ ...FULL }, 400);
   } else {
     setPanel(`<span class="cat">${it.catLabel}</span>Was ist hier markiert? ✏️`, testLabel() || '🎯 Benennen');
     $('#answer').hidden = false; $('#ansInput').value = ''; $('#ansShow').hidden = mode === 'test' || mode === 'big';
@@ -505,39 +628,45 @@ function nextQuestion(){
   }
 }
 const points = first => (first ? 10 : 5) + Math.min(round.streak * 2, 10); // Serien-Bonus bis +10
-function right(how){
+function right(how, msg){
   const it = Q.it, k = know(it.id), first = Q.tries === 0;
   Q.done = true; round.streak++;
-  if (Q.type === 'show') k.show++; else k.name++;
+  if (Q.type === 'draw') k.draw = (k.draw || 0) + 1; else if (Q.type === 'show') k.show++; else k.name++;
   k.row = first ? k.row + 1 : 0;
   const p = points(first); round.score += p;
   if (mode === 'test' || mode === 'big') round.results[round.n] = true;
   save(); updateHUD();
-  highlight(it.id, true);
+  highlight(it.id, true); missLine();
   $('#panel').className = 'panel good';
-  $('#feedback').textContent = (how === 'close' ? `Fast richtig geschrieben! Es heißt „${it.name}“. ` : pick(['Super! ','Richtig! ','Klasse! ','Spitze! '])) + `+${p} Punkte`;
+  $('#feedback').textContent = msg ? msg + `+${p} Punkte` : (how === 'close' ? `Fast richtig geschrieben! Es heißt „${it.name}“. ` : pick(['Super! ','Richtig! ','Klasse! ','Spitze! '])) + `+${p} Punkte`;
   SFX.ok(); const r = $('#panel').getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 26);
   afterAnswer();
 }
-function wrong(reveal){
+function wrong(reveal, hint){
   const it = Q.it, k = know(it.id);
   Q.tries++;
   if (!reveal && Q.tries < 2){ // erster Fehler: nochmal probieren
     $('#panel').className = 'panel bad'; $('#panel').classList.add('shake'); setTimeout(() => $('#panel').classList.remove('shake'), 400);
-    $('#feedback').textContent = Q.type === 'show' ? 'Nicht ganz – versuch’s nochmal! 🤔' : 'Hmm, nicht ganz. Nochmal? 🤔';
+    $('#feedback').textContent = hint || (Q.type === 'show' ? 'Nicht ganz – versuch’s nochmal! 🤔' : 'Hmm, nicht ganz. Nochmal? 🤔');
+    if (Q.type === 'draw'){ Q.old = Q.strokes; Q.oldPin = Q.pin; Q.strokes = []; Q.pin = null; renderDrawing(); } // alter Versuch bleibt blass zu sehen
     SFX.no(); return;
   }
   Q.done = true; round.streak = 0; k.row = 0;
   if (mode === 'test' || mode === 'big') round.results[round.n] = false;
   save();
-  highlight(it.id);
-  if (Q.type === 'show') focusTarget(it.id);
+  highlight(it.id); missLine();
+  if (Q.type !== 'name') focusTarget(it.id);
   $('#panel').className = 'panel bad';
-  $('#feedback').innerHTML = `Das ist: <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`;
+  const g = Q.type === 'draw' && !reveal ? gradeDraw() : null, art = MALE_RIVERS.includes(it.id) ? 'der' : 'die';
+  $('#feedback').innerHTML = Q.type !== 'draw' ? `Das ist: <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`
+    : GEO.targets[it.id].k === 'p' ? `Hier liegt <b>${esc(it.name)}</b>${g ? ` (${g.km} km daneben)` : ''}. Merk es dir für das nächste Mal! 💪`
+    : `So fließt ${art} <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`;
   if (!reveal) SFX.no();
   afterAnswer();
 }
-function afterAnswer(){ $('#answer').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
+// Stadt eingezeichnet: gestrichelte Linie vom Tipp zur richtigen Stelle
+function missLine(){ const t = GEO.targets[Q.it.id]; if (Q.type === 'draw' && Q.pin && t.k === 'p') $('#marks').innerHTML = `<path class="miss" d="M${Q.pin.join(' ')}L${t.pt.join(' ')}"/>`; }
+function afterAnswer(){ $('#answer').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
 $('#nextBtn').onclick = () => { if (mode === 'test' || mode === 'big') round.n++; nextQuestion(); };
 function mapTap(cx, cy){
   const [x, y] = toMap(cx, cy);
@@ -548,6 +677,7 @@ function mapTap(cx, cy){
     else { const land = GEO.targets; label(cx, cy, 'Hier ist nichts aus deinem Test', 'Probier woanders!'); }
     return;
   }
+  if (Q && !Q.done && Q.type === 'draw'){ if (GEO.targets[Q.it.id].k === 'p'){ Q.pin = [x, y]; renderDrawing(); SFX.tap(); } return; }
   if (!Q || Q.done || Q.type !== 'show') return;
   if (isHit(Q.it.id, x, y)) right('exact');
   else { markTap(x, y); const it = whatIsHere(x, y); if (it && it.id !== Q.it.id && Q.tries === 0) label(cx, cy, 'Das ist ' + showName(it)); wrong(false); }
@@ -561,7 +691,7 @@ $('#ansOk').onclick = submitName;
 $('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
 $('#ansShow').onclick = () => { if (Q && !Q.done){ $('#ansInput').value = Q.it.name; wrong(true); } };
 
-const testLabel = () => mode === 'test' ? '🏆 Probetest' : mode === 'big' ? `🌍 Großer Test ${round.n + 1}/${round.list.length}` : '';
+const testLabel = () => (mode === 'test' ? '🏆 Probetest' : mode === 'big' ? `🌍 Großer Test ${round.n + 1}/${round.list.length}` : '') + (mode !== 'practice' && round?.lvl === 2 ? ' · Stufe 2' : '');
 /* Codes für MathPets (gleiche Codes wie dort in UNLOCKS) – ab 50 %, 75 %, 100 % richtig im Großen Test */
 const GEO_CODES = [
   { key:'globus', need:.5,  code:'GLOBUS-7341', e:'🌍', what:'Zauberglobus fürs Haus' },
@@ -590,23 +720,24 @@ function finishTest(){
     $('#endModal').classList.add('open'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 40 + earned.length * 30);
     return;
   }
-  const best = round.score > G.best; if (best) G.best = round.score; save();
+  const bk = round.lvl === 2 ? 'best2' : 'best', best = round.score > (G[bk] || 0); if (best) G[bk] = round.score; save();
   $('#endEmoji').textContent = ok >= 18 ? '🏆' : ok >= 14 ? '🥇' : ok >= 10 ? '🥈' : '💪';
   $('#endTitle').textContent = ok >= 18 ? 'Geo-Profi!' : ok >= 14 ? 'Super gemacht!' : ok >= 10 ? 'Gut gemacht!' : 'Weiter üben – du schaffst das!';
   $('#endScore').textContent = round.score + ' Punkte';
-  $('#endInfo').textContent = `${ok} von ${total} richtig` + (best ? ' · Neuer eigener Rekord! 🎉' : ` · Dein Rekord: ${G.best}`);
+  $('#endInfo').textContent = `${ok} von ${total} richtig` + (best ? ' · Neuer eigener Rekord! 🎉' : ` · Dein Rekord: ${G[bk]}`);
   $('#endModal').classList.add('open');
   SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 70);
-  submitScore(round.score);
+  submitScore();
 }
 $('#endHome').onclick = () => { closeModals(); show('menu'); };
 $('#endAgain').onclick = () => { closeModals(); mode === 'big' ? startBig() : startTest(); };
-$('#endScores').onclick = () => { closeModals(); openScores(); };
+$('#endScores').onclick = () => { closeModals(); openScores(round?.lvl); };
 
 /* ================= Übungs-Auswahl ================= */
 function openSetup(){
   $('#catChips').innerHTML = CATS.map(([id, label]) => `<button class="chip ${G.cats.includes(id) ? 'on' : ''}" data-cat="${id}">${label}</button>`).join('');
   $('#typeChips').innerHTML = [['show','👆 Zeigen'],['name','✏️ Benennen'],['mix','🔀 Gemischt']].map(([id, l]) => `<button class="chip ${G.type === id ? 'on' : ''}" data-type="${id}">${l}</button>`).join('');
+  $('#setupNote').hidden = G.lvl !== 2;
   $('#setupModal').classList.add('open');
 }
 $('#catChips').onclick = e => { const b = e.target.closest('[data-cat]'); if (!b) return; const c = b.dataset.cat;
@@ -616,7 +747,8 @@ $('#setupGo').onclick = () => { closeModals(); startPractice(); };
 
 /* ================= Fortschritt und Rang ================= */
 function updateHUD(){
-  const s = totalStars(), max = ITEMS.length * 3;
+  const s = totalStars(), max = maxStars();
+  document.querySelectorAll('#lvlSwitch [data-lvl]').forEach(b => b.classList.toggle('on', +b.dataset.lvl === G.lvl));
   $('#hudStars').textContent = `⭐ ${s}`;
   const r = [...RANKS].reverse().find(([min]) => s >= min);
   $('#rankName').textContent = r[1];
@@ -628,18 +760,18 @@ function updateHUD(){
 function openProgress(){
   $('#progList').innerHTML = CATS.map(([cat, label, list]) => `<h3>${label}</h3><div class="list">` + list.map(([id, name]) => {
     const s = starsOf(id);
-    return `<div class="row"><span class="n">${esc(id === 'ural' ? 'Ural (Fluss)' : name)}</span><span class="stars">${'⭐'.repeat(s)}${'☆'.repeat(3 - s)}</span></div>`;
+    return `<div class="row"><span class="n">${esc(id === 'ural' ? 'Ural (Fluss)' : name)}</span><span class="stars">${'⭐'.repeat(s)}${'☆'.repeat(maxStarsOf(id) - s)}</span></div>`;
   }).join('') + `</div>`).join('');
   $('#progModal').classList.add('open');
 }
 let resetArmed = false;
 $('#progReset').onclick = () => {
   if (!resetArmed){ resetArmed = true; $('#progReset').textContent = 'Wirklich? Nochmal tippen'; setTimeout(() => { resetArmed = false; $('#progReset').textContent = 'Zurücksetzen'; }, 3000); return; }
-  G.k = {}; G.best = 0; save(); updateHUD(); openProgress(); resetArmed = false; $('#progReset').textContent = 'Zurücksetzen';
+  G.k = {}; G.best = 0; G.best2 = 0; save(); updateHUD(); openProgress(); resetArmed = false; $('#progReset').textContent = 'Zurücksetzen';
 };
 
 /* ================= Bestenliste (Firebase, gleiches Projekt wie MathPets) =================
-   geo/scores/<Gerät> = { n:Name, s:beste Punktzahl, t:Zeit } – jedes Gerät hat einen Eintrag mit seinem Rekord */
+   geo/scores/<Gerät> = { n:Name, s:Rekord Stufe 1, s2:Rekord Stufe 2, t:Zeit } – jedes Gerät hat einen Eintrag mit seinen Rekorden */
 const FB_CONFIG = {
   apiKey:'AIzaSyAIueUvh1GZoLb_5zdZ5VaUAvTn476IgAY', authDomain:'mathpets-fbbab.firebaseapp.com',
   databaseURL:'https://mathpets-fbbab-default-rtdb.europe-west1.firebasedatabase.app', projectId:'mathpets-fbbab',
@@ -656,32 +788,36 @@ async function net(){
     return true;
   } catch (e){ console.warn('Firebase', e); return false; }
 }
-async function submitScore(score){
-  if (!G.name || !await net()) return;
+async function submitScore(){
+  if (!G.name || !(G.best || G.best2) || !await net()) return;
   const { ref, get, set } = NET.fb, r = ref(NET.db, `geo/scores/${NET.uid}`);
   try {
-    const old = (await get(r)).val();
-    if (!old || score > old.s || old.n !== G.name) await set(r, { n:G.name, s:Math.max(score, old?.n === G.name ? old.s : 0), t:Date.now() });
+    const old = (await get(r)).val() || {};
+    await set(r, { n:G.name, s:Math.max(G.best || 0, old.s || 0), s2:Math.max(G.best2 || 0, old.s2 || 0), t:Date.now() });
   } catch (e){ console.warn(e); }
 }
 // Name ändern: gilt auch für den eigenen Eintrag in der Bestenliste (Punkte bleiben)
 $('#nameChange').onclick = () => { closeModals(); openName(async () => {
-  if (G.best && await net()){ try { await NET.fb.set(NET.fb.ref(NET.db, `geo/scores/${NET.uid}`), { n:G.name, s:G.best, t:Date.now() }); } catch (e){ console.warn(e); } }
-  openScores();
+  await submitScore();
+  openScores(scoreLvl);
 }); };
-async function openScores(){
+let scoreLvl = 1;
+async function openScores(lvl){
+  scoreLvl = lvl || G.lvl; const f = scoreLvl === 2 ? 's2' : 's';
+  $('#scoreTabs').innerHTML = [[1,'Stufe 1'],[2,'Stufe 2 ✍️']].map(([l, t]) => `<button class="chip ${l === scoreLvl ? 'on' : ''}" data-slvl="${l}">${t}</button>`).join('');
   $('#myName').textContent = G.name ? `Dein Name: ${G.name}` : 'Du hast noch keinen Namen – den fragt der erste Probetest ab.';
   $('#scoreList').innerHTML = '<p>Lade …</p>'; $('#scoreModal').classList.add('open');
   if (!await net()){ $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar. Bist du im Internet?</p>'; return; }
   try {
-    const { ref, query, orderByChild, limitToLast, get } = NET.fb;
-    const snap = await get(query(ref(NET.db, 'geo/scores'), orderByChild('s'), limitToLast(15)));
-    const rows = []; snap.forEach(c => { rows.push({ uid:c.key, ...c.val() }); });
-    rows.reverse();
-    $('#scoreList').innerHTML = rows.length ? rows.map((r, i) => `<div class="row ${r.uid === NET.uid ? 'me' : ''}"><span class="p">${['🥇','🥈','🥉'][i] || (i + 1) + '.'}</span><span class="n">${esc(r.n)}</span><b>${r.s}</b></div>`).join('')
-      : '<p>Noch niemand da – mach den ersten Probetest! 🏆</p>';
+    // ganze (kleine) Liste laden und hier sortieren – so braucht es keinen Datenbank-Index pro Stufe
+    const { ref, get } = NET.fb, snap = await get(ref(NET.db, 'geo/scores'));
+    const rows = []; snap.forEach(c => { if (c.val()[f] > 0) rows.push({ uid:c.key, ...c.val() }); });
+    rows.sort((x, y) => y[f] - x[f]); rows.length = Math.min(rows.length, 15);
+    $('#scoreList').innerHTML = rows.length ? rows.map((r, i) => `<div class="row ${r.uid === NET.uid ? 'me' : ''}"><span class="p">${['🥇','🥈','🥉'][i] || (i + 1) + '.'}</span><span class="n">${esc(r.n)}</span><b>${r[f]}</b></div>`).join('')
+      : `<p>Noch niemand da – mach den ersten Probetest${scoreLvl === 2 ? ' in Stufe 2' : ''}! 🏆</p>`;
   } catch (e){ console.warn(e); $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar.</p>'; }
 }
+$('#scoreTabs').onclick = e => { const b = e.target.closest('[data-slvl]'); if (b){ SFX.tap(); openScores(+b.dataset.slvl); } };
 let afterName = null;
 function openName(then){ afterName = then; $('#nameInput').value = G.name || ''; $('#nameModal').classList.add('open'); setTimeout(() => $('#nameInput').focus(), 200); }
 $('#nameOk').onclick = () => {
@@ -698,6 +834,11 @@ document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
   SFX.tap();
   ({ explore:startExplore, practice:openSetup, test:startTest, big:startBig, codes:openCodes, progress:openProgress, scores:openScores })[b.dataset.mode]();
 });
+$('#lvlSwitch').onclick = e => {
+  const b = e.target.closest('[data-lvl]'); if (!b) return;
+  G.lvl = +b.dataset.lvl; save(); updateHUD(); SFX.tap();
+  $('#owlSay').textContent = G.lvl === 2 ? 'Stufe 2: leere Karte wie im echten Test! Städte und Flüsse zeichnest du selbst ein. ✍️' : 'Stufe 1: zeigen und benennen. 👆';
+};
 $('#homeBtn').onclick = () => { closeModals(); show('menu'); };
 $('#soundBtn').onclick = () => { G.sound = !G.sound; save(); updateHUD(); };
 function owlHello(){
