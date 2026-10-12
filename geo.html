@@ -491,9 +491,9 @@ function label(cx, cy, text, sub){
    Gemessen wird in Kilometern auf der Karte, egal wie weit hineingezoomt ist. */
 const KM = 6.84; // km pro Karteneinheit (Paris–Berlin 878 km ≙ 128 Einheiten)
 const TOL_KM = {
-  cityGreat:40, city:100,   // Stadt: bis 40 km „super genau“, bis 100 km richtig
-  river:90, riverOff:120,   // Fluss: jede Flussstelle höchstens 90 km von der Linie, jede Linienstelle höchstens 120 km vom Fluss …
-  cover:.7, onRiver:.75,    // … richtig, wenn 70 % des Flusses getroffen sind und 75 % der Linie am Fluss liegen
+  cityGreat:50, city:150,   // Stadt: bis 50 km „super genau“, bis 150 km richtig
+  river:120, riverOff:160,  // Fluss: jede Flussstelle höchstens 120 km von der Linie, jede Linienstelle höchstens 160 km vom Fluss …
+  cover:.6, onRiver:.65,    // … richtig, wenn 60 % des Flusses getroffen sind und 65 % der Linie am Fluss liegen
 };
 function renderDrawing(){
   if (!Q || Q.type !== 'draw') return;
@@ -540,7 +540,7 @@ function dirWord([ax, ay], [bx, by]){
   const a = Math.atan2(ay - by, bx - ax) * 180 / Math.PI;
   return ['östlich','nordöstlich','nördlich','nordwestlich','westlich','südwestlich','südlich','südöstlich'][((Math.round(a / 45) % 8) + 8) % 8];
 }
-const MALE_RIVERS = ['rhein','po','ebro','ural','dnipro'];
+const MALE_RIVERS = ['rhein','po','ebro','ural','dnipro','ladoga','onega'];
 $('#drawClear').onclick = () => { if (!Q || Q.done || Q.type !== 'draw') return; Q.strokes = []; Q.pin = null; renderDrawing(); SFX.tap(); };
 $('#drawShow').onclick = () => { if (Q && !Q.done && Q.type === 'draw') wrong(true); };
 $('#drawOk').onclick = () => {
@@ -549,12 +549,12 @@ $('#drawOk').onclick = () => {
   const it = Q.it, t = GEO.targets[it.id];
   if (t.k === 'p'){
     if (g.ok) right('draw', (g.great ? 'Super genau! ' : 'Richtig! ') + `Nur ${g.km} km daneben. `);
-    else wrong(false, `${g.km} km daneben – ${it.name} liegt weiter ${dirWord(Q.pin, t.pt)}. Nochmal? 🤔`);
+    else wrong(false, `${g.km} km daneben – ${it.name} liegt weiter ${dirWord(Q.pin, t.pt)}.`);
   } else {
     if (g.ok) right('draw', g.great ? 'Super genau gezeichnet! ' : 'Richtig! So würde es auch die Lehrerin zählen. ✅ ');
-    else wrong(false, g.onRiver < .4 ? `Hmm, da fließt ${MALE_RIVERS.includes(it.id) ? 'der' : 'die'} ${it.name} nicht. Nochmal? 🤔`
-      : g.cover < TOL_KM.cover ? 'Da fehlt noch ein Stück – zeichne den ganzen Fluss, von der Quelle bis zur Mündung. Nochmal? 🤔'
-      : 'Ein Teil deiner Linie ist zu weit weg vom Fluss. Nochmal? 🤔');
+    else wrong(false, g.onRiver < .4 ? 'Da war es leider nicht.'
+      : g.cover < TOL_KM.cover ? 'Da fehlt noch ein Stück – der Fluss geht von der Quelle bis zur Mündung.'
+      : 'Ein Teil deiner Linie ist zu weit weg vom Fluss.');
   }
 };
 
@@ -642,25 +642,22 @@ function right(how, msg){
   SFX.ok(); const r = $('#panel').getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 26);
   afterAnswer();
 }
+// Falsch (oder 💡): sofort die richtige Antwort zeigen – auf der Karte markiert und mit Namen
 function wrong(reveal, hint){
-  const it = Q.it, k = know(it.id);
-  Q.tries++;
-  if (!reveal && Q.tries < 2){ // erster Fehler: nochmal probieren
-    $('#panel').className = 'panel bad'; $('#panel').classList.add('shake'); setTimeout(() => $('#panel').classList.remove('shake'), 400);
-    $('#feedback').textContent = hint || (Q.type === 'show' ? 'Nicht ganz – versuch’s nochmal! 🤔' : 'Hmm, nicht ganz. Nochmal? 🤔');
-    if (Q.type === 'draw'){ Q.old = Q.strokes; Q.oldPin = Q.pin; Q.strokes = []; Q.pin = null; renderDrawing(); } // alter Versuch bleibt blass zu sehen
-    SFX.no(); return;
-  }
-  Q.done = true; round.streak = 0; k.row = 0;
+  const it = Q.it, k = know(it.id), t = GEO.targets[it.id];
+  Q.tries++; Q.done = true; round.streak = 0; k.row = 0;
   if (mode === 'test' || mode === 'big') round.results[round.n] = false;
   save();
   highlight(it.id); missLine();
   if (Q.type !== 'name') focusTarget(it.id);
   $('#panel').className = 'panel bad';
-  const g = Q.type === 'draw' && !reveal ? gradeDraw() : null, art = MALE_RIVERS.includes(it.id) ? 'der' : 'die';
-  $('#feedback').innerHTML = Q.type !== 'draw' ? `Das ist: <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`
-    : GEO.targets[it.id].k === 'p' ? `Hier liegt <b>${esc(it.name)}</b>${g ? ` (${g.km} km daneben)` : ''}. Merk es dir für das nächste Mal! 💪`
-    : `So fließt ${art} <b>${esc(showName(it))}</b>. Merk es dir für das nächste Mal! 💪`;
+  if (!reveal){ $('#panel').classList.add('shake'); setTimeout(() => $('#panel').classList.remove('shake'), 400); }
+  const name = `<b>${esc(showName(it))}</b>`, art = MALE_RIVERS.includes(it.id) ? 'der' : 'die';
+  const answer = reveal ? `Das ist: ${name}.`
+    : Q.type === 'name' ? `Nicht ganz – richtig ist: ${name}.`
+    : Q.type === 'show' ? `Hier ist ${name}.`
+    : t.k === 'p' ? `Hier liegt ${name}.` : `So fließt ${art} ${name}.`;
+  $('#feedback').innerHTML = (hint ? esc(hint) + ' ' : '') + answer + ' Merk es dir! 💪';
   if (!reveal) SFX.no();
   afterAnswer();
 }
@@ -680,7 +677,7 @@ function mapTap(cx, cy){
   if (Q && !Q.done && Q.type === 'draw'){ if (GEO.targets[Q.it.id].k === 'p'){ Q.pin = [x, y]; renderDrawing(); SFX.tap(); } return; }
   if (!Q || Q.done || Q.type !== 'show') return;
   if (isHit(Q.it.id, x, y)) right('exact');
-  else { markTap(x, y); const it = whatIsHere(x, y); if (it && it.id !== Q.it.id && Q.tries === 0) label(cx, cy, 'Das ist ' + showName(it)); wrong(false); }
+  else { markTap(x, y); const it = whatIsHere(x, y); wrong(false, it && it.id !== Q.it.id ? `Du hast ${showName(it)} angetippt.` : 'Nicht ganz.'); }
 }
 function submitName(){
   if (!Q || Q.done || Q.type !== 'name') return;
@@ -692,11 +689,13 @@ $('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitN
 $('#ansShow').onclick = () => { if (Q && !Q.done){ $('#ansInput').value = Q.it.name; wrong(true); } };
 
 const testLabel = () => (mode === 'test' ? '🏆 Probetest' : mode === 'big' ? `🌍 Großer Test ${round.n + 1}/${round.list.length}` : '') + (mode !== 'practice' && round?.lvl === 2 ? ' · Stufe 2' : '');
-/* Codes für MathPets (gleiche Codes wie dort in UNLOCKS) – ab 50 %, 75 %, 100 % richtig im Großen Test */
+/* Codes für MathPets (gleiche Codes wie dort in UNLOCKS) – ab 50 %, 75 %, 90 %, 95 %, 100 % richtig im Großen Test */
 const GEO_CODES = [
-  { key:'globus', need:.5,  code:'GLOBUS-7341', e:'🌍', what:'Zauberglobus fürs Haus' },
-  { key:'welt',   need:.75, code:'REISE-5826',  e:'🧳', what:'Neue Welt „Europa-Reise“' },
-  { key:'tier',   need:1,   code:'ELLA-9147',   e:'🦉', what:'Ella, die Entdecker-Eule' },
+  { key:'globus',  need:.5,  code:'GLOBUS-7341',  e:'🌍', what:'Zauberglobus fürs Haus' },
+  { key:'welt',    need:.75, code:'REISE-5826',   e:'🧳', what:'Neue Welt „Europa-Reise“' },
+  { key:'kuerbis', need:.9,  code:'KUERBIS-6208', e:'🎃', what:'Jack, der Leuchtkürbis' },
+  { key:'fleder',  need:.95, code:'FLEDER-3954',  e:'🦇', what:'Flatti, die Fledermaus' },
+  { key:'tier',    need:1,   code:'ELLA-9147',    e:'🦉', what:'Ella, die Entdecker-Eule' },
 ];
 const codeRows = () => GEO_CODES.map(c => (G.codes || []).includes(c.key)
   ? `<div class="row"><span class="p">${c.e}</span><span class="n">${c.what}<br><span class="code">${c.code}</span></span><button class="copy" data-code="${c.code}">📋</button></div>`
@@ -712,8 +711,8 @@ function finishTest(){
   if (mode === 'big'){ // Großer Test: Codes statt Bestenliste
     const pct = ok / total, earned = GEO_CODES.filter(c => pct >= c.need), fresh = earned.filter(c => !(G.codes || []).includes(c.key));
     G.codes = [...new Set([...(G.codes || []), ...earned.map(c => c.key)])]; save();
-    $('#endEmoji').textContent = pct === 1 ? '🦉' : pct >= .75 ? '🧳' : pct >= .5 ? '🌍' : '💪';
-    $('#endTitle').textContent = pct === 1 ? 'ALLES RICHTIG! Wahnsinn!' : pct >= .75 ? 'Super stark!' : pct >= .5 ? 'Geschafft!' : 'Weiter üben – du schaffst das!';
+    $('#endEmoji').textContent = [...GEO_CODES].reverse().find(c => pct >= c.need)?.e || '💪';
+    $('#endTitle').textContent = pct === 1 ? 'ALLES RICHTIG! Wahnsinn!' : pct >= .9 ? 'Fast perfekt!' : pct >= .75 ? 'Super stark!' : pct >= .5 ? 'Geschafft!' : 'Weiter üben – du schaffst das!';
     $('#endScore').textContent = Math.round(pct * 100) + ' %';
     $('#endInfo').textContent = `${ok} von ${total} richtig` + (fresh.length ? ' · Neue Codes für MathPets! 🎁' : earned.length ? '' : ' · Ab 50 % gibt es den ersten Code 🎁');
     $('#endCodes').innerHTML = codeRows();

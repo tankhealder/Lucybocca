@@ -273,7 +273,7 @@ button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 @keyframes balR{from{transform:rotate(-35deg)}to{transform:rotate(-10deg)}}
 @keyframes waddle{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
 @keyframes step{from{transform:translate(-4px,0)}to{transform:translate(4px,-5px)}}
-.pet.held[data-move=hop] .bob{animation:hop .5s cubic-bezier(.3,.6,.4,1) infinite}
+.pet.held:is([data-move=hop],[data-move=spook]) .bob{animation:hop .5s cubic-bezier(.3,.6,.4,1) infinite}
 @keyframes hop{0%,100%{transform:scale(1.1,.9)}15%{transform:none}45%{transform:translateY(-28%) scale(.94,1.08)}80%{transform:translateY(0) scale(1.06,.94)}}
 .pet.held[data-move=gallop] .bob{animation:gallop .4s ease-in-out infinite}
 @keyframes gallop{0%,100%{transform:rotate(4deg)}50%{transform:translateY(-16%) rotate(-10deg)}}
@@ -928,6 +928,9 @@ Object.assign(A, {
 // Superspecial: Ella, die Entdecker-Eule (Maskottchen aus dem Europa-Entdecker) – nur mit Code (Großer Test 100 %)
 Object.assign(A, {
   ella: {hab:'reise', name:'Ella', label:'Entdecker-Eule', g:'die', c:'#3fb6a8', b:'#fff3d6', ears:'owl', eyeRing:true, bigEyes:true, mouth:'beak', arms:'wing', limb:'#2f9a8e', feet:'#ffa94d', explorer:true, fav:'apfel', say:'Auf zur nächsten Entdeckung! 🧭'},
+  // Lucys Halloween-Wünsche: Großer Test 90 % und 95 %
+  jacky: {hab:'reise', name:'Jack', label:'Leuchtkürbis', g:'der', c:'#ff9a2e', body:'blob', pumpkin:true, fy:76, eyeY:70, eyeX:17, nose:'none', mouth:'jack', fav:'muffin', say:'Buuuh! Süßes oder Saures? 🎃'},
+  fledermaus: {hab:'reise', name:'Flatti', label:'Fledermaus', g:'die', c:'#8273b8', b:'#e2d9f7', ears:'bat', inner:'#ffb8d2', wings:['#5d4e94','#a99ad8'], bat:true, limb:'#6c5ca6', feet:'#5d4e94', bigEyes:true, nose:'tri', mouth:'w', fang:true, fav:'apfel', say:'Ich hänge gern kopfüber ab! 🦇'},
 });
 // Urzeit (ab Level 16)
 Object.assign(A, {
@@ -946,7 +949,7 @@ const MOVE = {
   einhorn:'gallop', schildi:'slow', pferd:'gallop',
   greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
   trex:'stomp', mammut:'stomp', brachio:'slow',
-  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore',
+  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', fledermaus:'night',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
 const moveOf = type => MOVE[type] || 'walk';
@@ -1030,7 +1033,9 @@ const CL = Object.fromEntries(CLOTHES.map(c => [c.id, c]));
 const UNLOCKS = {
   globus:{ code:'GLOBUS-7341', e:'🌍', title:'Der Zauberglobus!', msg:'Ein leuchtender, sich drehender Globus für dein Haus. Du findest ihn beim Einrichten 🔨 im Möbel-Katalog.' },
   welt:  { code:'REISE-5826',  e:'🧳', title:'Neue Welt: Europa-Reise!', msg:'Eiffelturm, Kolosseum, Akropolis und mehr – besuch die neue Welt oben in der Weltenleiste.' },
-  tier:  { code:'ELLA-9147',   e:'🦉', title:'Ella, die Entdecker-Eule!', msg:'Ella wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie fliegt mit Weltkugeln und Landkarten!' },
+  kuerbis:{ code:'KUERBIS-6208', pet:'jacky', e:'🎃', title:'Jack, der Leuchtkürbis!', msg:'Jack wohnt jetzt in der Europa-Reise. Nimm ihn hoch – er hüpft und verteilt Süßigkeiten!' },
+  fleder:{ code:'FLEDER-3954', pet:'fledermaus', e:'🦇', title:'Flatti, die Fledermaus!', msg:'Flatti wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie flattert unter Mond und Sternen!' },
+  tier:  { code:'ELLA-9147', pet:'ella', e:'🦉', title:'Ella, die Entdecker-Eule!', msg:'Ella wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie fliegt mit Weltkugeln und Landkarten!' },
 };
 const codeKey = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const AV_SLOTS = [['top','👕 Oben'],['bottom','👖 Unten'],['shoes','👟 Schuhe'],['hat','🎩 Kopf'],['extra','✨ Extra']];
@@ -1177,7 +1182,7 @@ const SFX = {
 const STEP = {
   fly:[320, SFX.flap], explore:[300, SFX.flap, ['🌍','✨','🗺️','🧭']], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
   gold:[280, () => { SFX.flap(); tone(1760, .08, 'sine', 0, .03); }, el => { const [x, y] = centerOf(el); confetti(x, y, 9, GOLD); sprinkle(el, ['🪙','✨'], 1); }], blaze:[320, SFX.flap, ['🔥','✨']], stomp:[500, SFX.stomp], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
-  hop:[500, SFX.hop], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
+  hop:[500, SFX.hop], spook:[500, SFX.hop, ['🍬','👻','✨']], night:[260, SFX.flap, ['🌙','⭐','✨']], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
 
 /* ================= Kawaii-Tiergrafik (SVG) ================= */
@@ -1284,6 +1289,7 @@ function petSVG(type, acc = {}){
     case 'mouse':  back += Ep(24,30,17,17,ec) + Ep(24,30,10,10,inner,0,true); break;
     case 'pig':    back += Pp('M30 34 L27 12 L48 24Z', ec) + Pp('M32 29 L31 17 L43 25Z', inner, true); break;
     case 'owl':    back += Pp('M24 38 L18 8 L46 24Z', ec); break;
+    case 'bat':    back += Pp('M30 42 L16 -4 L54 22Z', ec) + Pp('M33 33 L23 6 L46 23Z', inner, true); break;
     case 'small':  back += Ep(22,34,8,8,ec) + Ep(22,34,4,4,inner,0,true); break;
     case 'fennec': back += Ep(22,8,13,28,ec,-32) + Ep(23,10,7,19,inner,-32,true); break;
     case 'jerboa': back += Ep(36,-2,11,22,ec,-18) + Ep(36,1,6,15,inner,-18,true); break;
@@ -1343,6 +1349,7 @@ function petSVG(type, acc = {}){
   /* --- Kopf / Hauptform --- */
   head += E(60, hy, hrx, hry, c);
   if (blob && t.belly) head += E(60, hy+16, 28, 18, b, 0, true);
+  if (t.pumpkin) [13, 27].forEach(dx => head += S_(`M${60-dx} ${top+4} Q${60-dx*1.4} ${hy} ${60-dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2) + S_(`M${60+dx} ${top+4} Q${60+dx*1.4} ${hy} ${60+dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2));
   head += `<ellipse cx="${60-hrx*.48}" cy="${hy-hry*.5}" rx="10" ry="6" fill="#ffffff" opacity=".5" transform="rotate(-20 ${60-hrx*.48} ${hy-hry*.5})"/>`;
 
   /* --- Gesicht --- */
@@ -1359,9 +1366,11 @@ function petSVG(type, acc = {}){
   if (t.moon) face += P('M64 20 A9 9 0 1 0 64 38 A7 7 0 1 1 64 20Z', '#ffe27a');
   if (t.eyeRing) face += Ep(60-eyX, eyY, 13, 13, b);
   const er = t.bigEyes ? [8, 9.5] : [6.5, 7.5], ex = [60-eyX, 60+eyX];
-  face += `<g class="eo">` + ex.map(x =>
-    `<ellipse cx="${x}" cy="${eyY}" rx="${er[0]}" ry="${er[1]}" fill="${INK}"/><circle cx="${x+2.3}" cy="${eyY-3}" r="${(er[0]*.42).toFixed(1)}" fill="#fff"/><circle cx="${x-2.2}" cy="${eyY+3.2}" r="${(er[0]*.2).toFixed(1)}" fill="#fff"/>`
+  face += `<g class="eo">` + ex.map(x => t.pumpkin
+    ? `<path d="M${x-9} ${eyY+6} L${x+9} ${eyY+6} L${x} ${eyY-9}Z" fill="#ffd23f" stroke="#9a4a0e"/>` + P(`M${x-4} ${eyY+4} L${x+4} ${eyY+4} L${x} ${eyY-3}Z`, '#fff6b8', true)
+    : `<ellipse cx="${x}" cy="${eyY}" rx="${er[0]}" ry="${er[1]}" fill="${INK}"/><circle cx="${x+2.3}" cy="${eyY-3}" r="${(er[0]*.42).toFixed(1)}" fill="#fff"/><circle cx="${x-2.2}" cy="${eyY+3.2}" r="${(er[0]*.2).toFixed(1)}" fill="#fff"/>`
   ).join('') + `</g>`;
+  if (t.pumpkin) face += `<path d="M56.5 ${fy+4} L63.5 ${fy+4} L60 ${fy-1}Z" fill="#ffd23f" stroke="#9a4a0e"/>`;
   face += `<g class="eh">` + ex.map(x => S_(`M${x-6} ${eyY+1} Q${x} ${eyY-6} ${x+6} ${eyY+1}`, INK, 3)).join('') + `</g>`;
   face += `<g class="es">` + ex.map(x => S_(`M${x-6} ${eyY} Q${x} ${eyY+5} ${x+6} ${eyY}`, INK, 3)).join('') + `</g>`; // Schlafaugen
   face += `<g opacity=".6">` + Ep(60-(t.blushX ?? eyX+12), fy+9, t.neck ? 5 : 7, t.neck ? 3.5 : 4.5, '#ff8fb8', 0, true) + `</g>`;
@@ -1382,6 +1391,7 @@ function petSVG(type, acc = {}){
     case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs(t.beakC || '#ffa94d')}/>`; break;
     case 'longbeak': face += `<path class="mouth" d="M54 ${fy+3} L66 ${fy+3} L60 ${fy+20}Z" ${fs('#ffb84d')}/>`; break;
     case 'none':  break;
+    case 'jack':  face += `<path class="mouth" d="M40 ${my} Q60 ${my+28} 80 ${my} Q72 ${my+7} 64 ${my+7} L64 ${my+11} L56 ${my+11} L56 ${my+7} Q48 ${my+7} 40 ${my}Z" fill="#ffd23f" stroke="#9a4a0e"/>`; break; // geschnitztes Kürbisgrinsen mit Zahn
     case 'tongue': face += `<ellipse cx="60" cy="${my+4}" rx="4" ry="5" fill="#ff8fb0" stroke="#d65f86" stroke-width="1.5"/><path class="mouth" d="M53 ${my} Q56.5 ${my+4} 60 ${my} Q63.5 ${my+4} 67 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
     default:      face += `<path class="mouth" d="M55 ${my} Q60 ${my+5} 65 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
   }
@@ -1410,6 +1420,8 @@ function petSVG(type, acc = {}){
   if (t.moon) front += star(92, 12, 6, '#ffe27a') + star(26, 6, 4, '#ffe27a');
   if (t.explorer) front += E(60, top + 3, 36, 7, '#a0703f') + P(`M38 ${top + 3} C38 ${top - 20} 82 ${top - 20} 82 ${top + 3}Z`, '#c8925a')
     + S_(`M39 ${top - 3} Q60 ${top - 8} 81 ${top - 3}`, '#7a4f2a', 3.5) + E(76, top - 6, 4, 4, '#ffd23f'); // Forscherhut mit Band und Abzeichen
+  if (t.pumpkin) front += P(`M55 ${top+5} C54 ${top-4} 56 ${top-12} 63 ${top-15} C67 ${top-11} 64 ${top-4} 65 ${top+5}Z`, '#6f8f3a')
+    + E(76, top-3, 10, 5, '#7cc45a', -20) + S_(`M65 ${top-9} q9 -9 13 -2 q2 5 -4 5`, '#5f9e3a', 2);
   if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
 
   /* --- Accessoires --- */
@@ -2260,7 +2272,7 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore'].includes(mode);
+    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore','night'].includes(mode);
     let moved = false, stepper = null;
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
@@ -2554,7 +2566,7 @@ function renderRemote(){
   const wrap = $('#pets'), seen = new Set();
   const setHeld = (el, h, type) => {
     el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
-    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore'].includes(moveOf(type)));
+    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore','night'].includes(moveOf(type)));
   };
   const here = together().room;
   const setPose = (el, pz) => { // sitzt/liegt/badet die Freundin oder ihr Tier gerade?
@@ -3081,15 +3093,15 @@ $('#redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#
 $('#redeemGo').addEventListener('click', () => {
   const key = Object.keys(UNLOCKS).find(k => codeKey(UNLOCKS[k].code) === codeKey($('#redeemInput').value));
   if (!key){ SFX.no(); retrigger($('#redeemInput'), 'shake'); toast('Diesen Code kenne ich nicht 🤔 Schau nochmal genau hin!'); return; }
-  if (S.unlocks.includes(key) && (key !== 'tier' || S.pets.some(p => p.type === 'ella'))){ toast('Den hast du schon eingelöst! 😊'); return; }
+  const u = UNLOCKS[key], hasPet = u.pet && S.pets.some(p => p.type === u.pet);
+  if (S.unlocks.includes(key) && (!u.pet || hasPet)){ toast('Den hast du schon eingelöst! 😊'); return; }
   if (!S.unlocks.includes(key)) S.unlocks.push(key);
-  const u = UNLOCKS[key];
   giftPet = null;
-  if (key === 'tier' && !S.pets.some(p => p.type === 'ella')){ const p = newPet('ella'); S.pets.push(p); S.newPet = p.id; giftPet = p; }
+  if (u.pet && !hasPet){ const p = newPet(u.pet); S.pets.push(p); S.newPet = p.id; giftPet = p; }
   save(); renderHUD();
   $('#redeemModal').classList.remove('open');
   // wie ein Geschenk auspacken
-  $('#giftStage').innerHTML = key === 'tier' ? `<div class="reveal-pet">${petNode(giftPet, 0)}</div>`
+  $('#giftStage').innerHTML = giftPet ? `<div class="reveal-pet">${petNode(giftPet, 0)}</div>`
     : key === 'globus' ? `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1">${FURN.zauberglobus.html}</div>`
     : `<div class="reveal-pet" style="font-size:96px;width:auto;line-height:1;font-family:var(--emoji)">${u.e}</div>`;
   $('#giftTitle').textContent = u.title; $('#giftMsg').textContent = u.msg;
