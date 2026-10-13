@@ -268,6 +268,42 @@
   .pick .eo { animation: none; }
   .pick[aria-pressed="true"] { border-color: var(--violet); background: var(--butter); }
 
+  /* Anziehen: Accessoires wie in MathPets */
+  .picker-label { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .dress-btn {
+    border: 0; border-radius: 999px; padding: .3em .8em;
+    font-weight: 800; font-size: .88rem;
+    background: var(--card); color: var(--violet);
+    box-shadow: 0 3px 0 #d9cdee;
+  }
+  .dress-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d9cdee; }
+  .dress {
+    position: fixed; inset: 0; z-index: 30;
+    background: rgba(43, 32, 69, .45);
+    display: grid; place-items: center; padding: 16px;
+  }
+  .dress-card {
+    position: relative; box-sizing: border-box;
+    width: min(100%, 380px); max-height: calc(100vh - 32px); overflow-y: auto;
+    background: var(--card); border-radius: 22px; padding: 12px 16px 16px;
+    text-align: center; box-shadow: 0 5px 0 #e3d8f3, 0 16px 30px var(--shadow);
+    animation: cardIn .35s cubic-bezier(.3, 1.5, .5, 1);
+  }
+  .dress-pet { width: 130px; margin: 0 auto; }
+  .dress-pet svg { width: 100%; height: auto; overflow: visible; display: block; }
+  .slot-name { margin: 8px 0 4px; font-weight: 800; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+  .slot-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .acc {
+    width: 46px; height: 46px; padding: 0;
+    border: 3px solid transparent; border-radius: 14px;
+    background: #f3eefc; font-size: 25px; line-height: 1;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  }
+  .acc.none { font-size: 18px; color: var(--ink-soft); font-family: var(--font-body); font-weight: 800; }
+  .acc[aria-pressed="true"] { border-color: var(--pink); background: var(--butter); }
+  .dress-card .row { margin-top: 14px; }
+  .acc-e { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+
   .toast {
     position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
@@ -334,8 +370,21 @@
   <button class="spin-btn" id="spin-btn">Drehen!</button>
 
   <div class="picker-wrap">
-    <p class="picker-label">Wer stupst das Rad an? <b id="picked-name">Fifi</b></p>
+    <p class="picker-label"><span>Wer stupst das Rad an? <b id="picked-name">Fifi</b></span><button class="dress-btn" id="dress-btn">👗 Anziehen</button></p>
     <div class="picker" id="picker" role="group" aria-label="Tier wählen"></div>
+  </div>
+</div>
+
+<div class="dress" id="dress" hidden>
+  <div class="dress-card" role="dialog" aria-labelledby="dress-title">
+    <button class="card-close" id="dress-close" aria-label="Schließen">×</button>
+    <div class="dress-pet" id="dress-pet"></div>
+    <p class="eyebrow" id="dress-title">Fifi anziehen</p>
+    <div id="dress-slots"></div>
+    <div class="row">
+      <button class="btn" id="dress-clear">Alles ausziehen</button>
+      <button class="btn primary" id="dress-done">Fertig</button>
+    </div>
   </div>
 </div>
 
@@ -633,8 +682,30 @@
     return off ? `<g transform="translate(${off[0]} ${off[1]})">${arm}</g>` : arm;
   }
 
+  // Accessoires aus MathPets – hier alle frei; jedes Tier merkt sich sein eigenes Outfit
+  const ACC = [
+    {id:'schleife',      e:'🎀', name:'Schleife',      slot:'side', lvl:1},
+    {id:'kappe',         e:'🧢', name:'Kappe',         slot:'hat',  lvl:2},
+    {id:'blume',         e:'🌸', name:'Blume',         slot:'side', lvl:3},
+    {id:'sonnenbrille',  e:'🕶️', name:'Sonnenbrille',  slot:'eyes', lvl:4},
+    {id:'zylinder',      e:'🎩', name:'Zylinder',      slot:'hat',  lvl:5},
+    {id:'schal',         e:'🧣', name:'Schal',         slot:'neck', lvl:6},
+    {id:'krone',         e:'👑', name:'Krone',         slot:'hat',  lvl:7},
+    {id:'brille',        e:'👓', name:'Brille',        slot:'eyes', lvl:8},
+    {id:'sonnenhut',     e:'👒', name:'Sonnenhut',     slot:'hat',  lvl:9},
+    {id:'gloeckchen',    e:'🔔', name:'Glöckchen',     slot:'neck', lvl:10},
+    {id:'stern',         e:'⭐', name:'Sternchen',     slot:'side', lvl:11},
+    {id:'doktorhut',     e:'🎓', name:'Doktorhut',     slot:'hat',  lvl:12},
+    {id:'schmetterling', e:'🦋', name:'Schmetterling', slot:'side', lvl:13},
+    {id:'ballon',        e:'🎈', name:'Luftballon',    slot:'side', lvl:14},
+    {id:'medaille',      e:'🏅', name:'Medaille',      slot:'neck', lvl:15},
+  ];
+  const ACCM = Object.fromEntries(ACC.map((a) => [a.id, a]));
+  const SLOTS = [['hat', 'Auf den Kopf'], ['eyes', 'Auf die Augen'], ['neck', 'Um den Hals'], ['side', 'Zum Schmücken']];
+  const accOf = (id) => (accs && accs[id]) || {};
+
   function animalSVG(id, viewBox = '0 -30 200 250') {
-    const full = petSVG(id), inner = full.slice(full.indexOf('>') + 1, full.lastIndexOf('</svg>'));
+    const full = petSVG(id, accOf(id)), inner = full.slice(full.indexOf('>') + 1, full.lastIndexOf('</svg>'));
     // MathPets-Zeichnung (120×154) auf die Bühne des Tiergenerators (200×250) skalieren
     return `<svg class="animal a-${id}" viewBox="${viewBox}" aria-hidden="true"><g class="whole"><g class="lean">` +
       `<g transform="translate(4 -30) scale(1.6) translate(0 24)">${inner}</g>` + armSVG(id) + '</g></g></svg>';
@@ -655,6 +726,8 @@
   let animal = store.get('animal', 'papillon');
   if (!ANIMALS[animal]) animal = 'papillon';
   let sound = store.get('sound', true);
+  let accs = store.get('acc', {});
+  if (!accs || typeof accs !== 'object') accs = {};
   let rot = 0, spin = null, pushing = false, winner = null, editIdx = null, editOld = '', editNew = false;
   let armEl, leanEl, armAnims = [], armAngle = 21;
 
@@ -685,6 +758,7 @@
   }
   const sfx = {
     tick() { const n = performance.now(); if (n - lastTick < 28) return; lastTick = n; tone(1500, .035, 'square', .045); },
+    dress() { [988, 1319].forEach((f, i) => tone(f, .12, 'sine', .1, i * .06)); },
     boop() { tone(300, .2, 'sine', .22, 0, 720); },
     win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'triangle', .16, i * .1)); tone(1319, .55, 'triangle', .12, .42); }
   };
@@ -824,6 +898,46 @@
       setTimeout(() => armTo([21, -120, -95, -120, 21], { duration: 1100, easing: 'ease-in-out' }).finished.catch(() => {}), 250);
     });
   }
+
+  // ---------- Anziehen ----------
+  const dress = $('dress');
+  function renderDress() {
+    const cur = accOf(animal);
+    $('dress-pet').innerHTML = animalSVG(animal, '0 -40 200 260');
+    $('dress-title').textContent = `${ANIMALS[animal].name} anziehen`;
+    $('dress-slots').innerHTML = SLOTS.map(([slot, label]) =>
+      `<p class="slot-name">${label}</p><div class="slot-row">` +
+      `<button class="acc none" data-slot="${slot}" data-acc="" aria-label="Nichts" aria-pressed="${!cur[slot]}">✖</button>` +
+      ACC.filter((a) => a.slot === slot).map((a) =>
+        `<button class="acc" data-slot="${slot}" data-acc="${a.id}" aria-label="${a.name}" title="${a.name}" aria-pressed="${cur[slot] === a.id}">${a.e}</button>`).join('') +
+      '</div>').join('');
+  }
+  function dressChanged() {
+    store.set('acc', accs);
+    renderDress();
+    renderAnimal(false);
+    const pick = $('pick-' + animal); if (pick) pick.innerHTML = animalSVG(animal, '10 -36 180 180');
+  }
+  function openDress() {
+    if (spin || pushing) return;
+    if (editIdx !== null) closeEditor();
+    result.hidden = true; winner = null;
+    renderDress(); dress.hidden = false;
+  }
+  const closeDress = () => { dress.hidden = true; };
+  $('dress-btn').addEventListener('click', openDress);
+  $('dress-close').addEventListener('click', closeDress);
+  $('dress-done').addEventListener('click', closeDress);
+  dress.addEventListener('click', (e) => { if (e.target === dress) closeDress(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && !dress.hidden) closeDress(); });
+  $('dress-slots').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-slot]'); if (!b) return;
+    ensureAudio();
+    const cur = Object.assign({}, accOf(animal)), id = b.dataset.acc || null;
+    cur[b.dataset.slot] = cur[b.dataset.slot] === id ? null : id;
+    accs[animal] = cur; sfx.dress(); dressChanged();
+  });
+  $('dress-clear').addEventListener('click', () => { accs[animal] = {}; ensureAudio(); sfx.dress(); dressChanged(); });
 
   // ---------- Spin ----------
   function startSpin() {
