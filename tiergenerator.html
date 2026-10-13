@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tiergenerator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap">
+<style>
+  /* Layout: one phone screen, animal perched on top of the wheel, paw = pointer at 12 o'clock. Single committed candy look. */
+  :root {
+    --sky: #c9e6f4;
+    --lattice: rgba(255, 255, 255, .28);
+    --ink: #2b2045;
+    --ink-soft: #5d5378;
+    --pink: #ff5d8f;
+    --pink-deep: #d13a6c;
+    --violet: #5b3fa0;
+    --butter: #fff4c7;
+    --card: #ffffff;
+    --shadow: rgba(60, 35, 110, .22);
+    --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+    --W: min(calc(100vw - 32px), calc((100vh - 250px) / 1.5), 440px);
+    --A: .46;
+    color-scheme: light;
+  }
+  @supports (height: 100dvh) {
+    :root { --W: min(calc(100vw - 32px), calc((100dvh - 250px) / 1.5), 440px); }
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background-color: var(--sky);
+    background-image:
+      repeating-linear-gradient(60deg, var(--lattice) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(-60deg, var(--lattice) 0 2px, transparent 2px 46px);
+    color: var(--ink);
+    font-family: var(--font-body);
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font-family: inherit; touch-action: manipulation; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+
+  .app {
+    box-sizing: border-box;
+    min-height: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .top { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.85rem;
+    line-height: 1;
+    letter-spacing: -.01em;
+    color: var(--violet);
+    text-shadow: 0 2px 0 #fff;
+  }
+  h1 span { color: var(--pink); }
+  .tools { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 0; background: var(--card); color: var(--violet);
+    display: grid; place-items: center;
+    box-shadow: 0 3px 0 #d9cdee, 0 6px 12px var(--shadow);
+  }
+  .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d9cdee; }
+  .icon-btn svg { width: 22px; height: 22px; }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    width: var(--W);
+    height: calc(var(--W) * (1 + var(--A) * 1.075));
+    flex: none;
+  }
+  .wheel {
+    position: absolute; left: 0;
+    top: calc(var(--W) * var(--A) * 1.075);
+    width: var(--W); height: var(--W);
+    filter: drop-shadow(0 10px 14px var(--shadow));
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  .animal-slot {
+    position: absolute; top: 0; left: 50%;
+    width: calc(var(--W) * var(--A));
+    aspect-ratio: 200 / 250;
+    transform: translateX(-50%);
+    z-index: 2;
+    cursor: pointer;
+  }
+  .animal-slot.pop { animation: pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+  @keyframes pop { from { transform: translateX(-50%) scale(.6); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+  .animal { width: 100%; height: 100%; overflow: visible; display: block; }
+
+  /* Animal rig: Tiere wie in MathPets (Lucybocca), eigene Stupspfote rechts */
+  .animal .whole { transform-origin: 100px 200px; animation: breathe 3s ease-in-out infinite; }
+  .animal .lean { transform-origin: 100px 200px; }
+  .animal .arm { transform-origin: 130px 150px; transform: rotate(21deg); }
+  .animal .eo { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+  .animal .eh, .animal .es { display: none; }
+  .animal .wing { transform-box: fill-box; }
+  .animal .wl { transform-origin: 100% 0; }
+  .animal .wr { transform-origin: 0 0; }
+  .animal .dwl { transform-origin: 100% 80%; }
+  .animal .dwr { transform-origin: 0 80%; }
+  .animal .foot { transform-box: fill-box; transform-origin: 50% 50%; }
+  .animal .ltail { transform-box: fill-box; transform-origin: 0 85%; animation: swish 3s ease-in-out infinite alternate; }
+
+  @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+  @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
+  @keyframes hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes hop { 0%, 100% { transform: translateY(0) scale(1.04, .96); } 40% { transform: translateY(-16px) scale(.97, 1.04); } }
+  @keyframes waddle { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+  @keyframes tilt { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+  @keyframes stomp { 0%, 100% { transform: rotate(-5deg) scaleY(.96); } 25% { transform: translateY(-8px); } 50% { transform: rotate(5deg) scaleY(.96); } 75% { transform: translateY(-8px); } }
+  @keyframes jump { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-20px); } 50% { transform: translateY(0); } 70% { transform: translateY(-9px); } }
+  @keyframes dflapL { from { transform: rotate(-12deg); } to { transform: rotate(30deg); } }
+  @keyframes dflapR { from { transform: rotate(12deg); } to { transform: rotate(-30deg); } }
+  @keyframes flapL { to { transform: rotate(60deg); } }
+  @keyframes flapR { to { transform: rotate(-60deg); } }
+  @keyframes swish { from { transform: rotate(-4deg); } to { transform: rotate(6deg); } }
+  @keyframes wave { from { transform: rotate(-14deg) scaleY(.92); } to { transform: rotate(12deg) scaleY(1.06); } }
+  @keyframes step { from { transform: translate(-3px, 0); } to { transform: translate(3px, -4px); } }
+
+  /* Spin personalities */
+  .spinning .a-papillon .whole { animation: hop .45s ease-out infinite; }
+  .spinning .a-fledermaus .whole { animation: hover .52s ease-in-out infinite; }
+  .spinning .a-fledermaus .dwl { animation: dflapL .18s ease-in-out infinite alternate; }
+  .spinning .a-fledermaus .dwr { animation: dflapR .18s ease-in-out infinite alternate; }
+  .spinning .a-capybara .whole { animation: tilt 1.8s ease-in-out infinite; }
+  .spinning .a-loewe .whole { animation: stomp .5s ease-in-out infinite; }
+  .spinning .a-loewe .fl, .spinning .a-capybara .fl { animation: step .25s ease-in-out infinite alternate; }
+  .spinning .a-loewe .fr, .spinning .a-capybara .fr { animation: step .25s ease-in-out infinite alternate-reverse; }
+  .spinning .a-drache .whole { animation: hover .9s ease-in-out infinite; }
+  .spinning .a-drache .dwl { animation: dflapL .3s ease-in-out infinite alternate; }
+  .spinning .a-drache .dwr { animation: dflapR .3s ease-in-out infinite alternate; }
+  .spinning .a-drache .ltail { animation: wave .45s ease-in-out infinite alternate; }
+  .spinning .a-pinguin .whole { animation: waddle .5s ease-in-out infinite; }
+  .spinning .a-pinguin .wl { animation: flapL .25s ease-in-out infinite alternate; }
+
+  .spinning .a-gecko .whole { animation: tilt .3s ease-in-out infinite; }
+  .spinning .a-gecko .fl { animation: step .15s ease-in-out infinite alternate; }
+  .spinning .a-gecko .fr { animation: step .15s ease-in-out infinite alternate-reverse; }
+  .spinning .a-kugelfisch .whole { animation: puff .7s ease-in-out infinite; }
+  .spinning .a-mammut .whole { animation: stomp .6s ease-in-out infinite; }
+  .spinning .a-mammut .fl { animation: step .3s ease-in-out infinite alternate; }
+  .spinning .a-mammut .fr { animation: step .3s ease-in-out infinite alternate-reverse; }
+  .spinning .a-greif .whole { animation: hover .6s ease-in-out infinite; }
+  .spinning .a-greif .dwl { animation: dflapL .22s ease-in-out infinite alternate; }
+  .spinning .a-greif .dwr { animation: dflapR .22s ease-in-out infinite alternate; }
+  .spinning .a-phoenix .whole { animation: hover .5s ease-in-out infinite; }
+  .spinning .a-phoenix .dwl, .spinning .a-pegasus .dwl { animation: dflapL .2s ease-in-out infinite alternate; }
+  .spinning .a-phoenix .dwr, .spinning .a-pegasus .dwr { animation: dflapR .2s ease-in-out infinite alternate; }
+  .spinning .a-phoenix .wl { animation: flapL .2s ease-in-out infinite alternate; }
+  .spinning .a-pegasus .whole, .spinning .a-einhorn .whole { animation: gallop .4s ease-in-out infinite; }
+  .spinning .a-mondkatze .whole { animation: tilt .8s ease-in-out infinite; }
+  .spinning .a-erdmann .whole { animation: hop .45s ease-out infinite; }
+  @keyframes gallop { 0%, 100% { transform: rotate(4deg); } 50% { transform: translateY(-14px) rotate(-8deg); } }
+  @keyframes puff { 0%, 100% { transform: scale(1) rotate(-6deg); } 50% { transform: translateY(-8px) scale(1.12) rotate(6deg); } }
+
+  .cheer .animal .whole { animation: jump .9s ease-out 2; }
+  .cheer .animal .eo { display: none; }
+  .cheer .animal .eh { display: inline; }
+  .cheer .a-fledermaus .dwl, .cheer .a-drache .dwl, .cheer .a-greif .dwl, .cheer .a-phoenix .dwl, .cheer .a-pegasus .dwl { animation: dflapL .2s ease-in-out 8 alternate; }
+  .cheer .a-fledermaus .dwr, .cheer .a-drache .dwr, .cheer .a-greif .dwr, .cheer .a-phoenix .dwr, .cheer .a-pegasus .dwr { animation: dflapR .2s ease-in-out 8 alternate; }
+  .cheer .a-pinguin .wl { animation: flapL .2s ease-in-out 8 alternate; }
+
+  /* Cards on the wheel */
+  .card {
+    position: absolute; left: 50%;
+    z-index: 3;
+    width: min(84%, 300px);
+    box-sizing: border-box;
+    background: var(--card);
+    border-radius: 22px;
+    padding: 14px 16px 16px;
+    text-align: center;
+    box-shadow: 0 5px 0 #e3d8f3, 0 16px 30px var(--shadow);
+  }
+  .card:not([hidden]) { animation: cardIn .35s cubic-bezier(.3, 1.5, .5, 1); }
+  @keyframes cardIn { from { opacity: 0; scale: .7; } to { opacity: 1; scale: 1; } }
+  .result { top: calc(var(--W) * var(--A) * 1.075 + var(--W) * .5); transform: translate(-50%, -18%); }
+  .editor { top: calc(var(--W) * var(--A) * 1.075 + var(--W) * .5); transform: translate(-50%, -50%); }
+  .eyebrow {
+    margin: 0;
+    font-size: .74rem; font-weight: 800;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .winner-name {
+    margin: 2px 0 0;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.8rem, 9vw, 2.5rem); line-height: 1.05;
+    color: var(--violet);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .winner-by { margin: 4px 0 12px; font-weight: 600; color: var(--ink-soft); }
+  .row { display: flex; gap: 8px; justify-content: center; }
+  .btn {
+    flex: 1;
+    border: 0; border-radius: 999px;
+    padding: .6em .9em;
+    font-weight: 800; font-size: .95rem;
+    background: #efe8fb; color: var(--violet);
+    box-shadow: 0 3px 0 #d6c8f0;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d6c8f0; }
+  .btn.primary { background: var(--pink); color: #fff; box-shadow: 0 3px 0 var(--pink-deep); }
+  .btn:disabled { opacity: .45; }
+  .card-close {
+    position: absolute; top: 6px; right: 6px;
+    width: 32px; height: 32px; border: 0; border-radius: 50%;
+    background: transparent; color: var(--ink-soft);
+    font-size: 1.3rem; line-height: 1;
+  }
+  .editor label { display: block; }
+  .editor input {
+    box-sizing: border-box; width: 100%;
+    margin: 8px 0 12px;
+    padding: .55em .8em;
+    border: 3px solid #e3d8f3; border-radius: 14px;
+    font: 800 1.25rem var(--font-display);
+    color: var(--ink); background: #fbf9ff;
+    text-align: center;
+  }
+  .editor input:focus { border-color: var(--pink); outline: none; }
+
+  /* Controls */
+  .spin-btn {
+    border: 0; border-radius: 999px;
+    padding: .38em 2.6em .3em;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.55rem;
+    color: #fff; background: var(--pink);
+    box-shadow: 0 6px 0 var(--pink-deep), 0 12px 20px var(--shadow);
+    transition: transform .08s;
+  }
+  .spin-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-deep); }
+  .spin-btn:disabled { opacity: .6; transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-deep); }
+
+  .picker-wrap { width: 100%; }
+  .picker-label { margin: 0 0 6px; text-align: center; font-weight: 600; color: var(--ink-soft); font-size: .92rem; }
+  .picker-label b { color: var(--violet); font-weight: 800; }
+  .picker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; max-width: 360px; margin: 0 auto; }
+  .pick {
+    aspect-ratio: 1; max-width: 100%;
+    padding: 0; border-radius: 50%;
+    border: 3px solid transparent;
+    background: var(--card);
+    box-shadow: 0 3px 0 #d9cdee;
+    overflow: hidden;
+  }
+  .pick svg { width: 100%; height: 100%; display: block; }
+  .pick .eo { animation: none; }
+  .pick[aria-pressed="true"] { border-color: var(--violet); background: var(--butter); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 20;
+    width: max-content; max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+    padding: 10px 16px; border-radius: 16px;
+    background: var(--ink); color: #fff;
+    font-weight: 600; font-size: .92rem; text-align: center;
+    box-shadow: 0 10px 24px var(--shadow);
+  }
+  .confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animal .whole, .animal .eo, .animal .ltail, .spinning .animal *, .cheer .animal * { animation: none !important; }
+  }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Tier<span>generator</span></h1>
+    <div class="tools">
+      <button class="icon-btn" id="add-btn" aria-label="Neues Feld hinzufügen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="icon-btn" id="sound-btn" aria-label="Ton aus" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>
+          <path id="sound-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>
+          <path id="sound-off" d="M16 9l6 6M22 9l-6 6" hidden/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="animal-slot" id="animal-slot" role="button" tabindex="0" aria-label="Tier anstupsen lassen"></div>
+    <canvas class="wheel" id="wheel" role="img" aria-label="Glücksrad. Tippe auf ein Feld, um es zu ändern."></canvas>
+
+    <div class="card editor" id="editor" hidden>
+      <label for="edit-input" class="eyebrow" id="edit-label">Feld 1</label>
+      <input id="edit-input" maxlength="24" autocomplete="off" enterkeyhint="done" placeholder="Name eintippen">
+      <div class="row">
+        <button class="btn" id="edit-delete">Löschen</button>
+        <button class="btn primary" id="edit-done">Fertig</button>
+      </div>
+    </div>
+
+    <div class="card result" id="result" hidden>
+      <button class="card-close" id="result-close" aria-label="Schließen">×</button>
+      <p class="eyebrow">Der Tiergenerator sagt</p>
+      <p class="winner-name" id="winner-name">Alex</p>
+      <p class="winner-by" id="winner-by">Fifi zeigt drauf!</p>
+      <div class="row">
+        <button class="btn" id="result-remove">Aus dem Rad</button>
+        <button class="btn primary" id="result-again">Nochmal</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="spin-btn" id="spin-btn">Drehen!</button>
+
+  <div class="picker-wrap">
+    <p class="picker-label">Wer stupst das Rad an? <b id="picked-name">Fifi</b></p>
+    <div class="picker" id="picker" role="group" aria-label="Tier wählen"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="sr" aria-live="polite" id="live"></div>
+<canvas class="confetti" id="confetti"></canvas>
+
+<script>
+(() => {
+  // ---------- Animals: genau wie in MathPets (Lucybocca) ----------
+  // Zeichen-Code unverändert aus Lucybocca/index.html übernommen; nur der rechte Arm fehlt,
+  // weil der Tiergenerator dort seine eigene, bewegliche Stupspfote hat.
+  const A = {
+    papillon: {hab:'wiese', name:'Fifi', label:'Papillon', g:'der', c:'#ffffff', b:'#ffffff', ears:'butterfly', earC:'#3b2b27', inner:'#8a5a42', fringe:'#4d3a33', pmask:'#4a332c', tanC:'#a8643a', fluffy:true, tail:'plume', muzzle:true, nose:'dot', mouth:'tongue', fav:'muffin', say:'Wuff! Ich hab Schmetterlingsohren! 🦋'},
+    fledermaus: {hab:'reise', name:'Flatti', label:'Fledermaus', g:'die', c:'#8273b8', b:'#e2d9f7', ears:'bat', inner:'#ffb8d2', wings:['#5d4e94','#a99ad8'], bat:true, limb:'#6c5ca6', feet:'#5d4e94', bigEyes:true, nose:'tri', mouth:'w', fang:true, fav:'apfel', say:'Ich hänge gern kopfüber ab! 🦇'},
+    capybara: {hab:'wiese', name:'Capy', label:'Capybara', g:'das', c:'#b5835a', b:'#d6ae86', ears:'small', earC:'#93663f', inner:'#7a5232', muzzle:true, nose:'nostrils', mouth:'smile', citrus:true, fav:'karotte', say:'Ganz entspannt … 🍊'},
+    loewe:    {hab:'wueste', name:'Leo', label:'Löwe', g:'der', c:'#f7c868', b:'#fff1d2', lmane:'#e0832f', ears:'round', earC:'#f0b54e', earIn:'#ffe1b0', tail:'lion', muzzle:true, nose:'dot', mouth:'w', fav:'fisch', say:'Roaaar! 🦁'},
+    drache:   {hab:'zauber', name:'Funki', label:'Glücksdrache', g:'der', c:'#fff8f1', b:'#fffdfa', luck:'#f4cdbd', feet:'#f4cdbd', nose:'nostrils', mouth:'smile', fav:'muffin', say:'Nie aufgeben! ✨'},
+    pinguin:  {hab:'eis', name:'Pingo', label:'Pinguin', g:'der', c:'#4f5f96', b:'#ffffff', mask:true, mouth:'beak', feet:'#ffa94d', arms:'wing', fav:'fisch', say:'Watschel!'},
+    gecko:    {hab:'wueste', name:'Gecki', label:'Gecko', g:'der', c:'#8be0a0', b:'#e5fbe8', spots:'#5cc47b', tail:'gecko', bigEyes:true, mouth:'wide', fav:'apfel', say:'Kletter kletter!'},
+    kugelfisch:{hab:'meer', name:'Pieks', label:'Kugelfisch', g:'der', c:'#ffd84d', b:'#fff4c2', body:'blob', belly:true, pspikes:true, fins:true, tail:'fish', mouth:'o', fav:'muffin', say:'Blubb blubb!'},
+    mammut:   {hab:'urzeit', name:'Manni', label:'Mammut', g:'das', c:'#a0704a', b:'#c99a72', ears:'round', earC:'#8a5c38', earIn:'#c99a72', hair:'#6e4528', trunk:true, mouth:'none', fav:'apfel', say:'Töröö! 🦣'},
+    greif:    {hab:'zauber', name:'Greifi', label:'Greif', g:'der', c:'#fffaf0', b:'#f6dfb4', bodyC:'#e2b26a', ears:'owl', mouth:'beak', beakC:'#ffc23d', feet:'#ffb84d', wings:['#b98048','#e8c28a'], tail:'lion', tuft:'#a8743f', fav:'fisch', say:'Kraaah! Halb Adler, halb Löwe! 🦅'},
+    phoenix:  {hab:'zauber', name:'Flammi', label:'Phönix', g:'der', c:'#ff8a3d', b:'#ffd166', ears:'flame', arms:'wing', limb:'#ff6b4a', mouth:'beak', beakC:'#ffd166', feet:'#ffb84d', wings:['#ff6b4a','#ffd166'], tail:'phoenix', fav:'muffin', say:'Ich glühe vor Freude! 🔥'},
+    pegasus:  {hab:'zauber', name:'Sternwind', label:'Pegasus', g:'der', c:'#ffffff', b:'#f4f1ff', ears:'cat', inner:'#ffd0e2', hair:'#c9b8ff', tail:'horse', wings:['#ffffff','#dcd3ff'], muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'Wiehern – ich kann fliegen! ✨'},
+    mondkatze:{hab:'zauber', name:'Luna', label:'Mondkatze', g:'die', c:'#7478e0', b:'#c3c5ff', ears:'cat', inner:'#ffc7e8', moon:true, nose:'tri', mouth:'w', fav:'fisch', say:'Miau im Mondschein!'},
+    einhorn:  {hab:'zauber', name:'Glitzer', label:'Einhorn', g:'das', c:'#ffffff', b:'#ffe8f5', ears:'cat', inner:'#ffc7e0', mane:true, horn:true, mouth:'smile', fav:'muffin', say:'Glitzer-Hallo! ✨'},
+    erdmann:  {hab:'wueste', name:'Luki', label:'Erdmännchen', g:'das', c:'#dcb47e', b:'#f5e1c0', ears:'small', earC:'#a67c50', patches:'#9a7048', nose:'dot', mouth:'smile', fav:'apfel', say:'Ich halte Wache!'},
+  };
+  const INK = '#2d2440';
+  function mix(a, b, t){
+    const p = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
+    const x = p(a), y = p(b);
+    return '#' + x.map((v,i) => Math.round(v + (y[i]-v)*t).toString(16).padStart(2,'0')).join('');
+  }
+  const line = f => mix(f, '#3a2e5c', .42);
+  const fs = (f, ns) => ns ? `fill="${f}"` : `fill="${f}" stroke="${line(f)}"`;
+  const E  = (cx,cy,rx,ry,f,rot=0,ns) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${fs(f,ns)}${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+  const Ep = (cx,cy,rx,ry,f,rot=0,ns) => E(cx,cy,rx,ry,f,rot,ns) + E(120-cx,cy,rx,ry,f,-rot,ns);
+  const P  = (d,f,ns) => `<path d="${d}" ${fs(f,ns)}/>`;
+  const mir = d => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m,x,y) => `${+(120-x).toFixed(2)} ${y}`);
+  const Pp = (d,f,ns) => P(d,f,ns) + P(mir(d),f,ns);
+  const S_ = (d,c,w=2.4) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+  const star = (x,y,r,f) => `<path d="M${x} ${y-r} Q${x} ${y} ${x+r} ${y} Q${x} ${y} ${x} ${y+r} Q${x} ${y} ${x-r} ${y} Q${x} ${y} ${x} ${y-r}Z" fill="${f}"/>`;
+  function spikes(cx,cy,rx,ry,out,n,a0,a1,f){
+    let d = '';
+    for (let i=0; i<=n*2; i++){
+      const a = (a0 + (a1-a0)*i/(n*2)) * Math.PI/180, o = i % 2 ? out : 0;
+      d += (i ? 'L' : 'M') + (cx + (rx+o)*Math.cos(a)).toFixed(1) + ' ' + (cy + (ry+o)*Math.sin(a)).toFixed(1) + ' ';
+    }
+    return P(d + 'Z', f);
+  }
+
+  function petSVG(type, acc = {}){
+    const t = A[type], c = t.c, b = t.b || mix(c, '#ffffff', .6), blob = t.body === 'blob';
+    const ec = t.earC || c, inner = t.inner || '#ffb8d2', limb = t.limb || c, feet = t.feet || limb;
+    const hy = t.hy ?? (blob ? 78 : 56), hrx = t.hrx ?? (blob ? 46 : 42), hry = t.hry ?? (blob ? 40 : 36);
+    const top = hy - hry;
+    const fy = t.fy ?? (blob ? 80 : 60);
+    const eyY = t.eyeY ?? fy, eyX = t.eyeX ?? 17;
+    let back = '', body = '', head = '', face = '', front = '';
+
+    /* --- hinter dem Kopf --- */
+    if (t.mane) back += E(38,20,12,12,'#c7a8ff') + E(54,12,12,12,'#ffa8d6') + E(72,14,11,11,'#8fd8ff') + E(86,25,9,9,'#fff0a0');
+    if (t.wool) for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; back += E((60 + 45*Math.cos(a)).toFixed(1), (hy + 39*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+    if (t.lmane){ // Löwenmähne: Kranz aus Locken um den Kopf, außen dunkler
+      for (let i=0; i<16; i++){ const a = i/16*Math.PI*2; back += E((60 + 46*Math.cos(a)).toFixed(1), (hy + 40*Math.sin(a)).toFixed(1), 14, 14, t.lmane); }
+      for (let i=0; i<16; i++){ const a = (i+.5)/16*Math.PI*2; back += E((60 + 38*Math.cos(a)).toFixed(1), (hy + 33*Math.sin(a)).toFixed(1), 12, 12, mix(t.lmane,'#ffd166',.35), 0, true); }
+    }
+    if (t.spikes) back += spikes(60, hy, 40, 34, 14, 12, 150, 390, t.spikes);
+    if (t.pspikes) back += spikes(60, hy, 44, 38, 8, 18, 0, 360, mix(c, '#ff9f43', .35));
+    if (t.luck){ // Kuscheldrache nach Lucys Plüschtier
+      const pk = t.luck;
+      // kleine Glitzerflügel mit gewelltem Rand (wie Finger), links gebaut und gespiegelt
+      const wing = s => {
+        const X = x => s < 0 ? x : 120 - x;
+        return [[2,64,6,11,-50],[9,55,6,11,-30],[19,51,6,11,-10],[29,54,5.5,10,10]].map(([x,y,rx,ry,r]) => E(X(x),y,rx,ry,pk,s*-r)).join('')
+          + E(X(23),77,17,12,pk,-s*35)
+          + [[16,72],[25,68],[22,82],[11,64]].map(([x,y]) => `<circle cx="${X(x)}" cy="${y}" r="1.3" fill="#ffffff"/>`).join('');
+      };
+      back += `<g class="wing dwl">${wing(-1)}</g><g class="wing dwr">${wing(1)}</g>`;
+      // große, seitlich abstehende Ohren
+      back += Ep(12,44,19,10,c,-12) + Ep(13,44,11,5,pk,-12,true);
+      // zwei Hörner neben den Ohren, leicht nach außen gebogen
+      back += Pp('M31 34 C26 24 23 14 25 4 C32 9 38 19 42 30Z', pk) + Pp('M28 12 C30 14 32 16 33 18', mix(pk,'#ffffff',.5), true);
+      // kurzer, dicker Schwanz mit Zacke
+      back += `<g class="ltail">${E(96,114,17,8,c,-25)}${E(106,104,3.5,4.5,pk)}</g>`;
+    }
+    if (t.wings){ // große Flügel hinter dem Körper (Federn oder Haut wie beim Flugsaurier), schlagen beim Fliegen
+      const [wc, wi] = t.wings;
+      const w = t.bat ? 'M46 96 C30 70 10 50 -10 40 C-2 56 0 66 6 72 C12 70 16 74 18 80 C24 78 30 84 34 90Z'
+                      : 'M46 98 C24 100 2 84 -6 34 C6 46 14 50 20 50 C16 62 20 70 28 72 C24 82 32 90 46 90Z';
+      const iw = t.bat ? 'M42 92 C30 76 14 60 0 52 C6 64 10 72 22 82Z' : 'M42 94 C26 94 10 80 4 54 C14 66 22 72 30 76 C32 84 38 88 42 90Z';
+      back += `<g class="wing dwl">${P(w,wc)}${P(iw,wi,true)}</g><g class="wing dwr">${P(mir(w),wc)}${P(mir(iw),wi,true)}</g>`;
+    }
+    if (t.crest) back += P(`M56 ${top+8} C68 ${top-12} 94 ${top-20} 110 ${top-18} C96 ${top-6} 80 ${top+4} 68 ${top+12}Z`, t.crest); // Flugsaurier-Kamm
+    if (t.hump) back += E(90,90,16,15,c);
+    switch (t.tail){
+      case 'squirrel': back += P('M80 118 C118 118 124 70 104 44 C94 32 74 40 84 56 C92 70 90 92 76 100Z', c) + P('M86 104 C108 100 112 74 100 58', mix(c,'#ffffff',.5), true); break;
+      case 'gecko':    back += P('M76 116 C100 126 114 108 104 94 C98 88 90 94 96 100 C100 108 90 112 78 108Z', c); break;
+      case 'jerboa':   back += S_('M80 116 C106 120 108 94 112 76', line(c), 3) + E(112,72,6,8,'#ffffff'); break;
+      case 'lion':     back += S_('M80 112 C104 118 112 100 106 82', line(t.bodyC || c), 5) + S_('M80 112 C104 118 112 100 106 82', t.bodyC || c, 3) + E(106,78,7,9,t.tuft || t.lmane); break;
+      case 'horse':    { const d = 'M80 104 C100 100 110 112 104 128'; back += S_(d, line(t.hair), 11) + S_(d, t.hair, 8); break; }
+      case 'plume': { // Papillon: großer, flauschiger Puschelschwanz (Lucys Wunsch)
+        const cx = 110, cy = 84;
+        back += S_('M78 108 C88 106 98 100 104 94', line('#ffffff'), 12) + S_('M78 108 C88 106 98 100 104 94', '#ffffff', 9);
+        for (let i=0; i<12; i++){ const a = i/12*Math.PI*2; back += E((cx + 22*Math.cos(a)).toFixed(1), (cy + 22*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+        back += E(cx, cy, 25, 25, '#ffffff', 0, true) + E(cx-6, cy-8, 8, 5, '#f4efe9', -20, true) + E(cx+8, cy+8, 7, 4, '#f4efe9', 20, true); break;
+      }
+      case 'kangaroo': back += P('M76 112 C98 124 118 120 122 106 C110 112 96 110 80 102Z', c); break;
+      case 'dino':     back += P('M78 114 C100 120 118 110 121 92 C112 102 98 104 82 102Z', c); break;
+      case 'phoenix':  back += P('M78 110 C100 112 118 96 121 76 C112 90 102 94 94 94 C106 86 110 74 107 60 C98 78 90 88 80 98Z', '#ff6b4a')
+                         + P('M82 106 C98 106 110 96 114 84 C106 92 98 96 88 98Z', '#ffd166', true); break;
+      case 'fish':     back += P('M98 80 L119 62 L115 96Z', mix(c,'#ff9f43',.35)); break;
+      case 'whale':    back += P('M96 98 C106 92 108 80 119 70 C121 86 117 100 104 106Z', c); break;
+    }
+    if (t.tentacles) [24,42,60,78,96].forEach((x,i) => back += `<g class="tent${i%2 ? ' t2' : ''}">${E(x, 104 + (i%2)*3, 9, 14, c, (x-60)/3)}</g>`);
+    if (t.fins) back += Ep(12,86,10,6,mix(c,'#ff9f43',.35),25);
+    if (t.flippers) back += Ep(16,104,13,7,c,35);
+    if (t.crab){
+      back += S_(`M44 ${top+4} L44 ${eyY+6} M76 ${top+4} L76 ${eyY+6}`, line(c), 4);
+      back += S_(mir('M22 100 L8 112 M28 108 L16 122') + ' M22 100 L8 112 M28 108 L16 122', line(c), 3.5);
+      back += Ep(12,64,8,13,c,-25) + Ep(22,62,8,13,c,25);
+      back += Ep(60-eyX, eyY, 10, 10, '#ffffff');
+    }
+    switch (t.ears){
+      case 'cat':    back += Pp('M28 40 L26 6 L54 24Z', ec) + Pp('M32 32 L31 14 L46 25Z', inner, true); break;
+      case 'bunny':  back += Ep(44,0,10,25,ec,-12) + Ep(44,3,5,17,inner,-12,true); break;
+      case 'round':  back += Ep(28,26,12,12,ec) + Ep(28,26,6,6,t.earIn || b,0,true); break;
+      case 'mouse':  back += Ep(24,30,17,17,ec) + Ep(24,30,10,10,inner,0,true); break;
+      case 'pig':    back += Pp('M30 34 L27 12 L48 24Z', ec) + Pp('M32 29 L31 17 L43 25Z', inner, true); break;
+      case 'owl':    back += Pp('M24 38 L18 8 L46 24Z', ec); break;
+      case 'bat':    back += Pp('M30 42 L16 -4 L54 22Z', ec) + Pp('M33 33 L23 6 L46 23Z', inner, true); break;
+      case 'small':  back += Ep(22,34,8,8,ec) + Ep(22,34,4,4,inner,0,true); break;
+      case 'fennec': back += Ep(22,8,13,28,ec,-32) + Ep(23,10,7,19,inner,-32,true); break;
+      case 'jerboa': back += Ep(36,-2,11,22,ec,-18) + Ep(36,1,6,15,inner,-18,true); break;
+      case 'frog':   back += Ep(40,eyY,15,15,c); break;
+      case 'koala': back += Ep(20,34,19,18,c) + Ep(21,35,12,11,'#f4f6f8',0,true) + [[8,26],[10,42],[16,20]].map(([x,y]) => Ep(x,y,4,4,'#f4f6f8',0,true)).join(''); break;
+      case 'puffy': { // Papillon (Lucys Wunsch): Ohren als lange, schräg aufgestellte Fell-Puschel
+        const [cx, cy, rx, ry, rot] = [19, 13, 11, 24, -42], th = rot * Math.PI / 180;
+        for (let i=0; i<14; i++){
+          const a = i/14*Math.PI*2, px = rx*Math.cos(a), py = ry*Math.sin(a);
+          back += Ep(+(cx + px*Math.cos(th) - py*Math.sin(th)).toFixed(1), +(cy + px*Math.sin(th) + py*Math.cos(th)).toFixed(1), 7.5, 7.5, ec);
+        }
+        back += Ep(cx, cy, rx+3, ry+3, ec, rot, true) + Ep(cx+2, cy+4, 4.5, 13, inner, rot, true); break;
+      }
+      case 'butterfly': { // Papillon: große, schräg aufgestellte Ohren wie Schmetterlingsflügel, außen lange helle Fransen
+        const fr = t.fringe || mix(ec, '#ffffff', .6);
+        back += [[2,-6,-30],[-4,5,-15],[-5,17,0],[-1,28,15],[7,38,30]].map(([x,y,r]) => Ep(x,y,5,13,fr,r)).join('')
+              + Pp('M44 30 C32 12 16 -4 2 -10 C-4 6 0 24 12 36 C22 44 34 40 44 34Z', ec)
+              + Pp('M38 28 C28 16 18 6 8 1 C8 14 14 26 24 32Z', inner, true); break;
+      }
+    }
+
+    /* --- Körper (stehende Tiere) --- */
+    if (!blob){
+      const bc = t.bodyC || c;
+      body += `<g class="foot fl">${E(47,119,9,6,feet)}</g><g class="foot fr">${E(73,119,9,6,feet)}</g>`;
+      if (t.wool) [[44,96],[60,92],[76,96],[42,108],[78,108],[60,114]].forEach(([x,y]) => body += E(x,y,11,11,bc));
+      if (t.fluffy){ // flauschiger Wolken-Körper wie ein Puschel
+        for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; body += E((60 + 23*Math.cos(a)).toFixed(1), (101 + 17*Math.sin(a)).toFixed(1), 9, 9, bc); }
+        body += E(60,101,26,20,bc,0,true) + E(52,106,6,4,'#f4efe9',-15,true) + E(70,96,5,3.5,'#f4efe9',15,true);
+      } else body += E(60,100,25,20,bc);
+      if (t.shell){
+        body += E(60,101,29,21,t.shell);
+        const s = mix(t.shell,'#ffffff',.3);
+        body += E(60,99,8,6,s,0,true) + Ep(45,96,5,4,s,0,true) + Ep(48,109,5,4,s,0,true);
+      } else if (!t.wool) {
+        body += E(60,104,15,12,b,0,true);
+      }
+      if (t.flank) body += E(81,96,7,8,t.flank,-15); // dunkler Fleck an der Seite
+      if (t.pouch){ // Känguru: Baby schaut aus dem Beutel
+        body += Ep(55,93,2.5,4,c) + E(60,99,7,6,c) + `<circle cx="57.5" cy="99" r="1.3" fill="${INK}"/><circle cx="62.5" cy="99" r="1.3" fill="${INK}"/>`
+              + E(60,108,14,8,mix(b,'#c08a5a',.3));
+      }
+      if (t.ruff){ // flauschige Brustmähne: außen Locken mit Kontur, innen ohne, damit es weich ineinander übergeht
+        [[45,93,9],[75,93,9],[49,105,8],[71,105,8],[60,112,7]].forEach(([x,y,r]) => body += E(x,y,r,r,'#ffffff'));
+        body += E(60,100,16,13,'#ffffff',0,true);
+      }
+      if (t.neck){ // Brachiosaurus: langer, kräftiger Hals und dicker Bauch mit Flecken
+        const d = `M60 ${hy+8} L60 92`;
+        body += E(60,104,31,22,c) + E(60,108,18,12,b,0,true) + S_(d, line(c), 33) + S_(d, c, 28)
+              + [[40,98,4],[78,100,5],[72,110,3],[60,60,3],[57,74,2.5]].map(([x,y,r]) => E(x,y,r,r*.8,mix(c,'#3a8f7d',.35),0,true)).join('');
+      }
+      body += t.arms === 'wing'
+        ? `<g class="wing wl">${E(35,98,6,11,limb,35)}</g>`
+        : E(37,98,6,8,limb,30);
+    }
+
+    /* --- Kopf / Hauptform --- */
+    head += E(60, hy, hrx, hry, c);
+    if (blob && t.belly) head += E(60, hy+16, 28, 18, b, 0, true);
+    if (t.pumpkin) [13, 27].forEach(dx => head += S_(`M${60-dx} ${top+4} Q${60-dx*1.4} ${hy} ${60-dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2) + S_(`M${60+dx} ${top+4} Q${60+dx*1.4} ${hy} ${60+dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2));
+    head += `<ellipse cx="${60-hrx*.48}" cy="${hy-hry*.5}" rx="10" ry="6" fill="#ffffff" opacity=".5" transform="rotate(-20 ${60-hrx*.48} ${hy-hry*.5})"/>`;
+
+    /* --- Gesicht --- */
+    if (t.mask) face += P('M60 30 C46 18 22 28 24 54 C26 76 44 86 60 86 C76 86 94 76 96 54 C98 28 74 18 60 30Z', '#ffffff', true);
+    if (t.muzzle) face += E(60, fy+8, 13, 9, b, 0, true);
+    if (t.luck) face += E(60, eyY-9, 4, 8, t.luck, 0, true) + E(60, fy+9, 18, 12, b); // Stirnfleck + breite Schnauze
+    if (t.patches) face += Ep(60-eyX, eyY, 10, 11, t.patches, 15, true);
+    if (t.pmask){ // Papillon-Maske: außen dunkel, um die Augen rotbraun, schmale weiße Blesse in der Mitte
+      face += Pp('M57 22 C44 20 26 26 22 42 C20 54 30 64 44 62 C52 60 56 50 56 40Z', t.pmask, true);
+      if (t.tanC) face += Pp('M54 40 C46 38 36 44 36 54 C36 62 46 66 54 62 C56 56 56 46 54 40Z', t.tanC, true);
+    }
+    if (t.spots) face += E(88, hy-14, 5, 4, t.spots, 0, true) + E(94, hy-2, 3.5, 3, t.spots, 0, true) + E(30, hy-20, 4, 3, t.spots, 0, true);
+    if (t.stripes) face += S_('M54 24 L55 31 M60 22 L60 30 M66 24 L65 31', line(c), 2.4);
+    if (t.moon) face += P('M64 20 A9 9 0 1 0 64 38 A7 7 0 1 1 64 20Z', '#ffe27a');
+    if (t.eyeRing) face += Ep(60-eyX, eyY, 13, 13, b);
+    const er = t.bigEyes ? [8, 9.5] : [6.5, 7.5], ex = [60-eyX, 60+eyX];
+    face += `<g class="eo">` + ex.map(x => t.pumpkin
+      ? `<path d="M${x-9} ${eyY+6} L${x+9} ${eyY+6} L${x} ${eyY-9}Z" fill="#ffd23f" stroke="#9a4a0e"/>` + P(`M${x-4} ${eyY+4} L${x+4} ${eyY+4} L${x} ${eyY-3}Z`, '#fff6b8', true)
+      : `<ellipse cx="${x}" cy="${eyY}" rx="${er[0]}" ry="${er[1]}" fill="${INK}"/><circle cx="${x+2.3}" cy="${eyY-3}" r="${(er[0]*.42).toFixed(1)}" fill="#fff"/><circle cx="${x-2.2}" cy="${eyY+3.2}" r="${(er[0]*.2).toFixed(1)}" fill="#fff"/>`
+    ).join('') + `</g>`;
+    if (t.pumpkin) face += `<path d="M56.5 ${fy+4} L63.5 ${fy+4} L60 ${fy-1}Z" fill="#ffd23f" stroke="#9a4a0e"/>`;
+    face += `<g class="eh">` + ex.map(x => S_(`M${x-6} ${eyY+1} Q${x} ${eyY-6} ${x+6} ${eyY+1}`, INK, 3)).join('') + `</g>`;
+    face += `<g class="es">` + ex.map(x => S_(`M${x-6} ${eyY} Q${x} ${eyY+5} ${x+6} ${eyY}`, INK, 3)).join('') + `</g>`; // Schlafaugen
+    face += `<g opacity=".6">` + Ep(60-(t.blushX ?? eyX+12), fy+9, t.neck ? 5 : 7, t.neck ? 3.5 : 4.5, '#ff8fb8', 0, true) + `</g>`;
+    if (t.whiskers) face += `<g fill="${line(b)}">` + [[50,fy+9],[46,fy+12],[70,fy+9],[74,fy+12]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('') + `</g>`;
+
+    let my = fy + (t.nose === 'snout' ? 14 : t.muzzle ? 11 : 8);
+    switch (t.nose){
+      case 'tri':      face += P(`M57.5 ${fy+3} L62.5 ${fy+3} L60 ${fy+6}Z`, '#ff8fb8', true); break;
+      case 'dot':      face += E(60, fy+4, 3, 2.2, INK, 0, true); break;
+      case 'snout':    face += E(60, fy+7, 8, 5.5, '#ff9cc2') + E(57, fy+7, 1.5, 2.2, '#d0578a', 0, true) + E(63, fy+7, 1.5, 2.2, '#d0578a', 0, true); break;
+      case 'koala':    face += E(60, fy+1, 7, 9, '#4a4458', 0, true) + E(58, fy-3, 2, 2.5, '#8a8496', 0, true); my += 4; break; // große Koala-Nase
+      case 'nostrils': face += E(56, fy+5, 1.5, 1.2, INK, 0, true) + E(64, fy+5, 1.5, 1.2, INK, 0, true); break;
+    }
+    switch (t.mouth){
+      case 'w':     face += `<path class="mouth" d="M54 ${my} Q57 ${my+4} 60 ${my} Q63 ${my+4} 66 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
+      case 'wide':  face += `<path class="mouth" d="M46 ${my-2} Q60 ${my+9} 74 ${my-2}" fill="none" stroke="${INK}" stroke-width="2.4"/>`; break;
+      case 'o':     face += `<ellipse class="mouth" cx="60" cy="${my+1}" rx="3.5" ry="4" fill="#c2455f"/>`; break;
+      case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs(t.beakC || '#ffa94d')}/>`; break;
+      case 'longbeak': face += `<path class="mouth" d="M54 ${fy+3} L66 ${fy+3} L60 ${fy+20}Z" ${fs('#ffb84d')}/>`; break;
+      case 'none':  break;
+      case 'jack':  face += `<path class="mouth" d="M40 ${my} Q60 ${my+28} 80 ${my} Q72 ${my+7} 64 ${my+7} L64 ${my+11} L56 ${my+11} L56 ${my+7} Q48 ${my+7} 40 ${my}Z" fill="#ffd23f" stroke="#9a4a0e"/>`; break; // geschnitztes Kürbisgrinsen mit Zahn
+      case 'tongue': face += `<ellipse cx="60" cy="${my+4}" rx="4" ry="5" fill="#ff8fb0" stroke="#d65f86" stroke-width="1.5"/><path class="mouth" d="M53 ${my} Q56.5 ${my+4} 60 ${my} Q63.5 ${my+4} 67 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
+      default:      face += `<path class="mouth" d="M55 ${my} Q60 ${my+5} 65 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
+    }
+    if (t.fang) face += P(`M62 ${my+1.5} L65.5 ${my+1} L63.8 ${my+5}Z`, '#ffffff');
+    if (t.teeth) [[51,my+1.5],[57,my+3.5],[63,my+3.5],[69,my+1.5]].forEach(([x,y]) => face += P(`M${x-2.5} ${y} L${x+2.5} ${y} L${x} ${y+4.5}Z`, '#ffffff')); // T-Rex
+    if (t.trunk){ // Mammut: Stoßzähne und Rüssel
+      const tk = `M50 ${fy+6} C45 ${fy+20} 50 ${fy+30} 58 ${fy+31}`;
+      face += S_(tk, line('#fff8e8'), 7) + S_(tk, '#fff8e8', 4.5) + S_(mir(tk), line('#fff8e8'), 7) + S_(mir(tk), '#fff8e8', 4.5);
+      const tr = `M60 ${fy-4} C59 ${fy+12} 56 ${fy+24} 62 ${fy+31} C68 ${fy+36} 72 ${fy+29} 67 ${fy+26}`;
+      face += S_(tr, line(c), 12) + S_(tr, c, 9);
+    }
+
+    /* --- vor dem Kopf --- */
+    switch (t.ears){
+      case 'tuft':   front += P('M56 22 C52 8 60 4 61 14 C63 2 73 8 65 22Z', c); break;
+      case 'floppy': front += Ep(20,56,10,21,ec,18); break;
+      case 'sheep':  front += Ep(17,50,11,6,ec,28); break;
+      case 'flame':  // Phönix: Flammenkrone
+        front += P('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z', '#ff9f43') + P(mir('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z'), '#ff9f43')
+               + P('M60 24 C48 14 54 2 60 -8 C66 2 72 14 60 24Z', '#ffd166'); break;
+    }
+    if (t.horn) front += P('M55 24 L60 -8 L65 24Z', '#ffd966') + S_('M56.5 15 L63.5 12 M58 5 L62 3', '#e0a800', 2);
+    if (t.hair) front += E(53,22,7,7,t.hair) + E(61,18,8,8,t.hair) + E(69,22,6,6,t.hair);
+    if (t.narhorn) front += P(`M57 ${top+4} L60 ${top-34} L63 ${top+4}Z`, '#fff3d6') + S_(`M57.8 ${top-6} L62.2 ${top-9} M58.6 ${top-18} L61.4 ${top-20}`, '#d8c39a', 1.6);
+    if (t.spout) front += S_(`M60 ${top+2} C60 ${top-8} 52 ${top-12} 47 ${top-18} M60 ${top+2} C60 ${top-8} 68 ${top-12} 73 ${top-18}`, '#bfe9ff', 4) + `<circle cx="45" cy="${top-22}" r="3" fill="#bfe9ff"/><circle cx="75" cy="${top-22}" r="3" fill="#bfe9ff"/>`;
+    if (t.moon) front += star(92, 12, 6, '#ffe27a') + star(26, 6, 4, '#ffe27a');
+    if (t.explorer) front += E(60, top + 3, 36, 7, '#a0703f') + P(`M38 ${top + 3} C38 ${top - 20} 82 ${top - 20} 82 ${top + 3}Z`, '#c8925a')
+      + S_(`M39 ${top - 3} Q60 ${top - 8} 81 ${top - 3}`, '#7a4f2a', 3.5) + E(76, top - 6, 4, 4, '#ffd23f'); // Forscherhut mit Band und Abzeichen
+    if (t.pumpkin) front += P(`M55 ${top+5} C54 ${top-4} 56 ${top-12} 63 ${top-15} C67 ${top-11} 64 ${top-4} 65 ${top+5}Z`, '#6f8f3a')
+      + E(76, top-3, 10, 5, '#7cc45a', -20) + S_(`M65 ${top-9} q9 -9 13 -2 q2 5 -4 5`, '#5f9e3a', 2);
+    if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
+
+    /* --- Accessoires --- */
+    let over = '';
+    const em = (e, x, y, size, rot=0) => `<text class="acc-e" x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central"${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}>${e}</text>`;
+    if (acc.neck && ACCM[acc.neck]) over += em(ACCM[acc.neck].e, 60, blob ? hy+hry-8 : 92, 30);
+    if (acc.eyes && ACCM[acc.eyes]) over += em(ACCM[acc.eyes].e, 60, eyY+1, eyX*2 + 16);
+    if (acc.hat && ACCM[acc.hat]) over += em(ACCM[acc.hat].e, 60, t.hatY ?? top - 8, 48);
+    if (acc.side && ACCM[acc.side]) over += em(ACCM[acc.side].e, 92, top + 8, 26, 18);
+
+    return `<svg viewBox="0 -24 120 154" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t.label}">
+      <ellipse cx="60" cy="125" rx="${blob ? 36 : 28}" ry="4.5" fill="rgba(40,30,70,.14)"/>
+      <g stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">${back}${body}${head}${face}${front}</g>${over}
+    </svg>`;
+  }
+
+  const ORDER = ['papillon', 'fledermaus', 'capybara', 'loewe', 'drache', 'pinguin', 'gecko', 'kugelfisch', 'mammut', 'greif', 'phoenix', 'pegasus', 'mondkatze', 'einhorn', 'erdmann'];
+  const ANIMALS = Object.fromEntries(ORDER.map((id) => [id, { name: A[id].name, label: A[id].label }]));
+  const BEANS = (x, y) => `<ellipse cx="${x}" cy="${y + 3}" rx="5" ry="4" fill="#ff9fb6"/><circle cx="${x - 6.5}" cy="${y - 3.5}" r="2.3" fill="#ff9fb6"/><circle cx="${x}" cy="${y - 6}" r="2.3" fill="#ff9fb6"/><circle cx="${x + 6.5}" cy="${y - 3.5}" r="2.3" fill="#ff9fb6"/>`;
+  // Stupspfote im Stil der Tiere: Farbe vom Arm, Pfote in Fußfarbe, Säugetiere mit Pfotenballen
+  function armSVG(id) {
+    const t = A[id], fin = id === 'kugelfisch' ? mix(t.c, '#ff9f43', .35) : null;
+    const c = fin || t.limb || t.bodyC || t.c, p = (id === 'pinguin' || fin) ? c : id === 'greif' ? '#ffffff' : (t.feet || c); // Greifi: weiße Pfote (Lucys Wunsch)
+    const st = (f) => `fill="${f}" stroke="${line(f)}" stroke-width="3.6"`;
+    let paw = `<ellipse cx="130" cy="200" rx="12.5" ry="10.5" ${st(p)}/>`;
+    if (['papillon', 'capybara', 'loewe', 'mondkatze', 'erdmann'].includes(id)) paw += BEANS(130, 202);
+    if (['fledermaus', 'drache', 'greif', 'phoenix'].includes(id)) paw += `<path d="M123 207 q7 8 14 0" stroke="${line(p)}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    const arm = `<g class="arm"><rect x="121" y="146" width="18" height="56" rx="9" ${st(c)}/>${paw}</g>`;
+    const off = { kugelfisch: [26, 6], mammut: [14, 2] }[id]; // Pfote nicht vors Gesicht / vor den Rüssel
+    return off ? `<g transform="translate(${off[0]} ${off[1]})">${arm}</g>` : arm;
+  }
+
+  function animalSVG(id, viewBox = '0 -30 200 250') {
+    const full = petSVG(id), inner = full.slice(full.indexOf('>') + 1, full.lastIndexOf('</svg>'));
+    // MathPets-Zeichnung (120×154) auf die Bühne des Tiergenerators (200×250) skalieren
+    return `<svg class="animal a-${id}" viewBox="${viewBox}" aria-hidden="true"><g class="whole"><g class="lean">` +
+      `<g transform="translate(4 -30) scale(1.6) translate(0 24)">${inner}</g>` + armSVG(id) + '</g></g></svg>';
+  }
+
+  // ---------- Storage ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('tg_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('tg_' + k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  // ---------- State ----------
+  const TAU = Math.PI * 2;
+  const COLORS = ['#ff6b81', '#ffd166', '#4cc9f0', '#ff9f5a', '#9be3b0', '#b79cf2', '#ff9ecf', '#5fd4c4'];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let items = store.get('items', null);
+  if (!Array.isArray(items) || items.length < 2) items = ['Alex', 'Franzi', 'Gustav', 'Tim', 'Sarah'];
+  let animal = store.get('animal', 'papillon');
+  if (!ANIMALS[animal]) animal = 'papillon';
+  let sound = store.get('sound', true);
+  let rot = 0, spin = null, pushing = false, winner = null, editIdx = null, editOld = '', editNew = false;
+  let armEl, leanEl, armAnims = [], armAngle = 21;
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), slot = $('animal-slot'), canvas = $('wheel'), ctx = canvas.getContext('2d');
+  const spinBtn = $('spin-btn'), editor = $('editor'), input = $('edit-input'), result = $('result');
+  const fx = $('confetti'), fctx = fx.getContext('2d');
+
+  const mod = (a, m) => ((a % m) + m) % m;
+  const colorFor = (i, n) => (n % COLORS.length === 1 && i === n - 1) ? COLORS[(i + 1) % COLORS.length] : COLORS[i % COLORS.length];
+  const saveItems = () => store.set('items', items);
+
+  // ---------- Audio ----------
+  let actx = null, lastTick = 0;
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } }
+    if (actx && actx.state === 'suspended') actx.resume();
+  }
+  function tone(freq, dur, type = 'sine', vol = .15, when = 0, slideTo) {
+    if (!sound || !actx) return;
+    const t = actx.currentTime + when, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + .01);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .03);
+  }
+  const sfx = {
+    tick() { const n = performance.now(); if (n - lastTick < 28) return; lastTick = n; tone(1500, .035, 'square', .045); },
+    boop() { tone(300, .2, 'sine', .22, 0, 720); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'triangle', .16, i * .1)); tone(1319, .55, 'triangle', .12, .42); }
+  };
+
+  // ---------- Wheel drawing ----------
+  let cw = 300, dpr = 1;
+  function resize() {
+    cw = canvas.clientWidth || 300;
+    dpr = Math.min(window.devicePixelRatio || 1, 3);
+    canvas.width = Math.round(cw * dpr); canvas.height = Math.round(cw * dpr);
+    fx.width = innerWidth * dpr; fx.height = innerHeight * dpr;
+  }
+
+  const displayFont = '"Baloo 2", "Arial Rounded MT Bold", sans-serif';
+
+  function draw(t) {
+    const R = cw / 2, c = ctx, n = items.length, seg = TAU / n;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, cw, cw);
+    c.save(); c.translate(R, R);
+
+    // rim
+    c.beginPath(); c.arc(0, 0, R - 1, 0, TAU); c.fillStyle = '#5b3fa0'; c.fill();
+    c.beginPath(); c.arc(0, 0, R - 1, 0, TAU); c.lineWidth = R * .02; c.strokeStyle = '#7d5fcf'; c.stroke();
+
+    // bulbs
+    const nb = 20, active = spin || pushing;
+    for (let i = 0; i < nb; i++) {
+      const a = i / nb * TAU, x = Math.cos(a) * R * .945, y = Math.sin(a) * R * .945;
+      const lit = active ? (i + Math.floor(t / 90)) % 2 === 0 : (Math.sin(t / 520 + i * 1.7) > -.2);
+      c.beginPath(); c.arc(x, y, R * .027, 0, TAU);
+      if (lit) { c.shadowColor = '#ffe27a'; c.shadowBlur = R * .05; c.fillStyle = '#fff6c4'; }
+      else { c.shadowBlur = 0; c.fillStyle = '#9b84d9'; }
+      c.fill();
+    }
+    c.shadowBlur = 0;
+
+    // inner ring
+    c.beginPath(); c.arc(0, 0, R * .895, 0, TAU); c.fillStyle = '#ff5d8f'; c.fill();
+
+    // segments
+    const sr = R * .86;
+    for (let i = 0; i < n; i++) {
+      const a0 = rot - Math.PI / 2 + i * seg;
+      c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, sr, a0, a0 + seg); c.closePath();
+      c.fillStyle = colorFor(i, n); c.fill();
+    }
+    c.lineWidth = Math.max(2, R * .014); c.strokeStyle = '#ffffff';
+    for (let i = 0; i < n; i++) {
+      const a0 = rot - Math.PI / 2 + i * seg;
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a0) * sr, Math.sin(a0) * sr); c.stroke();
+    }
+
+    // focus (editing or winner)
+    const focus = editIdx !== null ? editIdx : (winner !== null && !spin ? winner : null);
+    if (focus !== null && focus < n) {
+      for (let i = 0; i < n; i++) {
+        if (i === focus) continue;
+        const a0 = rot - Math.PI / 2 + i * seg;
+        c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, sr, a0, a0 + seg); c.closePath();
+        c.fillStyle = 'rgba(43, 32, 69, .34)'; c.fill();
+      }
+      const a0 = rot - Math.PI / 2 + focus * seg;
+      c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, sr - R * .02, a0, a0 + seg); c.closePath();
+      c.lineWidth = R * (.022 + .014 * Math.sin(t / 160)); c.strokeStyle = '#ffffff'; c.lineJoin = 'round'; c.stroke();
+    }
+
+    // labels
+    c.fillStyle = '#2b2045'; c.textAlign = 'right'; c.textBaseline = 'middle';
+    const maxW = sr * .66, maxFs = Math.min(R * .13, seg * sr * .36);
+    for (let i = 0; i < n; i++) {
+      let text = items[i];
+      if (!text) text = i === editIdx ? '…' : '?';
+      const mid = rot - Math.PI / 2 + (i + .5) * seg;
+      c.save(); c.rotate(mid);
+      let fs = maxFs;
+      c.font = `800 ${fs}px ${displayFont}`;
+      const w = c.measureText(text).width;
+      if (w > maxW) { fs = Math.max(10, fs * maxW / w); c.font = `800 ${fs}px ${displayFont}`; }
+      while (c.measureText(text).width > maxW && text.length > 2) text = text.slice(0, -2) + '…';
+      c.fillText(text, sr - R * .07, fs * .06);
+      c.restore();
+    }
+
+    // hub
+    c.shadowColor = 'rgba(43,32,69,.3)'; c.shadowBlur = R * .05;
+    c.beginPath(); c.arc(0, 0, R * .12, 0, TAU); c.fillStyle = '#ffffff'; c.fill();
+    c.shadowBlur = 0;
+    c.lineWidth = R * .022; c.strokeStyle = '#ff5d8f'; c.stroke();
+    if (!spin && !pushing && editIdx === null) {
+      c.lineWidth = R * .022; c.lineCap = 'round'; c.strokeStyle = '#5b3fa0';
+      const p = R * .05;
+      c.beginPath(); c.moveTo(-p, 0); c.lineTo(p, 0); c.moveTo(0, -p); c.lineTo(0, p); c.stroke();
+    } else {
+      // tiny paw print
+      c.fillStyle = '#ff9fb6';
+      c.beginPath(); c.ellipse(0, R * .018, R * .035, R * .028, 0, 0, TAU); c.fill();
+      [[-.042, -.03], [0, -.048], [.042, -.03]].forEach(([x, y]) => { c.beginPath(); c.arc(x * R, y * R, R * .016, 0, TAU); c.fill(); });
+    }
+    c.restore();
+  }
+
+  const pointerIdx = () => Math.floor(mod(-rot, TAU) / (TAU / items.length)) % items.length;
+
+  // ---------- Animal ----------
+  function renderAnimal(pop) {
+    slot.innerHTML = animalSVG(animal);
+    armEl = slot.querySelector('.arm'); leanEl = slot.querySelector('.lean');
+    armAnims = []; armAngle = 21;
+    $('picked-name').textContent = ANIMALS[animal].name;
+    slot.setAttribute('aria-label', ANIMALS[animal].name + ' stupst das Rad an');
+    document.querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', b.dataset.id === animal ? 'true' : 'false'));
+    if (pop) { slot.classList.remove('pop'); void slot.offsetWidth; slot.classList.add('pop'); }
+  }
+
+  function armTo(angles, opts) {
+    armAnims.forEach((a) => a.cancel());
+    const frames = angles.map((d) => ({ transform: `rotate(${d}deg)` }));
+    const a = armEl.animate(frames, Object.assign({ fill: 'forwards' }, opts));
+    armAnims = [a];
+    armAngle = angles[angles.length - 1];
+    return a;
+  }
+
+  function buildPicker() {
+    const box = $('picker');
+    box.innerHTML = ORDER.map((id) =>
+      `<button class="pick" id="pick-${id}" data-id="${id}" aria-label="${ANIMALS[id].name}" aria-pressed="false">${animalSVG(id, '10 -36 180 180')}</button>`
+    ).join('');
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('.pick');
+      if (!b || spin || pushing) return;
+      animal = b.dataset.id; store.set('animal', animal);
+      winner = null; result.hidden = true; stage.classList.remove('cheer');
+      renderAnimal(true);
+      // little hello wave
+      setTimeout(() => armTo([21, -120, -95, -120, 21], { duration: 1100, easing: 'ease-in-out' }).finished.catch(() => {}), 250);
+    });
+  }
+
+  // ---------- Spin ----------
+  function startSpin() {
+    if (spin || pushing) return;
+    if (items.length < 2) { toast('Mindestens zwei Felder braucht das Rad.'); return; }
+    if (editIdx !== null) closeEditor();
+    ensureAudio();
+    result.hidden = true; winner = null;
+    stage.classList.remove('cheer');
+    pushing = true; spinBtn.disabled = true;
+
+    const pushDur = reduce ? 350 : 720;
+    armTo([armAngle, 62, -42, -30], { duration: pushDur, easing: 'ease-in-out' }).finished.catch(() => {});
+    if (!reduce) {
+      leanEl.animate([
+        { transform: 'none' },
+        { transform: 'translateX(-5px) rotate(-6deg)', offset: .4 },
+        { transform: 'translateX(7px) rotate(6deg)', offset: .66 },
+        { transform: 'none' }
+      ], { duration: pushDur + 200, easing: 'ease-in-out' });
+    }
+
+    setTimeout(() => {
+      pushing = false;
+      const n = items.length, seg = TAU / n;
+      const w = Math.floor(Math.random() * n);
+      const desired = (w + .15 + Math.random() * .7) * seg;
+      const delta = mod(mod(-desired, TAU) - mod(rot, TAU), TAU);
+      const spins = reduce ? 1 : 5 + Math.floor(Math.random() * 3);
+      spin = {
+        t0: performance.now(), from: rot,
+        to: rot + spins * TAU + delta,
+        dur: reduce ? 1800 : 4800 + Math.random() * 1400,
+        armBack: false, last: pointerIdx()
+      };
+      stage.classList.add('spinning');
+      sfx.boop();
+      armTo([armAngle, -140], { duration: 420, easing: 'ease-out' }).finished.then(() => {
+        if (spin && !spin.armBack) armTo([-140, -110, -140], { duration: 520, iterations: Infinity, easing: 'ease-in-out' });
+      }).catch(() => {});
+    }, Math.round(pushDur * .62));
+  }
+
+  const ease = (p) => 1 - Math.pow(1 - p, 4);
+
+  function stepSpin(t) {
+    const p = Math.min(1, (t - spin.t0) / spin.dur);
+    rot = spin.from + (spin.to - spin.from) * ease(p);
+    const idx = pointerIdx();
+    if (idx !== spin.last) { spin.last = idx; sfx.tick(); }
+    if (!spin.armBack && t - spin.t0 > spin.dur - 1350) {
+      spin.armBack = true;
+      armTo([-140, 21], { duration: 750, easing: 'ease-in-out' }).finished.catch(() => {});
+    }
+    if (p >= 1) finishSpin();
+  }
+
+  function finishSpin() {
+    spin = null;
+    rot = mod(rot, TAU);
+    winner = pointerIdx();
+    stage.classList.remove('spinning');
+    void stage.offsetWidth;
+    stage.classList.add('cheer');
+    armTo([21, 13, 21, 13, 21], { duration: 650, easing: 'ease-in-out' }).finished.catch(() => {});
+    sfx.win();
+    burst();
+    const name = items[winner] || '?';
+    $('winner-name').textContent = name;
+    $('winner-by').textContent = `${ANIMALS[animal].name} zeigt drauf!`;
+    $('result-remove').disabled = items.length <= 2;
+    $('live').textContent = `Gewinner: ${name}`;
+    setTimeout(() => { result.hidden = false; spinBtn.disabled = false; }, reduce ? 100 : 500);
+    setTimeout(() => stage.classList.remove('cheer'), 2200);
+  }
+
+  // ---------- Editing ----------
+  function openEditor(i, isNew) {
+    result.hidden = true; winner = null;
+    editIdx = i; editOld = items[i]; editNew = !!isNew;
+    input.value = items[i];
+    $('edit-label').textContent = isNew ? 'Neues Feld' : `Feld ${i + 1} von ${items.length}`;
+    $('edit-delete').disabled = items.length <= 2 && !isNew;
+    editor.hidden = false;
+    input.focus({ preventScroll: true }); input.select();
+  }
+  function closeEditor() {
+    if (editIdx === null) return;
+    const v = input.value.trim();
+    if (!v) {
+      if (editNew) items.splice(editIdx, 1);
+      else items[editIdx] = editOld;
+    } else items[editIdx] = v;
+    editIdx = null; editor.hidden = true;
+    saveItems(); input.blur();
+  }
+  function deleteField() {
+    if (editIdx === null) return;
+    if (items.length <= 2 && !editNew) { toast('Mindestens zwei Felder braucht das Rad.'); return; }
+    items.splice(editIdx, 1);
+    editIdx = null; editor.hidden = true; saveItems(); input.blur();
+  }
+  function addField() {
+    if (spin || pushing) return;
+    if (editIdx !== null) closeEditor();
+    if (items.length >= 16) { toast('Mehr als 16 Felder passen nicht aufs Rad.'); return; }
+    items.push('');
+    openEditor(items.length - 1, true);
+  }
+
+  input.addEventListener('input', () => { if (editIdx !== null) items[editIdx] = input.value; });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); closeEditor(); }
+    if (e.key === 'Escape') { input.value = editOld; closeEditor(); }
+  });
+  $('edit-done').addEventListener('click', closeEditor);
+  $('edit-delete').addEventListener('click', deleteField);
+
+  canvas.addEventListener('click', (e) => {
+    if (spin || pushing) return;
+    const r = canvas.getBoundingClientRect(), R = r.width / 2;
+    const dx = e.clientX - r.left - R, dy = e.clientY - r.top - R, d = Math.hypot(dx, dy);
+    if (!result.hidden) { result.hidden = true; winner = null; return; }
+    if (d < R * .13) { addField(); return; }
+    if (d > R * .87) { if (editIdx !== null) closeEditor(); return; }
+    const local = mod(Math.atan2(dy, dx) + Math.PI / 2 - rot, TAU);
+    const i = Math.floor(local / (TAU / items.length)) % items.length;
+    if (editIdx !== null) closeEditor();
+    if (i < items.length) openEditor(i, false);
+  });
+
+  // ---------- Result card ----------
+  $('result-close').addEventListener('click', () => { result.hidden = true; winner = null; });
+  $('result-again').addEventListener('click', startSpin);
+  $('result-remove').addEventListener('click', () => {
+    if (winner === null || items.length <= 2) return;
+    const name = items[winner];
+    items.splice(winner, 1); saveItems();
+    winner = null; result.hidden = true;
+    toast(`„${name || '?'}“ ist raus.`);
+  });
+
+  // ---------- Controls ----------
+  spinBtn.addEventListener('click', startSpin);
+  slot.addEventListener('click', startSpin);
+  slot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startSpin(); } });
+  $('add-btn').addEventListener('click', addField);
+  function paintSound() {
+    $('sound-waves').hidden = !sound; $('sound-off').hidden = sound;
+    $('sound-btn').setAttribute('aria-label', sound ? 'Ton aus' : 'Ton an');
+    $('sound-btn').setAttribute('aria-pressed', String(sound));
+  }
+  $('sound-btn').addEventListener('click', () => { sound = !sound; store.set('sound', sound); paintSound(); if (sound) { ensureAudio(); sfx.tick(); } });
+
+  let toastTimer;
+  function toast(msg, ms = 2600) {
+    const el = $('toast'); el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, ms);
+  }
+
+  // ---------- Confetti ----------
+  let bits = [];
+  function burst() {
+    if (reduce) return;
+    const r = canvas.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height * .15;
+    for (let i = 0; i < 110; i++) {
+      const a = -Math.PI / 2 + (Math.random() - .5) * 2.4, v = 5 + Math.random() * 9;
+      bits.push({
+        x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+        s: 5 + Math.random() * 6, r: Math.random() * TAU, vr: (Math.random() - .5) * .4,
+        c: COLORS[i % COLORS.length], life: 1, round: Math.random() < .3
+      });
+    }
+  }
+  function stepConfetti() {
+    fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    fctx.clearRect(0, 0, innerWidth, innerHeight);
+    if (!bits.length) return;
+    bits.forEach((b) => {
+      b.vy += .28; b.vx *= .985; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life -= .007;
+      fctx.save(); fctx.globalAlpha = Math.max(0, Math.min(1, b.life * 1.5));
+      fctx.translate(b.x, b.y); fctx.rotate(b.r); fctx.fillStyle = b.c;
+      if (b.round) { fctx.beginPath(); fctx.arc(0, 0, b.s / 2, 0, TAU); fctx.fill(); }
+      else fctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2);
+      fctx.restore();
+    });
+    bits = bits.filter((b) => b.life > 0 && b.y < innerHeight + 40);
+  }
+
+  // ---------- Loop ----------
+  function frame(t) {
+    if (spin) stepSpin(t);
+    draw(t);
+    stepConfetti();
+    requestAnimationFrame(frame);
+  }
+
+  buildPicker();
+  renderAnimal(false);
+  paintSound();
+  resize();
+  addEventListener('resize', resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas);
+  requestAnimationFrame(frame);
+  if (document.fonts && document.fonts.load) document.fonts.load('800 20px "Baloo 2"').catch(() => {});
+  if (!store.get('seenHint', false)) {
+    setTimeout(() => toast('Tippe auf ein Feld, um den Namen zu ändern. Das Plus in der Mitte macht ein neues Feld.', 5200), 700);
+    store.set('seenHint', true);
+  }
+})();
+</script>
+</body>
+</html>
