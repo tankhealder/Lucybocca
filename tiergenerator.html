@@ -29,6 +29,7 @@
   @supports (height: 100dvh) {
     :root { --W: min(calc(100vw - 32px), calc((100dvh - 250px) / 1.5), 440px); }
   }
+  [hidden] { display: none !important; } /* versteckte Fenster (Anziehen, Karten) wirklich ausblenden */
   html, body { height: 100%; }
   body {
     margin: 0;
