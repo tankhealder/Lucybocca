@@ -157,7 +157,7 @@ main{flex:1;position:relative;min-height:0}
     <section class="screen active" id="menu">
       <div class="hero"><div class="owl">🦉</div><div class="speech" id="owlSay">Hallo! Ich bin Ella, die Entdecker-Eule. Lass uns Europa erkunden!</div></div>
       <div class="rank"><b id="rankName">Kartenleser</b> · <span id="rankInfo">0 von 156 Sternen</span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
-      <div class="lvl" id="lvlSwitch"><button data-lvl="1">Stufe 1<small>Zeigen &amp; Benennen</small></button><button data-lvl="2">Stufe 2 ✍️<small>Leere Karte: Städte &amp; Flüsse einzeichnen</small></button></div>
+      <div class="lvl" id="lvlSwitch"><button data-lvl="1">Stufe 1<small>Zeigen &amp; Benennen</small></button><button data-lvl="2">Stufe 2 ✍️<small>Städte blind einzeichnen</small></button></div>
       <div class="modes">
         <button class="mode" data-mode="explore"><span class="e">🗺️</span><b>Entdecken</b><small>Tippe auf die Karte – ich sage dir, was dort ist</small></button>
         <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Zeigen oder benennen, Kategorien wählbar</small></button>
@@ -183,6 +183,7 @@ main{flex:1;position:relative;min-height:0}
           <button class="btn" id="ansOk">✔</button>
           <button class="btn alt" id="ansShow">💡 Anzeigen</button>
         </div>
+        <div class="btns" id="showRow" hidden><button class="btn alt" id="showShow">💡 Anzeigen</button></div>
         <div class="btns" id="drawRow" hidden><button class="btn alt" id="drawClear">🧽 Löschen</button><button class="btn alt" id="drawShow">💡</button><button class="btn" id="drawOk">✔ Fertig</button></div>
         <div class="btns" id="nextRow" hidden><button class="btn" id="nextBtn">Weiter ➜</button></div>
         <div class="feedback" id="feedback"></div>
@@ -197,7 +198,7 @@ main{flex:1;position:relative;min-height:0}
   <div class="chips" id="catChips"></div>
   <p>Aufgaben</p>
   <div class="chips" id="typeChips"></div>
-  <p id="setupNote" hidden>✍️ <b>Stufe 2:</b> Städte und Flüsse zeichnest du auf der leeren Karte selbst ein.</p>
+  <p id="setupNote" hidden>✍️ <b>Stufe 2:</b> Städte zeichnest du selbst ein – die Stadtpunkte sind nicht zu sehen.</p>
   <div class="btns"><button class="btn alt" data-close>Zurück</button><button class="btn" id="setupGo">Los geht’s!</button></div>
 </div></div>
 
@@ -236,7 +237,7 @@ main{flex:1;position:relative;min-height:0}
 
 <div class="modal" id="progModal"><div class="mcard prog">
   <h2>Dein Fortschritt ⭐</h2>
-  <p>⭐ gezeigt · ⭐ benannt · ⭐ dreimal hintereinander richtig · bei Städten und Flüssen: ⭐ eingezeichnet (Stufe 2)</p>
+  <p>⭐ gezeigt · ⭐ benannt · ⭐ dreimal hintereinander richtig · bei Städten: ⭐ eingezeichnet (Stufe 2)</p>
   <div id="progList"></div>
   <div class="btns"><button class="btn alt" id="progReset">Zurücksetzen</button><button class="btn" data-close>Schließen</button></div>
 </div></div>
@@ -265,8 +266,9 @@ try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
 G = Object.assign({ name:'', sound:true, best:0, best2:0, lvl:1, k:{}, cats:CATS.map(c => c[0]), type:'mix', codes:[] }, G); // codes: verdiente MathPets-Codes, lvl: Stufe 1 (zeigen/benennen) oder 2 (einzeichnen), best2: Rekord Stufe 2
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
 const know = id => G.k[id] ||= { show:0, name:0, row:0 };
-// Städte und Flüsse kann man in Stufe 2 einzeichnen – dafür gibt es einen vierten Stern
-const drawable = id => GEO.targets[id].k !== 'a';
+// Städte zeichnet man in Stufe 2 blind ein – dafür gibt es einen vierten Stern.
+// (Flüsse einzeichnen kann der Code auch – dafür hier zusätzlich k === 'l' erlauben und in drawMap die Flüsse ausblenden.)
+const drawable = id => GEO.targets[id].k === 'p';
 const starsOf = id => { const k = know(id); return (k.show > 0) + (k.name > 0) + (k.row >= 3) + (drawable(id) && k.draw > 0); };
 const maxStarsOf = id => drawable(id) ? 4 : 3;
 const totalStars = () => ITEMS.reduce((s, i) => s + starsOf(i.id), 0);
@@ -336,11 +338,11 @@ const FULL = { x:0, y:0, w:GEO.w, h:GEO.h };
 let vb = { ...FULL };
 const ringD = rings => rings.map(r => 'M' + r.map(p => p.join(' ')).join('L') + 'Z').join('');
 const lineD = parts => parts.map(r => 'M' + r.map(p => p.join(' ')).join('L')).join('');
-function drawMap(blank){ // blank = leere Karte (Stufe 2): ohne Flüsse und Stadtpunkte
+function drawMap(blank){ // blank = Stufe 2: ohne Stadtpunkte
   const cities = blank ? '' : ITEMS.filter(i => GEO.targets[i.id].k === 'p').map(i => { const [x, y] = GEO.targets[i.id].pt; return `<circle class="city" cx="${x}" cy="${y}" r="3.2"/>`; }).join('');
   svg.innerHTML = `<rect x="-500" y="-500" width="${GEO.w + 1000}" height="${GEO.h + 1000}" fill="var(--sea)"/>
     <path class="land" d="${GEO.land}"/><path class="borders" d="${GEO.borders}"/><path class="mount" d="${GEO.mountains}"/>
-    <path class="lakes" d="${GEO.lakes}"/>${blank ? '' : `<path class="rivers" d="${GEO.rivers}"/>`}<g id="cities">${cities}</g><g id="draw"></g><g id="hl"></g><g id="marks"></g>`;
+    <path class="lakes" d="${GEO.lakes}"/><path class="rivers" d="${GEO.rivers}"/><g id="cities">${cities}</g><g id="draw"></g><g id="hl"></g><g id="marks"></g>`;
   setVB();
 }
 function setVB(){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
@@ -576,7 +578,7 @@ function startTest(){
   round.list = shuffle(round.list);
   showGame(); nextQuestion();
 }
-// Großer Test: alle 52 Dinge einmal, Zeigen und Benennen gemischt, ohne 💡 – danach Codes für MathPets
+// Großer Test: alle 52 Dinge einmal, Zeigen und Benennen gemischt (💡 zählt als nicht gewusst) – danach Codes für MathPets
 function startBig(){
   mode = 'big';
   round = { lvl:G.lvl, score:0, streak:0, n:0, list:shuffle(ITEMS).map(it => ({ it, type:Math.random() < .5 ? 'show' : 'name' })), results:[] };
@@ -585,7 +587,7 @@ function startBig(){
 function startExplore(){ mode = 'explore'; round = null; showGame(); clearHL(); setPanel('Tippe irgendwo auf die Karte – ich sage dir, was dort ist! 🦉', '🗺️ Entdecken'); }
 function showGame(){
   show('game'); drawMap(round?.lvl === 2); vb = { ...FULL }; setVB();
-  $('#answer').hidden = true; $('#nextRow').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true; $('#feedback').textContent = '';
+  $('#answer').hidden = true; $('#nextRow').hidden = true; $('#drawRow').hidden = true; $('#showRow').hidden = true; $('#penBtn').hidden = true; $('#feedback').textContent = '';
 }
 function setPanel(text, modeLabel){
   $('#qText').innerHTML = text; $('#qMode').textContent = modeLabel || '';
@@ -599,7 +601,7 @@ function renderDots(){
 }
 function nextQuestion(){
   clearHL();
-  $('#nextRow').hidden = true; $('#answer').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true;
+  $('#nextRow').hidden = true; $('#answer').hidden = true; $('#drawRow').hidden = true; $('#showRow').hidden = true; $('#penBtn').hidden = true;
   if ((mode === 'test' || mode === 'big') && round.n >= round.list.length) return finishTest();
   let it, type;
   if (mode === 'test' || mode === 'big'){ ({ it, type } = round.list[round.n]); }
@@ -608,21 +610,22 @@ function nextQuestion(){
     it = nextItem(pool, round.last); round.last = it.id;
     type = G.type === 'mix' ? (Math.random() < .5 ? 'show' : 'name') : G.type;
   }
-  if (round.lvl === 2 && drawable(it.id)) type = 'draw'; // Stufe 2: Städte und Flüsse werden eingezeichnet
+  if (round.lvl === 2 && drawable(it.id)) type = 'draw'; // Stufe 2: Städte werden eingezeichnet
   Q = { it, type, tries:0, done:false, strokes:[], pin:null, pen:true };
   if (type === 'draw'){
     const river = GEO.targets[it.id].k === 'l';
     setPanel(`<span class="cat">${it.catLabel}</span>Zeichne ein: <u>${esc(showName(it))}</u> ${river ? '✍️' : '📍'}<span class="how">${river
       ? 'Mal den Fluss mit dem Finger – von der Quelle bis zur Mündung. Zwei Finger zoomen.' : 'Tippe dorthin, wo die Stadt liegt.'}</span>`, testLabel() || '✍️ Einzeichnen');
-    $('#drawRow').hidden = false; $('#drawShow').hidden = mode === 'test' || mode === 'big';
+    $('#drawRow').hidden = false;
     renderDrawing(); penUI();
     animateTo({ ...FULL }, 400);
   } else if (type === 'show'){
     setPanel(`<span class="cat">${it.catLabel}</span>Zeig mir: <u>${esc(showName(it))}</u> 👆`, testLabel() || '🎯 Zeigen');
+    $('#showRow').hidden = false;
     animateTo({ ...FULL }, 400);
   } else {
     setPanel(`<span class="cat">${it.catLabel}</span>Was ist hier markiert? ✏️`, testLabel() || '🎯 Benennen');
-    $('#answer').hidden = false; $('#ansInput').value = ''; $('#ansShow').hidden = mode === 'test' || mode === 'big';
+    $('#answer').hidden = false; $('#ansInput').value = '';
     highlight(it.id); focusTarget(it.id);
     setTimeout(() => $('#ansInput').focus({ preventScroll:true }), 350);
   }
@@ -663,7 +666,7 @@ function wrong(reveal, hint){
 }
 // Stadt eingezeichnet: gestrichelte Linie vom Tipp zur richtigen Stelle
 function missLine(){ const t = GEO.targets[Q.it.id]; if (Q.type === 'draw' && Q.pin && t.k === 'p') $('#marks').innerHTML = `<path class="miss" d="M${Q.pin.join(' ')}L${t.pt.join(' ')}"/>`; }
-function afterAnswer(){ $('#answer').hidden = true; $('#drawRow').hidden = true; $('#penBtn').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
+function afterAnswer(){ $('#answer').hidden = true; $('#drawRow').hidden = true; $('#showRow').hidden = true; $('#penBtn').hidden = true; $('#nextRow').hidden = false; renderDots(); $('#nextBtn').focus({ preventScroll:true }); }
 $('#nextBtn').onclick = () => { if (mode === 'test' || mode === 'big') round.n++; nextQuestion(); };
 function mapTap(cx, cy){
   const [x, y] = toMap(cx, cy);
@@ -686,6 +689,7 @@ function submitName(){
 }
 $('#ansOk').onclick = submitName;
 $('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+$('#showShow').onclick = () => { if (Q && !Q.done && Q.type === 'show') wrong(true); };
 $('#ansShow').onclick = () => { if (Q && !Q.done){ $('#ansInput').value = Q.it.name; wrong(true); } };
 
 const testLabel = () => (mode === 'test' ? '🏆 Probetest' : mode === 'big' ? `🌍 Großer Test ${round.n + 1}/${round.list.length}` : '') + (mode !== 'practice' && round?.lvl === 2 ? ' · Stufe 2' : '');
@@ -836,7 +840,7 @@ document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
 $('#lvlSwitch').onclick = e => {
   const b = e.target.closest('[data-lvl]'); if (!b) return;
   G.lvl = +b.dataset.lvl; save(); updateHUD(); SFX.tap();
-  $('#owlSay').textContent = G.lvl === 2 ? 'Stufe 2: leere Karte wie im echten Test! Städte und Flüsse zeichnest du selbst ein. ✍️' : 'Stufe 1: zeigen und benennen. 👆';
+  $('#owlSay').textContent = G.lvl === 2 ? 'Stufe 2: wie im echten Test! Die Städte zeichnest du selbst ein. ✍️' : 'Stufe 1: zeigen und benennen. 👆';
 };
 $('#homeBtn').onclick = () => { closeModals(); show('menu'); };
 $('#soundBtn').onclick = () => { G.sound = !G.sound; save(); updateHUD(); };
