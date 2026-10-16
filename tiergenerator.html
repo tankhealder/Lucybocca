@@ -22,12 +22,47 @@
     --shadow: rgba(60, 35, 110, .22);
     --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
     --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
-    --W: min(calc(100vw - 32px), calc((100vh - 250px) / 1.5), 440px);
+    --W: min(calc(100vw - 32px), calc((100vh - 296px) / 1.5), 440px);
     --A: .46;
     color-scheme: light;
   }
   @supports (height: 100dvh) {
-    :root { --W: min(calc(100vw - 32px), calc((100dvh - 250px) / 1.5), 440px); }
+    :root { --W: min(calc(100vw - 32px), calc((100dvh - 296px) / 1.5), 440px); }
+  }
+
+  /* Generator tabs */
+  .gens {
+    width: 100%;
+    display: flex; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+    padding-block: 2px 5px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gens::-webkit-scrollbar { display: none; }
+  .gen {
+    flex: none;
+    display: flex; align-items: center; gap: 6px;
+    max-width: 62vw;
+    border: 0; border-radius: 999px;
+    padding: 4px 12px 4px 4px;
+    background: var(--card); color: var(--ink);
+    font-weight: 800; font-size: .9rem;
+    box-shadow: 0 2px 0 #d9cdee;
+    white-space: nowrap;
+  }
+  .gen > span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .gen-face {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--butter); overflow: hidden; display: block;
+  }
+  .gen-face svg { width: 100%; height: 100%; display: block; }
+  .gen-face .eo, .gen-face .whole, .gen-face .ltail { animation: none; }
+  .gen svg.pencil { width: 14px; height: 14px; flex: none; }
+  .gen[aria-current="true"] { background: var(--violet); color: #fff; box-shadow: 0 2px 0 #3e2a75; }
+  .gen.new {
+    padding: 4px 14px;
+    background: transparent; color: var(--violet);
+    border: 2px dashed #a58fd6; box-shadow: none;
   }
   [hidden] { display: none !important; } /* versteckte Fenster (Anziehen, Karten) wirklich ausblenden */
   html, body { height: 100%; }
@@ -343,6 +378,8 @@
     </div>
   </header>
 
+  <nav class="gens" id="gens" aria-label="Generatoren"></nav>
+
   <div class="stage" id="stage">
     <div class="animal-slot" id="animal-slot" role="button" tabindex="0" aria-label="Tier anstupsen lassen"></div>
     <canvas class="wheel" id="wheel" role="img" aria-label="Glücksrad. Tippe auf ein Feld, um es zu ändern."></canvas>
@@ -353,6 +390,15 @@
       <div class="row">
         <button class="btn" id="edit-delete">Löschen</button>
         <button class="btn primary" id="edit-done">Fertig</button>
+      </div>
+    </div>
+
+    <div class="card editor" id="gen-card" hidden>
+      <label for="gen-name" class="eyebrow">Name des Generators</label>
+      <input id="gen-name" maxlength="28" autocomplete="off" enterkeyhint="done" placeholder="z. B. Klasse 3a">
+      <div class="row">
+        <button class="btn" id="gen-delete">Löschen</button>
+        <button class="btn primary" id="gen-done">Fertig</button>
       </div>
     </div>
 
@@ -722,10 +768,23 @@
   const TAU = Math.PI * 2;
   const COLORS = ['#ff6b81', '#ffd166', '#4cc9f0', '#ff9f5a', '#9be3b0', '#b79cf2', '#ff9ecf', '#5fd4c4'];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let items = store.get('items', null);
-  if (!Array.isArray(items) || items.length < 2) items = ['Alex', 'Franzi', 'Gustav', 'Tim', 'Sarah'];
-  let animal = store.get('animal', 'papillon');
-  if (!ANIMALS[animal]) animal = 'papillon';
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const SAMPLE = ['Alex', 'Franzi', 'Gustav', 'Tim', 'Sarah'];
+  let gens = store.get('gens', null);
+  if (!Array.isArray(gens) || !gens.length) {
+    // das eine Rad aus der ersten Version übernehmen
+    gens = [{ id: uid(), name: 'Mein Rad', items: store.get('items', null), animal: store.get('animal', 'papillon') }];
+  }
+  gens = gens.filter((g) => g && typeof g === 'object').map((g) => ({
+    id: g.id || uid(),
+    name: String(g.name || 'Generator'),
+    items: Array.isArray(g.items) && g.items.length >= 2 ? g.items.map(String) : SAMPLE.slice(),
+    animal: ANIMALS[g.animal] ? g.animal : 'papillon'
+  }));
+  if (!gens.length) gens = [{ id: uid(), name: 'Mein Rad', items: SAMPLE.slice(), animal: 'papillon' }];
+  let cur = Math.min(Math.max(0, Number(store.get('cur', 0)) || 0), gens.length - 1);
+  let items = gens[cur].items;
+  let animal = gens[cur].animal;
   let sound = store.get('sound', true);
   let accs = store.get('acc', {});
   if (!accs || typeof accs !== 'object') accs = {};
@@ -739,7 +798,9 @@
 
   const mod = (a, m) => ((a % m) + m) % m;
   const colorFor = (i, n) => (n % COLORS.length === 1 && i === n - 1) ? COLORS[(i + 1) % COLORS.length] : COLORS[i % COLORS.length];
-  const saveItems = () => store.set('items', items);
+  const saveGens = () => store.set('gens', gens);
+  const saveItems = saveGens;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
   // ---------- Audio ----------
   let actx = null, lastTick = 0;
@@ -892,7 +953,7 @@
     box.addEventListener('click', (e) => {
       const b = e.target.closest('.pick');
       if (!b || spin || pushing) return;
-      animal = b.dataset.id; store.set('animal', animal);
+      animal = b.dataset.id; gens[cur].animal = animal; saveGens(); renderChips();
       winner = null; result.hidden = true; stage.classList.remove('cheer');
       renderAnimal(true);
       // little hello wave
@@ -918,10 +979,12 @@
     renderDress();
     renderAnimal(false);
     const pick = $('pick-' + animal); if (pick) pick.innerHTML = animalSVG(animal, '10 -36 180 180');
+    renderChips();
   }
   function openDress() {
     if (spin || pushing) return;
     if (editIdx !== null) closeEditor();
+    if (!genCard.hidden) closeGenCard();
     result.hidden = true; winner = null;
     renderDress(); dress.hidden = false;
   }
@@ -945,6 +1008,7 @@
     if (spin || pushing) return;
     if (items.length < 2) { toast('Mindestens zwei Felder braucht das Rad.'); return; }
     if (editIdx !== null) closeEditor();
+    if (!genCard.hidden) closeGenCard();
     ensureAudio();
     result.hidden = true; winner = null;
     stage.classList.remove('cheer');
@@ -1017,6 +1081,7 @@
 
   // ---------- Editing ----------
   function openEditor(i, isNew) {
+    if (!genCard.hidden) closeGenCard();
     result.hidden = true; winner = null;
     editIdx = i; editOld = items[i]; editNew = !!isNew;
     input.value = items[i];
@@ -1061,6 +1126,7 @@
     if (spin || pushing) return;
     const r = canvas.getBoundingClientRect(), R = r.width / 2;
     const dx = e.clientX - r.left - R, dy = e.clientY - r.top - R, d = Math.hypot(dx, dy);
+    if (!genCard.hidden) { closeGenCard(); return; }
     if (!result.hidden) { result.hidden = true; winner = null; return; }
     if (d < R * .13) { addField(); return; }
     if (d > R * .87) { if (editIdx !== null) closeEditor(); return; }
@@ -1068,6 +1134,78 @@
     const i = Math.floor(local / (TAU / items.length)) % items.length;
     if (editIdx !== null) closeEditor();
     if (i < items.length) openEditor(i, false);
+  });
+
+  // ---------- Generators ----------
+  const genCard = $('gen-card'), genInput = $('gen-name'), genDelete = $('gen-delete');
+  const PENCIL = '<svg class="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+  let deleteArmed = false;
+
+  function renderChips() {
+    const box = $('gens');
+    box.innerHTML = gens.map((g, i) =>
+      `<button class="gen" data-i="${i}" aria-current="${i === cur}"${i === cur ? ' aria-label="' + esc(g.name) + ' umbenennen"' : ''}>` +
+      `<span class="gen-face">${animalSVG(g.animal, '10 -36 180 180')}</span><span>${esc(g.name)}</span>${i === cur ? PENCIL : ''}</button>`
+    ).join('') + '<button class="gen new" id="gen-add">+ Neuer Generator</button>';
+    const active = box.querySelector('[aria-current="true"]');
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  function switchGen(i) {
+    if (editIdx !== null) closeEditor();
+    genCard.hidden = true;
+    cur = i; store.set('cur', cur);
+    items = gens[cur].items; animal = gens[cur].animal;
+    winner = null; result.hidden = true; rot = 0;
+    stage.classList.remove('cheer');
+    renderAnimal(true); renderChips();
+  }
+
+  function addGen() {
+    if (gens.length >= 12) { toast('Mehr als 12 Generatoren gehen nicht.'); return; }
+    const next = ORDER[(ORDER.indexOf(animal) + 1) % ORDER.length];
+    gens.push({ id: uid(), name: `Generator ${gens.length + 1}`, items: ['Feld 1', 'Feld 2', 'Feld 3'], animal: next });
+    saveGens();
+    switchGen(gens.length - 1);
+    openGenCard();
+  }
+
+  function openGenCard() {
+    if (editIdx !== null) closeEditor();
+    result.hidden = true; winner = null;
+    genInput.value = gens[cur].name;
+    deleteArmed = false; genDelete.textContent = 'Löschen';
+    genDelete.disabled = gens.length <= 1;
+    genCard.hidden = false;
+    genInput.focus({ preventScroll: true }); genInput.select();
+  }
+  function closeGenCard() {
+    if (genCard.hidden) return;
+    const v = genInput.value.trim();
+    if (v) gens[cur].name = v;
+    saveGens(); genCard.hidden = true; genInput.blur(); renderChips();
+  }
+
+  $('gens').addEventListener('click', (e) => {
+    const b = e.target.closest('.gen');
+    if (!b || spin || pushing) return;
+    if (b.id === 'gen-add') { addGen(); return; }
+    const i = Number(b.dataset.i);
+    if (i === cur) { genCard.hidden ? openGenCard() : closeGenCard(); }
+    else switchGen(i);
+  });
+  $('gen-done').addEventListener('click', closeGenCard);
+  genDelete.addEventListener('click', () => {
+    if (gens.length <= 1) return;
+    if (!deleteArmed) { deleteArmed = true; genDelete.textContent = 'Wirklich löschen?'; return; }
+    const name = gens[cur].name;
+    gens.splice(cur, 1); saveGens();
+    switchGen(Math.min(cur, gens.length - 1));
+    toast(`„${name}“ gelöscht.`);
+  });
+  genInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); closeGenCard(); }
+    if (e.key === 'Escape') { genInput.value = gens[cur].name; closeGenCard(); }
   });
 
   // ---------- Result card ----------
@@ -1139,6 +1277,7 @@
 
   buildPicker();
   renderAnimal(false);
+  renderChips();
   paintSound();
   resize();
   addEventListener('resize', resize);
