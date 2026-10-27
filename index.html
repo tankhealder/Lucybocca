@@ -113,9 +113,9 @@ main{flex:1;position:relative;min-height:0}
 .stairdoor .sign{position:absolute;left:50%;top:-1cqmin;transform:translate(-50%,-110%);background:#fff;border-radius:10px;padding:3px 8px;font-size:clamp(10px,2.4cqmin,13px);font-weight:600;white-space:nowrap;box-shadow:0 3px 0 rgba(58,46,92,.12)}
 .towerwin{position:absolute;transform:translateX(-50%);width:10cqmin;height:17cqmin;border-radius:5cqmin 5cqmin 1cqmin 1cqmin;border:1.1cqmin solid #8f84bd;background:linear-gradient(#7fc8ff,#d6f4ff);overflow:hidden}
 .scene.dark .towerwin{background:linear-gradient(#141c44,#33407e)}
-.tcloud{position:absolute;top:28%;left:-70%;width:65%;height:20%;background:#fff;border-radius:999px;animation:tdrift 9s linear infinite}
-.tcloud.c2{top:62%;width:50%;animation-duration:13s;animation-delay:-6s}
-@keyframes tdrift{to{left:120%}}
+.tcloud{position:absolute;top:28%;left:-70%;width:65%;height:20%;background:#fff;border-radius:999px;--d:292%;animation:tdrift 9s linear infinite}
+.tcloud.c2{top:62%;width:50%;--d:380%;animation-duration:13s;animation-delay:-6s}
+@keyframes tdrift{to{transform:translateX(var(--d))}} /* transform statt left: kein Neu-Layout in jedem Bild */
 .hint.lower{top:140px}
 /* Zauberschloss: Freundin (live), Namensschilder, Chat */
 .pet.remote{transition:left .16s linear,top .16s linear;cursor:default}
@@ -464,7 +464,11 @@ nav{display:flex;gap:10px;padding:8px 16px calc(10px + env(safe-area-inset-botto
 
 @media (max-height:640px){.coach{min-height:66px}.mascot{width:58px}.speech{font-size:15px;margin-bottom:18px}.task{font-size:44px}.card{padding:12px}}
 @media (max-width:380px){.treat{width:46px;height:46px;font-size:26px}}
-@media (prefers-reduced-motion:reduce){.fx,.bob,.cloud,.eo{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.fx,.bob,.cloud,.tcloud,.eo,.ltail{animation:none!important}}
+/* 🐢 Ruhig: Deko-Bewegung aus (spart Rechenleistung) */
+html.calm :is(.fx,.bob,.cloud,.tcloud,.eo,.ltail){animation:none!important}
+/* Niemand spielt / Fenster nicht aktiv: alle Dauer-Animationen anhalten */
+html.still *,html.still *::before,html.still *::after{animation-play-state:paused!important}
 </style>
 </head>
 <body>
@@ -1854,11 +1858,11 @@ function renderScene(){
   if (h.hills) html += `<div class="hill a" style="background:${h.hills[0]}"></div><div class="hill b" style="background:${h.hills[1]}"></div>`;
   if (h.sun) html += `<div class="sun"></div>`;
   if (h.fx === 'clouds' || h.id === 'zauber') html += `<div class="cloud" style="width:90px;top:22%;animation:drift 38s linear infinite"></div><div class="cloud" style="width:70px;top:32%;animation:drift 52s linear infinite -20s"></div>`;
-  if (h.fx === 'bubbles') for (let i=0; i<14; i++){ const s = rnd(8,22); html += `<div class="fx bub" style="left:${rnd(2,96)}%;width:${s}px;height:${s}px;animation-duration:${rnd(7,14)}s;animation-delay:-${rnd(0,14)}s"></div>`; }
-  if (h.fx === 'snow') for (let i=0; i<22; i++) html += `<div class="fx snow" style="left:${rnd(0,96)}%;font-size:${rnd(10,20)}px;animation-duration:${rnd(8,16)}s;animation-delay:-${rnd(0,16)}s">❄</div>`;
+  if (h.fx === 'bubbles') for (let i=0; i<8; i++){ const s = rnd(8,22); html += `<div class="fx bub" style="left:${rnd(2,96)}%;width:${s}px;height:${s}px;animation-duration:${rnd(7,14)}s;animation-delay:-${rnd(0,14)}s"></div>`; }
+  if (h.fx === 'snow') for (let i=0; i<10; i++) html += `<div class="fx snow" style="left:${rnd(0,96)}%;font-size:${rnd(10,20)}px;animation-duration:${rnd(8,16)}s;animation-delay:-${rnd(0,16)}s">❄</div>`;
   if (h.fx === 'leaves') for (let i=0; i<7; i++) html += `<div class="fx leaf" style="left:${rnd(0,90)}%;font-size:${rnd(16,24)}px;animation-duration:${rnd(12,20)}s;animation-delay:-${rnd(0,20)}s">${pick(['🍃','🍂'])}</div>`;
-  if (h.fx === 'ash') for (let i=0; i<12; i++) html += `<div class="fx ash" style="left:${rnd(40,98)}%;animation-duration:${rnd(9,16)}s;animation-delay:-${rnd(0,16)}s"></div>`; // Vulkanasche
-  if (h.fx === 'sparkle') for (let i=0; i<14; i++) html += `<div class="fx spark" style="left:${rnd(2,96)}%;top:${rnd(12,44)}%;font-size:${rnd(12,22)}px;animation-delay:-${(Math.random()*2.2).toFixed(1)}s">✨</div>`;
+  if (h.fx === 'ash') for (let i=0; i<7; i++) html += `<div class="fx ash" style="left:${rnd(40,98)}%;animation-duration:${rnd(9,16)}s;animation-delay:-${rnd(0,16)}s"></div>`; // Vulkanasche
+  if (h.fx === 'sparkle') for (let i=0; i<8; i++) html += `<div class="fx spark" style="left:${rnd(2,96)}%;top:${rnd(12,44)}%;font-size:${rnd(12,22)}px;animation-delay:-${(Math.random()*2.2).toFixed(1)}s">✨</div>`;
   if (R){
     html += `<div class="floor" style="background:${FLOORS[R.floor]}"></div>`;
     if (R.win) html += `<div class="win" style="left:${R.win[0]}%;width:${R.win[1]}cqmin"></div>`;
@@ -2823,6 +2827,17 @@ $('#bringGrid').addEventListener('click', e => {
   SFX.dress(); save(); renderBring();
 });
 $('#bringClose').addEventListener('click', () => { $('#bringModal').classList.remove('open'); renderWorld(); netPush(true); });
+// Rechenleistung sparen: 🐢-Modus, und Animationen anhalten, wenn das Fenster nicht aktiv ist oder 2 Min. niemand spielt
+function applyCalm(){ document.documentElement.classList.toggle('calm', !!S?.calm); }
+let idleT = 0, lastAct = 0;
+function wake(){
+  const now = Date.now(); if (now - lastAct < 1000) return; lastAct = now;
+  document.documentElement.classList.remove('still');
+  clearTimeout(idleT); idleT = setTimeout(() => document.documentElement.classList.add('still'), 120000);
+}
+['pointerdown','pointermove','keydown','wheel','focus'].forEach(t => window.addEventListener(t, wake, { passive:true }));
+window.addEventListener('blur', () => { clearTimeout(idleT); lastAct = 0; document.documentElement.classList.add('still'); });
+wake();
 document.addEventListener('visibilitychange', () => { // App im Hintergrund = nicht im Schloss
   if (document.hidden) netLeave();
   else if (HAB[S.hab]?.shared && $('#world').classList.contains('active')) netJoin();
@@ -2837,6 +2852,7 @@ function toolList(){
     ...(HAB[S.hab].shared && canBuild() ? [['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
     ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],['redeemBtn','🎁','Code einlösen'],
+    ['calmBtn', S.calm ? '🐇' : '🐢', S.calm ? 'Mehr Bewegung' : 'Weniger Bewegung'],
   ];
 }
 function renderTreats(){
@@ -2860,6 +2876,7 @@ function runTool(id){
   if (id === 'bringBtn') openBring();
   if (id === 'codeBtn') openTogether();
   if (id === 'redeemBtn') openRedeem();
+  if (id === 'calmBtn'){ S.calm = !S.calm; save(); applyCalm(); }
   if (id === 'chatBtn'){
     NET.chatOpen = !NET.chatOpen;
     $('#chatbar').hidden = !NET.chatOpen; $('#chatBtn')?.classList.toggle('on', NET.chatOpen);
@@ -3172,7 +3189,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ================= Start ================= */
-load(); save();
+load(); save(); applyCalm();
 document.body.classList.toggle('newtop', NEWTOP);
 if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
 buildChips(); buildPad(); renderMascot(); renderAvatar(); renderHUD(); newTask();
