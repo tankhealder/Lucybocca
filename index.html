@@ -136,6 +136,7 @@ main{flex:1;position:relative;min-height:0}
 @media (max-width:480px){.chatbar .qe:nth-of-type(n+3){display:none}}
 .scene.urzeit{background:linear-gradient(#ffb47a,#ffe0b5 44%,#a8cf6e 44%,#7fb24f)}
 .scene.reise{background:linear-gradient(#7fc8ff,#d8f1ff 44%,#b8e6a0 44%,#93cf7a)}
+.scene.winter{background:linear-gradient(#2e3c86,#7d8fe0 44%,#f6f9ff 44%,#dde8f7)} /* Winterwunderland: Abendhimmel, Schnee */
 /* Zauberglobus (Möbelstück, nur mit Code): dreht sich und leuchtet */
 .zglobe{display:block;width:.9em;height:1.18em;position:relative}
 .zglobe i{position:absolute;left:.05em;top:0;width:.8em;height:.8em;border-radius:50%;z-index:1;
@@ -273,7 +274,7 @@ button.acard.on{background:#e6dbff;box-shadow:inset 0 0 0 3px var(--purple)}
 @keyframes balR{from{transform:rotate(-35deg)}to{transform:rotate(-10deg)}}
 @keyframes waddle{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
 @keyframes step{from{transform:translate(-4px,0)}to{transform:translate(4px,-5px)}}
-.pet.held:is([data-move=hop],[data-move=spook]) .bob{animation:hop .5s cubic-bezier(.3,.6,.4,1) infinite}
+.pet.held:is([data-move=hop],[data-move=spook],[data-move=cookie]) .bob{animation:hop .5s cubic-bezier(.3,.6,.4,1) infinite}
 @keyframes hop{0%,100%{transform:scale(1.1,.9)}15%{transform:none}45%{transform:translateY(-28%) scale(.94,1.08)}80%{transform:translateY(0) scale(1.06,.94)}}
 .pet.held[data-move=gallop] .bob{animation:gallop .4s ease-in-out infinite}
 @keyframes gallop{0%,100%{transform:rotate(4deg)}50%{transform:translateY(-16%) rotate(-10deg)}}
@@ -349,6 +350,37 @@ body.newtop .hint,body.newtop .hint.low,body.newtop .hint.lower{top:auto;bottom:
 .gobtn{display:flex;align-items:center;gap:8px;padding:12px;border-radius:16px;background:var(--soft);font-weight:600;font-size:17px;box-shadow:0 3px 0 #d6cdee}
 .gobtn span{font-size:28px;font-family:var(--emoji)}
 .gobtn:active{transform:translateY(2px)}
+/* Adventskalender */
+.mcard.advcard{background:linear-gradient(#1f3b70,#2e5a9e);color:#fff}
+.advcard h2{color:#fff}
+.mcard.advcard p{color:#e6edff;font-weight:600}
+.advgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;perspective:600px}
+.adoor{position:relative;aspect-ratio:1;border-radius:14px;font-family:inherit;color:#fff;font-weight:700;font-size:24px;
+  background:var(--dc);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.25);transform-origin:0 50%;transition:transform .5s}
+.adoor .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.adoor .bow{position:absolute;right:4px;top:2px;font-size:13px;font-family:var(--emoji)}
+.adoor.big{font-size:30px;box-shadow:inset 0 0 0 3px #ffe27a,0 4px 0 rgba(0,0,0,.25)}
+.adoor.ready{animation:doorWiggle 1.4s ease-in-out infinite;box-shadow:inset 0 0 0 3px #ffe27a,0 0 16px 4px rgba(255,226,122,.75),0 4px 0 rgba(0,0,0,.25)}
+@keyframes doorWiggle{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(-4deg)}90%{transform:rotate(4deg)}95%{transform:rotate(-2deg)}}
+.adoor.open{background:#fff8e6;color:var(--ink);box-shadow:inset 0 0 0 3px #ffd23f}
+.adoor.open .num{flex-direction:column;font-size:11px;gap:0;text-shadow:none;color:var(--ink-soft)}
+.adoor.open .num .ic{font-size:30px;line-height:1.1;font-family:var(--emoji);display:flex;align-items:center;justify-content:center;height:38px}
+.adoor.open .num .ic svg{width:34px!important;height:34px!important}
+.adoor.open .num .ic .reveal-mini{width:40px}
+.adoor.opening{transform:rotateY(-105deg)}
+/* Schlitten (Adventskalender, 24. Dezember): Tiere in andere Welten fahren */
+.sled{position:relative;width:min(260px,70vw);aspect-ratio:240/140;margin:0 auto}
+.sled>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.sled .riders{position:absolute;left:12%;right:28%;bottom:36%;height:72%;display:flex;align-items:flex-end;justify-content:center;gap:0}
+.sled .riders .rp{width:46%;margin:0 -7%;flex:none}
+.sled .riders svg{width:100%;height:auto;display:block;overflow:visible}
+#sledHero{position:sticky;top:-20px;z-index:2;background:#fff;padding-top:6px;border-radius:0 0 18px 18px} /* Schlitten bleibt beim Scrollen sichtbar */
+.btnrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#sledModal [hidden]{display:none!important}
+#sledModal .btn:disabled{opacity:.45;transform:none}
+.sledride{position:fixed;left:0;right:0;z-index:5000;pointer-events:none}
+.sledride .sled{position:absolute;left:0;bottom:0;width:min(300px,62vw)}
+.sledride .flake{position:absolute;font-family:var(--emoji);pointer-events:none}
 /* Einrichten-Modus */
 .tray[hidden]{display:none}
 .scene.build .deco[data-i]{pointer-events:auto;cursor:grab;outline:2px dashed rgba(155,93,229,.65);outline-offset:3px;border-radius:12px;touch-action:none}
@@ -363,6 +395,7 @@ body.newtop .hint,body.newtop .hint.low,body.newtop .hint.lower{top:auto;bottom:
 .fcat::-webkit-scrollbar{display:none}
 .fitem{flex:none;width:60px;border-radius:14px;background:#fff6e5;padding:4px 2px;display:flex;flex-direction:column;align-items:center}
 .fitem .e{font-size:30px;font-family:var(--emoji);line-height:1.15}
+.fitem .fsvg{display:inline-block;vertical-align:middle;max-width:44px;overflow:hidden}
 .fitem small{font-size:10px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px}
 .fitem.locked .e{filter:grayscale(1);opacity:.35}
 .pet .bob{position:relative}
@@ -611,6 +644,22 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
   <br><button class="btn alt" id="goClose">Lieber zu Hause bleiben</button>
 </div></div>
 
+<div class="modal" id="adventModal"><div class="mcard wide advcard">
+  <h2>Adventskalender 2026 🎄</h2>
+  <p id="advInfo"></p>
+  <div class="advgrid" id="advGrid"></div>
+  <br><button class="btn" id="advClose">Schließen</button>
+</div></div>
+
+<div class="modal" id="sledModal"><div class="mcard wide">
+  <div class="sled" id="sledHero"></div>
+  <h2 id="sledTitle">Schlittenfahrt! 🛷</h2>
+  <p id="sledInfo">Wer fährt mit?</p>
+  <div class="album" id="sledPets"></div>
+  <div class="gogrid" id="sledGo" hidden></div>
+  <br><div class="btnrow"><button class="btn alt" id="sledClose">Doch nicht</button><button class="btn" id="sledNext">Weiter ➜</button></div>
+</div></div>
+
 <div class="modal" id="inviteModal"><div class="mcard wide">
   <h2>Wen lädst du ein? 📨</h2>
   <p>Tippe auf ein Tier, dann kommt es zu Besuch ins Haus.</p>
@@ -650,6 +699,10 @@ const HABS = [
   { id:'urzeit', name:'Urzeit',     e:'🦕', lvl:16, hills:['#9bc46a','#88b55a'], fx:'ash',
     decos:[['🌋',78,46,110],['🌴',8,54,96],['🌴',94,58,70],['🌿',20,90,40],['🦴',64,94,30],['🥚',36,84,26],['🥚',40,86,20],['🪨',86,88,34],['🌿',50,58,28]] },
   // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (geo.html, Großer Test ab 75 %); code statt Level
+  // Adventskalender (Türchen 1): Weihnachtswelt
+  { id:'winter', name:'Winterwunderland', e:'🎄', lvl:1, advent:1, hills:['#ffffff','#eaf1fb'], fx:'snow',
+    decos:[['🎄',10,50,96],['🎄',88,47,84],['🏘️',50,46,74],['🎠',72,55,58],['🌙',84,12,44],['⭐',18,10,22],['⭐',58,7,16],['⭐',36,16,12],
+           ['🎁',28,88,34],['🎁',34,91,24],['🔔',92,90,28],['🕯️',7,90,30],['⛸️',60,93,26],['🍪',78,92,24],['🎄',30,47,40],['🎄',66,46,36]] },
   { id:'reise', name:'Europa-Reise', e:'🧳', lvl:99, code:'welt', hills:['#9fdc8a','#8fd17a'], sun:true, fx:'clouds',
     decos:[['🗼',14,52,96],['🏟️',36,56,62],['🏛️',58,52,58],['🕌',84,52,78],['🎡',70,58,52],['⛵',48,47,26],['🌷',22,88,30],['🚂',62,90,36],['🧳',90,92,30],['🗺️',8,90,30]] },
 ];
@@ -779,6 +832,17 @@ const FURN_LIST = [
   {id:'schneemann', e:'⛄', name:'Schneemann', s:18, gift:true},
   // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (Großer Test ab 50 %)
   {id:'zauberglobus', e:'🌍', html:'<span class="zglobe"><i></i></span>', name:'Zauberglobus', s:26, code:'globus'},
+  // Adventskalender (advent = Türchen)
+  {id:'adventskranz',    e:'🕯️', name:'Adventskranz',      s:18, advent:3,  html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><ellipse cx="50" cy="74" rx="46" ry="17" fill="#2f8f4e" stroke="#1d5e33" stroke-width="3"/><ellipse cx="50" cy="72" rx="28" ry="8" fill="#1d5e33"/><rect x="17" y="46" width="10" height="28" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="22" cy="40" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="22" cy="42" rx="2" ry="3.5" fill="#fff6c4"/><rect x="35" y="40" width="10" height="34" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="40" cy="34" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="40" cy="36" rx="2" ry="3.5" fill="#fff6c4"/><rect x="55" y="40" width="10" height="34" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="60" cy="34" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="60" cy="36" rx="2" ry="3.5" fill="#fff6c4"/><rect x="73" y="46" width="10" height="28" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="78" cy="40" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="78" cy="42" rx="2" ry="3.5" fill="#fff6c4"/><circle cx="12" cy="72" r="3.5" fill="#e8424f"/><circle cx="30" cy="86" r="3.5" fill="#e8424f"/><circle cx="50" cy="90" r="3.5" fill="#e8424f"/><circle cx="70" cy="86" r="3.5" fill="#e8424f"/><circle cx="88" cy="72" r="3.5" fill="#e8424f"/></svg>'},
+  {id:'nikolausstiefel', e:'🥾', name:'Nikolausstiefel',   s:14, advent:6,  html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><path d="M30 30 L62 30 L62 66 C62 72 70 74 80 76 C92 78 94 96 80 96 L34 96 C28 96 26 92 26 86 Z" fill="#e8424f" stroke="#a82634" stroke-width="3"/><rect x="24" y="22" width="44" height="16" rx="7" fill="#ffffff" stroke="#d9dde6" stroke-width="3"/><path d="M38 22 L36 4 M50 22 L54 2" stroke="#7a4f2a" stroke-width="5" stroke-linecap="round"/><circle cx="36" cy="6" r="7" fill="#ffd23f"/><circle cx="55" cy="6" r="7" fill="#5cc97b"/></svg>'},
+  {id:'lichterkette',    e:'✨', name:'Lichterkette',      s:12, advent:7,  wall:true, html:'<svg viewBox="0 0 100 40" style="width:2.6em;height:1.04em;overflow:visible;display:block"><path d="M0 8 Q12 26 25 8 Q37 26 50 8 Q62 26 75 8 Q87 26 100 8" fill="none" stroke="#2f6b3e" stroke-width="2.5"/><rect x="10" y="14" width="4" height="4" fill="#2f6b3e"/><ellipse cx="12" cy="22" rx="4.5" ry="6" fill="#ff5a64"/><ellipse cx="10.8" cy="20" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="35" y="14" width="4" height="4" fill="#2f6b3e"/><ellipse cx="37" cy="22" rx="4.5" ry="6" fill="#ffd23f"/><ellipse cx="35.8" cy="20" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="60" y="14" width="4" height="4" fill="#2f6b3e"/><ellipse cx="62" cy="22" rx="4.5" ry="6" fill="#4cc9f0"/><ellipse cx="60.8" cy="20" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="85" y="14" width="4" height="4" fill="#2f6b3e"/><ellipse cx="87" cy="22" rx="4.5" ry="6" fill="#5cc97b"/><ellipse cx="85.8" cy="20" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="23" y="5" width="4" height="4" fill="#2f6b3e"/><ellipse cx="25" cy="13" rx="4.5" ry="6" fill="#ff9ecf"/><ellipse cx="23.8" cy="11" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="48" y="5" width="4" height="4" fill="#2f6b3e"/><ellipse cx="50" cy="13" rx="4.5" ry="6" fill="#ff9f43"/><ellipse cx="48.8" cy="11" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/><rect x="73" y="5" width="4" height="4" fill="#2f6b3e"/><ellipse cx="75" cy="13" rx="4.5" ry="6" fill="#b79cf2"/><ellipse cx="73.8" cy="11" rx="1.4" ry="2" fill="#ffffff" opacity=".7"/></svg>'},
+  {id:'lebkuchenhaus',   e:'🏠', name:'Lebkuchenhaus',     s:20, advent:9,  html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><rect x="16" y="44" width="68" height="52" rx="4" fill="#c98a4f" stroke="#8a5a2e" stroke-width="3"/><path d="M8 50 L50 10 L92 50 Z" fill="#a8693a" stroke="#7a4a22" stroke-width="3" stroke-linejoin="round"/><path d="M10 50 Q20 58 30 50 Q40 58 50 50 Q60 58 70 50 Q80 58 90 50" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><path d="M50 14 L16 46 M50 14 L84 46" stroke="#ffffff" stroke-width="3" stroke-dasharray="6 4"/><rect x="42" y="66" width="16" height="30" rx="8" fill="#7a4a22"/><rect x="22" y="56" width="14" height="14" rx="2" fill="#ffe27a" stroke="#ffffff" stroke-width="2.5"/><rect x="64" y="56" width="14" height="14" rx="2" fill="#ffe27a" stroke="#ffffff" stroke-width="2.5"/><circle cx="24" cy="82" r="3.2" fill="#e8424f"/><circle cx="34" cy="88" r="3.2" fill="#5cc97b"/><circle cx="68" cy="84" r="3.2" fill="#4cc9f0"/><circle cx="78" cy="90" r="3.2" fill="#e8424f"/><circle cx="50" cy="34" r="3.2" fill="#ffd23f"/></svg>'},
+  {id:'weihnachtsstern', e:'🌺', name:'Weihnachtsstern',   s:14, advent:13},
+  {id:'schneekugel',     e:'🔮', name:'Schneekugel',       s:13, advent:14, html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><path d="M22 80 L78 80 L86 98 L14 98 Z" fill="#a8693a" stroke="#7a4a22" stroke-width="3"/><circle cx="50" cy="46" r="38" fill="#cfeaff" stroke="#8fb8d9" stroke-width="3"/><ellipse cx="50" cy="74" rx="30" ry="7" fill="#ffffff"/><circle cx="50" cy="62" r="11" fill="#ffffff" stroke="#c9d6ea" stroke-width="2"/><circle cx="50" cy="45" r="8" fill="#ffffff" stroke="#c9d6ea" stroke-width="2"/><path d="M50 46 L60 48 L50 49Z" fill="#ff8a1c"/><circle cx="47" cy="43" r="1.4" fill="#3a3446"/><circle cx="53" cy="43" r="1.4" fill="#3a3446"/><circle cx="26" cy="30" r="2" fill="#ffffff"/><circle cx="36" cy="20" r="2" fill="#ffffff"/><circle cx="66" cy="22" r="2" fill="#ffffff"/><circle cx="74" cy="40" r="2" fill="#ffffff"/><circle cx="30" cy="50" r="2" fill="#ffffff"/><circle cx="70" cy="58" r="2" fill="#ffffff"/><circle cx="58" cy="30" r="2" fill="#ffffff"/><ellipse cx="34" cy="28" rx="8" ry="5" fill="#ffffff" opacity=".6" transform="rotate(-30 34 28)"/></svg>'},
+  {id:'kamin',           e:'🔥', name:'Kamin',             s:30, advent:17, html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><rect x="8" y="26" width="84" height="72" rx="3" fill="#c8553d" stroke="#8a3424" stroke-width="3"/><path d="M8 40 L92 40" stroke="#a8432f" stroke-width="2"/><path d="M8 54 L92 54" stroke="#a8432f" stroke-width="2"/><path d="M8 68 L92 68" stroke="#a8432f" stroke-width="2"/><path d="M8 82 L92 82" stroke="#a8432f" stroke-width="2"/><rect x="2" y="18" width="96" height="12" rx="3" fill="#7a4a22" stroke="#5a3415" stroke-width="3"/><path d="M26 98 L26 58 Q50 36 74 58 L74 98 Z" fill="#3a2a2a"/><path d="M38 96 C34 82 44 76 42 66 C50 72 52 62 50 56 C60 66 66 80 62 96 Z" fill="#ff8a1c"/><path d="M44 96 C42 86 48 82 48 76 C54 82 58 90 56 96 Z" fill="#ffd23f"/><path d="M16 30 L16 44 C16 50 22 50 26 48 L26 30 Z" fill="#e8424f" stroke="#ffffff" stroke-width="2"/><path d="M74 30 L74 44 C74 50 80 50 84 48 L84 30 Z" fill="#3fae6a" stroke="#ffffff" stroke-width="2"/></svg>'},
+  {id:'nussknacker',     e:'💂', name:'Nussknacker',       s:18, advent:18},
+  {id:'geschenke',       e:'🎁', name:'Geschenkestapel',   s:16, advent:21},
+  {id:'plaetzchen',      e:'🍪', name:'Plätzchenteller',   s:14, advent:23, html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><ellipse cx="50" cy="72" rx="46" ry="16" fill="#ffffff" stroke="#8fb8d9" stroke-width="3"/><ellipse cx="50" cy="70" rx="32" ry="9" fill="#eef4fb"/><circle cx="34" cy="62" r="12" fill="#d9a066" stroke="#a8693a" stroke-width="2.5"/><path d="M29 62 L39 62 M34 57 L34 67" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/><circle cx="64" cy="62" r="12" fill="#d9a066" stroke="#a8693a" stroke-width="2.5"/><path d="M59 62 L69 62 M64 57 L64 67" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/><circle cx="49" cy="52" r="12" fill="#d9a066" stroke="#a8693a" stroke-width="2.5"/><path d="M44 52 L54 52 M49 47 L49 57" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/><path d="M70 50 l5 -10 l5 10 l-10 -6 l10 0z" fill="#ffd23f" transform="translate(-2 2)"/></svg>'},
 ];
 const FURN = Object.fromEntries(FURN_LIST.map(f => [f.id, f]));
 // Einrichtung, mit der jedes Zimmer startet: [Möbel-id, x%, y%, Größe?, gespiegelt?]
@@ -873,7 +937,7 @@ function furnOf(room){
   if (!S.furn[room]) S.furn[room] = ROOMS[room].decos.map(([id, x, y, s, f]) => ({ id, x, y, ...(s ? { s } : {}), ...(f ? { f:true } : {}) }));
   return S.furn[room];
 }
-const furnOpen = f => f.code ? (S.unlocks || []).includes(f.code) : f.lvl ? level() >= f.lvl : (S.furnOwned || []).includes(f.id);
+const furnOpen = f => f.code ? (S.unlocks || []).includes(f.code) : f.advent ? adventHas(f.advent) : f.lvl ? level() >= f.lvl : (S.furnOwned || []).includes(f.id);
 
 /* Tiere: c = Fellfarbe, b = Bauch/Schnauze, weitere Felder steuern Ohren, Mund usw. */
 const A = {
@@ -936,6 +1000,13 @@ Object.assign(A, {
   jacky: {hab:'reise', name:'Jack', label:'Leuchtkürbis', g:'der', c:'#ff9a2e', body:'blob', pumpkin:true, fy:76, eyeY:70, eyeX:17, nose:'none', mouth:'jack', fav:'muffin', say:'Buuuh! Süßes oder Saures? 🎃'},
   fledermaus: {hab:'reise', name:'Flatti', label:'Fledermaus', g:'die', c:'#8273b8', b:'#e2d9f7', ears:'bat', inner:'#ffb8d2', wings:['#5d4e94','#a99ad8'], bat:true, limb:'#6c5ca6', feet:'#5d4e94', bigEyes:true, nose:'tri', mouth:'w', fang:true, fav:'apfel', say:'Ich hänge gern kopfüber ab! 🦇'},
 });
+// Weihnachtstiere aus dem Adventskalender (advent = Türchen)
+Object.assign(A, {
+  rentier:  {hab:'winter', advent:4,  name:'Rudi', label:'Rentier', g:'das', c:'#b9825a', b:'#f3e2cd', ears:'deer', earC:'#a8724c', inner:'#f3e2cd', antlers:'#8a5a35', muzzle:true, nose:'red', mouth:'smile', fav:'karotte', say:'Meine Nase leuchtet! 🔴✨'},
+  lebki:    {hab:'winter', advent:10, name:'Lebki', label:'Lebkuchenmann', g:'der', c:'#c98a4f', b:'#dba56f', icing:true, mouth:'icing', fav:'muffin', say:'Ich bin frisch gebacken! 🍪'},
+  schneeeule:{hab:'winter', advent:15, name:'Flöckchen', label:'Schneeeule', g:'die', c:'#ffffff', b:'#eef3fb', ears:'owl', eyeRing:true, bigEyes:true, mouth:'beak', arms:'wing', limb:'#f1f5fb', feet:'#ffa94d', speckles:'#b9c8de', beanie:'#e8424f', fav:'fisch', say:'Schuhu – es schneit! ❄️'},
+  schneemann:{hab:'winter', advent:19, name:'Knopf', label:'Schneemann', g:'der', c:'#ffffff', b:'#ffffff', snowman:true, arms:'twig', feet:'#ffffff', nose:'carrot', mouth:'coal', scarf:'#3fae6a', fav:'karotte', say:'Mir ist schön kalt! ⛄'},
+});
 // Urzeit (ab Level 16)
 Object.assign(A, {
   mammut:   {hab:'urzeit', name:'Manni', label:'Mammut', g:'das', c:'#a0704a', b:'#c99a72', ears:'round', earC:'#8a5c38', earIn:'#c99a72', hair:'#6e4528', trunk:true, mouth:'none', fav:'apfel', say:'Töröö! 🦣'},
@@ -954,6 +1025,7 @@ const MOVE = {
   greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
   trex:'stomp', mammut:'stomp', brachio:'slow',
   kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', fledermaus:'night',
+  rentier:'xmasfly', lebki:'cookie', schneeeule:'snowfly', schneemann:'slow',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
 const moveOf = type => MOVE[type] || 'walk';
@@ -974,6 +1046,12 @@ const ACC = [
   {id:'schmetterling', e:'🦋', name:'Schmetterling', slot:'side', lvl:13},
   {id:'ballon',        e:'🎈', name:'Luftballon',    slot:'side', lvl:14},
   {id:'medaille',      e:'🏅', name:'Medaille',      slot:'neck', lvl:15},
+  // Adventskalender: svg = eigene Zeichnung (Kasten -50…50), e = Emoji für Texte
+  {id:'xmasmuetze',    e:'🎅', name:'Weihnachtsmütze', slot:'hat',  advent:2,  svg:'<path d="M-36 22 C-32 -18 -4 -40 26 -30 C40 -24 46 -6 42 8 C36 -4 26 -10 16 -8 C24 2 28 12 30 22Z" fill="#e8424f" stroke="#a82634" stroke-width="4" stroke-linejoin="round"/><rect x="-42" y="16" width="78" height="18" rx="9" fill="#ffffff" stroke="#c9d1dc" stroke-width="4"/><circle cx="42" cy="10" r="11" fill="#ffffff" stroke="#c9d1dc" stroke-width="4"/>'},
+  {id:'schneeflocke',  e:'❄️', name:'Schneeflocke',    slot:'side', advent:8},
+  {id:'geweih',        e:'🦌', name:'Rentiergeweih',   slot:'hat',  advent:12, svg:'<path d="M-14 26 C-20 6 -30 -6 -42 -18 M-25 0 C-34 0 -42 4 -48 0 M-32 -10 C-30 -22 -24 -30 -18 -36 M14 26 C20 6 30 -6 42 -18 M25 0 C34 0 42 4 48 0 M32 -10 C30 -22 24 -30 18 -36" fill="none" stroke="#6b4426" stroke-width="12" stroke-linecap="round"/><path d="M-14 26 C-20 6 -30 -6 -42 -18 M-25 0 C-34 0 -42 4 -48 0 M-32 -10 C-30 -22 -24 -30 -18 -36 M14 26 C20 6 30 -6 42 -18 M25 0 C34 0 42 4 48 0 M32 -10 C30 -22 24 -30 18 -36" fill="none" stroke="#a8724c" stroke-width="7" stroke-linecap="round"/><path d="M-30 30 Q0 18 30 30" fill="none" stroke="#e8424f" stroke-width="7" stroke-linecap="round"/>'},
+  {id:'zuckerstange',  e:'🍬', name:'Zuckerstange',    slot:'side', advent:16, svg:'<path d="M12 44 L12 -18 C12 -42 -26 -42 -26 -18" fill="none" stroke="#c9d1dc" stroke-width="18" stroke-linecap="round"/><path d="M12 44 L12 -18 C12 -42 -26 -42 -26 -18" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round"/><path d="M12 44 L12 -18 C12 -42 -26 -42 -26 -18" fill="none" stroke="#e8424f" stroke-width="13" stroke-dasharray="9 9"/>'},
+  {id:'sternkette',    e:'🌟', name:'Sternen-Halsband',slot:'neck', advent:22},
 ];
 const ACCM = Object.fromEntries(ACC.map(a => [a.id, a]));
 
@@ -1029,6 +1107,10 @@ const CLOTHES = [
   {id:'zauberstab', slot:'extra', name:'Zauberstab',       lvl:17, e:'🪄'},
   {id:'drachenfluegel', slot:'extra', name:'Drachenflügel',gift:true, style:'dragonwings', c:'#f4cdbd'},
   {id:'ballon',     slot:'extra', name:'Luftballon',       gift:true, style:'balloon'},
+  // Adventskalender
+  {id:'xmaspulli',   slot:'top',   name:'Weihnachtspulli',  advent:5,  style:'xmas', c:'#e8424f', c2:'#ffffff'},
+  {id:'wichtelmuetze', slot:'hat', name:'Wichtelmütze',     advent:11, style:'elf'},
+  {id:'faeustlinge', slot:'extra', name:'Fäustlinge',       advent:20, e:'🧤'},
 ];
 const CL = Object.fromEntries(CLOTHES.map(c => [c.id, c]));
 
@@ -1050,6 +1132,10 @@ const HELLO = ['Du rechnest super!','Hihi, das kitzelt!','Noch eine Aufgabe?','I
 /* ================= Spielstand ================= */
 // Testmodus (index.html?test): alles freigeschaltet, eigener Spielstand – Lucys echter bleibt unberührt
 const TEST = new URLSearchParams(location.search).has('test');
+/* Adventskalender: S.advent = geöffnete Türchen (1–24). Sachen mit advent:N gibt es erst ab Türchen N – auch im Test nicht geschenkt.
+   Vorschau für Lucy und Papa beim Bauen: ?test&advent (alles aus dem Kalender sichtbar, ohne Türchen zu öffnen) */
+const ADVENT_PREVIEW = TEST && new URLSearchParams(location.search).has('advent');
+const adventHas = d => ADVENT_PREVIEW || ((typeof S !== 'undefined' && S && S.advent) || []).includes(d);
 // Speicher-Schlüssel tragen noch den alten Namen „Rechen-Zoo“ – nicht ändern, sonst ist der Spielstand weg
 const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
@@ -1075,15 +1161,20 @@ function load(){
     S.pets = (S.pets || []).filter(p => !HAB[A[p.type]?.hab]?.code);
     Object.values(S.furn || {}).forEach(list => { for (let i = list.length - 1; i >= 0; i--) if (FURN[list[i].id]?.code) list.splice(i, 1); });
     if (HAB[S.hab]?.code) S.hab = 'wiese';
+    S.pets = S.pets.filter(p => !A[p.type]?.advent || adventHas(A[p.type].advent)); // Kalender-Tiere erst nach ihrem Türchen
+    Object.values(S.furn || {}).forEach(list => { for (let i = list.length - 1; i >= 0; i--){ const f = FURN[list[i].id]; if (f?.advent && !adventHas(f.advent)) list.splice(i, 1); } });
+    (S.pets || []).forEach(p => Object.entries(p.acc || {}).forEach(([k, id]) => { if (ACCM[id]?.advent && !adventHas(ACCM[id].advent)) delete p.acc[k]; }));
+    if (HAB[S.hab]?.advent && !adventHas(HAB[S.hab].advent)) S.hab = 'wiese';
   }
-  if (TEST){ const max = Math.max(...HABS.filter(h => !h.code).map(h => h.lvl), ...ACC.map(a => a.lvl), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
+  if (TEST){ const max = Math.max(...HABS.filter(h => !h.code).map(h => h.lvl), ...ACC.map(a => a.lvl || 1), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
   // Im Test immer alle Tiere da – auch neu eingebaute
-  if (TEST) ORDER.forEach(type => { if (!HAB[A[type].hab].code && !(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); }); // Code-Tiere nicht
+  if (TEST) ORDER.forEach(type => { if (!HAB[A[type].hab].code && (!A[type].advent || adventHas(A[type].advent)) && !(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); }); // Code- und Kalender-Tiere nicht
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
   S.av = Object.assign({...DEFAULT.av}, S.av);
   S.me = Object.assign({...DEFAULT.me}, S.me, { id:'me', type:'me' });
   if (!HAB[S.me.hab]) S.me.hab = 'haus';
   S.avOwned = S.avOwned || [];
+  S.advent = S.advent || [];
   S.furnOwned = S.furnOwned || [];
   if (TEST) S.furnOwned = FURN_LIST.filter(f => f.gift).map(f => f.id); // im Test alle Geschenk-Möbel
   if (TEST) S.avOwned = CLOTHES.filter(c => c.gift).map(c => c.id); // im Test alle Geschenk-Kleider
@@ -1091,7 +1182,7 @@ function load(){
   if (!S.lamps || 'ceil' in S.lamps) S.lamps = {};
   if (!ROOMS[S.room]) S.room = 'flur';
   // Hausbesuch aus der Zeit vor den Zimmern: die saßen im Wohnzimmer, Sitzplätze passen nicht mehr
-  (S.pets || []).forEach(p => { if (p.at && !p.room){ p.room = 'wohn'; delete p.seat; } });
+  (S.pets || []).forEach(p => { if (p.at === 'haus' && !p.room){ p.room = 'wohn'; delete p.seat; } });
   // Spielzimmer wurden zu Kinderzimmern mit anderen Möbeln: alte Sitzplätze dort passen nicht mehr
   if (!S.kidRooms){ (S.pets || []).forEach(p => { if (p.room === 'spiel1' || p.room === 'spiel2') delete p.seat; }); S.kidRooms = true; }
   // Neue XP-Kurve: alte Spielstände einmalig umrechnen – gleiches Level, gleicher Fortschritt im Balken
@@ -1133,11 +1224,12 @@ function oldLevelInfo(xp){
   return { l, cur:xp, need };
 }
 const level = () => levelInfo(S.xp).l;
-const habOpen = h => (h.code ? S.unlocks.includes(h.code) : level() >= h.lvl) || S.pets.some(p => A[p.type].hab === h.id);
+const habOpen = h => (h.code ? S.unlocks.includes(h.code) : h.advent ? adventHas(h.advent) : level() >= h.lvl) || S.pets.some(p => A[p.type].hab === h.id);
 const nameOf = p => p.name || A[p.type].name; // eigener Name (selbst vergeben) oder der Standardname
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[ch]));
 function setName(p, v){ v = v.trim().slice(0, 16); if (!v || v === A[p.type].name) delete p.name; else p.name = v; save(); }
-const where = p => p.at || A[p.type].hab; // p.at = 'haus', solange das Tier zu Besuch ist
+const where = p => p.at || A[p.type].hab; // p.at = 'haus' (zu Besuch im Haus) oder eine andere Welt (mit dem Schlitten hingefahren)
+const inHouse = p => p.at === 'haus';
 /* Der Avatar als Spielfigur (S.me) benutzt dieselben Funktionen wie die Tiere */
 const ME_INFO = { hab:'haus', name:'Ich', say:'Hallo! 👋' };
 const ME_HELLO = ['Hallo! 👋','Wohin gehen wir?','Ich hab euch lieb! 💕','Lass uns spielen!','Juhu!','Wer kommt mit?'];
@@ -1146,8 +1238,10 @@ const info = p => isMe(p) ? ME_INFO : A[p.type];
 const ridePet = () => S.ride && S.pets.find(x => x.id === S.ride);
 const curRoom = () => HAB[S.hab]?.shared ? together().room : S.room; // Zimmer, das man gerade anschaut (Haus oder Schloss)
 const meHere = () => !ridePet() && S.me.hab === S.hab && (!HAB[S.hab].indoor || S.me.room === S.room);
-const accOpen = a => level() >= a.lvl;
-const clothOpen = c => c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
+const accOpen = a => a.advent ? adventHas(a.advent) : level() >= a.lvl;
+// Accessoire als Bild: eigene Zeichnung (svg) oder Emoji
+const accIcon = a => a.svg ? `<svg viewBox="-50 -50 100 100" style="width:1em;height:1em;overflow:visible;vertical-align:middle">${a.svg}</svg>` : a.e;
+const clothOpen = c => c.advent ? adventHas(c.advent) : c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
 
 /* ================= Sound ================= */
 let AC;
@@ -1181,12 +1275,14 @@ const SFX = {
   click: () => tone(1400, .03, 'square', 0, .025),
   twinkle: () => tone(1568, .15, 'sine', 0, .04),
   stomp: () => { tone(110, .22, 'sine', 0, .22, 45); tone(70, .15, 'triangle', .02, .12, 40); },
+  jingle: () => [0,.09,.18,.42,.51,.60].forEach((w,i) => { tone(2093 + (i%3)*190, .16, 'triangle', w, .05); tone(3136, .08, 'sine', w + .02, .025); }), // Schlittenglöckchen
 };
 /* Geräusch-Takt und Glitzer beim Tragen: [ms, Sound, Partikel] */
 const STEP = {
   fly:[320, SFX.flap], explore:[300, SFX.flap, ['🌍','✨','🗺️','🧭']], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
   gold:[280, () => { SFX.flap(); tone(1760, .08, 'sine', 0, .03); }, el => { const [x, y] = centerOf(el); confetti(x, y, 9, GOLD); sprinkle(el, ['🪙','✨'], 1); }], blaze:[320, SFX.flap, ['🔥','✨']], stomp:[500, SFX.stomp], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
-  hop:[500, SFX.hop], spook:[500, SFX.hop, ['🍬','👻','✨']], night:[260, SFX.flap, ['🌙','⭐','✨']], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
+  hop:[500, SFX.hop], spook:[500, SFX.hop, ['🍬','👻','✨']], cookie:[500, SFX.hop, ['🍪','🍬','✨']],
+  xmasfly:[300, () => { SFX.flap(); tone(2093, .1, 'triangle', 0, .03); }, ['❄️','⭐','✨']], snowfly:[320, SFX.flap, ['❄️','✨']], night:[260, SFX.flap, ['🌙','⭐','✨']], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
 
 /* ================= Kawaii-Tiergrafik (SVG) ================= */
@@ -1256,6 +1352,10 @@ function petSVG(type, acc = {}){
     const iw = t.bat ? 'M42 92 C30 76 14 60 0 52 C6 64 10 72 22 82Z' : 'M42 94 C26 94 10 80 4 54 C14 66 22 72 30 76 C32 84 38 88 42 90Z';
     back += `<g class="wing dwl">${P(w,wc)}${P(iw,wi,true)}</g><g class="wing dwr">${P(mir(w),wc)}${P(mir(iw),wi,true)}</g>`;
   }
+  if (t.antlers){ // Rentiergeweih: verzweigt, links gebaut und gespiegelt
+    const d = 'M44 26 C40 14 34 6 26 -2 M37 14 C31 13 24 15 18 12 M32 6 C33 -2 38 -8 42 -12 M28 1 C22 -3 18 -9 18 -14';
+    back += S_(d + ' ' + mir(d), line(t.antlers), 7) + S_(d + ' ' + mir(d), t.antlers, 4.4);
+  }
   if (t.crest) back += P(`M56 ${top+8} C68 ${top-12} 94 ${top-20} 110 ${top-18} C96 ${top-6} 80 ${top+4} 68 ${top+12}Z`, t.crest); // Flugsaurier-Kamm
   if (t.hump) back += E(90,90,16,15,c);
   switch (t.tail){
@@ -1293,6 +1393,7 @@ function petSVG(type, acc = {}){
     case 'mouse':  back += Ep(24,30,17,17,ec) + Ep(24,30,10,10,inner,0,true); break;
     case 'pig':    back += Pp('M30 34 L27 12 L48 24Z', ec) + Pp('M32 29 L31 17 L43 25Z', inner, true); break;
     case 'owl':    back += Pp('M24 38 L18 8 L46 24Z', ec); break;
+    case 'deer':   back += Ep(16,38,15,7,ec,-28) + Ep(17,38,9,3.5,inner,-28,true); break;
     case 'bat':    back += Pp('M30 42 L16 -4 L54 22Z', ec) + Pp('M33 33 L23 6 L46 23Z', inner, true); break;
     case 'small':  back += Ep(22,34,8,8,ec) + Ep(22,34,4,4,inner,0,true); break;
     case 'fennec': back += Ep(22,8,13,28,ec,-32) + Ep(23,10,7,19,inner,-32,true); break;
@@ -1345,14 +1446,22 @@ function petSVG(type, acc = {}){
       body += E(60,104,31,22,c) + E(60,108,18,12,b,0,true) + S_(d, line(c), 33) + S_(d, c, 28)
             + [[40,98,4],[78,100,5],[72,110,3],[60,60,3],[57,74,2.5]].map(([x,y,r]) => E(x,y,r,r*.8,mix(c,'#3a8f7d',.35),0,true)).join('');
     }
+    if (t.icing) body += [[60,96,'#e8424f'],[60,106,'#3fae6a']].map(([x,y,f]) => E(x,y,3.2,3.2,f)).join('')
+                       + S_('M31 104 Q33 100 35 104 Q37 100 39 104 ' + mir('M31 104 Q33 100 35 104 Q37 100 39 104'), '#ffffff', 2); // Zuckerguss-Knöpfe und -Ärmel
+    if (t.snowman) body += [94,103,112].map(y => E(60,y,2.6,2.6,'#3a3446',0,true)).join(''); // Kohleknöpfe
+    if (t.speckles) body += [[52,96],[66,100],[58,108],[70,92]].map(([x,y]) => S_(`M${x-2} ${y} Q${x} ${y+2} ${x+2} ${y}`, t.speckles, 1.8)).join('');
     body += t.arms === 'wing'
       ? `<g class="wing wl">${E(35,98,6,11,limb,35)}</g><g class="wing wr">${E(85,98,6,11,limb,-35)}</g>`
+      : t.arms === 'twig'
+      ? S_('M38 96 L20 84 M27 88 L24 80 M27 88 L18 90' + ' ' + mir('M38 96 L20 84 M27 88 L24 80 M27 88 L18 90'), '#7a4f2a', 3)
       : Ep(37,98,6,8,limb,30);
   }
 
   /* --- Kopf / Hauptform --- */
   head += E(60, hy, hrx, hry, c);
   if (blob && t.belly) head += E(60, hy+16, 28, 18, b, 0, true);
+  if (t.icing) head += S_(`M${60-hrx+7} ${hy-6} Q${60-hrx+6} ${top+4} 60 ${top+3} Q${60+hrx-6} ${top+4} ${60+hrx-7} ${hy-6}`, '#ffffff', 2.4)
+                     .replace('fill="none"', 'fill="none" stroke-dasharray="5 3"');
   if (t.pumpkin) [13, 27].forEach(dx => head += S_(`M${60-dx} ${top+4} Q${60-dx*1.4} ${hy} ${60-dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2) + S_(`M${60+dx} ${top+4} Q${60+dx*1.4} ${hy} ${60+dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2));
   head += `<ellipse cx="${60-hrx*.48}" cy="${hy-hry*.5}" rx="10" ry="6" fill="#ffffff" opacity=".5" transform="rotate(-20 ${60-hrx*.48} ${hy-hry*.5})"/>`;
 
@@ -1387,6 +1496,8 @@ function petSVG(type, acc = {}){
     case 'snout':    face += E(60, fy+7, 8, 5.5, '#ff9cc2') + E(57, fy+7, 1.5, 2.2, '#d0578a', 0, true) + E(63, fy+7, 1.5, 2.2, '#d0578a', 0, true); break;
     case 'koala':    face += E(60, fy+1, 7, 9, '#4a4458', 0, true) + E(58, fy-3, 2, 2.5, '#8a8496', 0, true); my += 4; break; // große Koala-Nase
     case 'nostrils': face += E(56, fy+5, 1.5, 1.2, INK, 0, true) + E(64, fy+5, 1.5, 1.2, INK, 0, true); break;
+    case 'red':      face += `<ellipse cx="60" cy="${fy+4}" rx="11" ry="9" fill="#ff5a64" opacity=".25"/>` + E(60, fy+4, 6.5, 5.5, '#ff3b47') + E(58, fy+2, 2, 1.4, '#ffffff', 0, true); my += 2; break; // Rudis Leuchtnase
+    case 'carrot':   face += P(`M58 ${fy+1} L80 ${fy+5} L58 ${fy+8}Z`, '#ff8a1c') + S_(`M66 ${fy+3} l1 2 M72 ${fy+4} l1 2`, mix('#ff8a1c','#7a3b00',.4), 1.5); my += 3; break;
   }
   switch (t.mouth){
     case 'w':     face += `<path class="mouth" d="M54 ${my} Q57 ${my+4} 60 ${my} Q63 ${my+4} 66 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
@@ -1395,6 +1506,8 @@ function petSVG(type, acc = {}){
     case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs(t.beakC || '#ffa94d')}/>`; break;
     case 'longbeak': face += `<path class="mouth" d="M54 ${fy+3} L66 ${fy+3} L60 ${fy+20}Z" ${fs('#ffb84d')}/>`; break;
     case 'none':  break;
+    case 'coal':  face += [-8,-4,0,4,8].map(dx => `<circle cx="${60+dx}" cy="${my + 2 - Math.abs(dx) * .3 + (dx ? 1.6 : 2.4)}" r="1.6" fill="#3a3446"/>`).join(''); break; // Schneemann: Kohlemund
+    case 'icing': face += `<path class="mouth" d="M53 ${my} Q60 ${my+6} 67 ${my}" fill="none" stroke="#ffffff" stroke-width="2.6"/>`; break;
     case 'jack':  face += `<path class="mouth" d="M40 ${my} Q60 ${my+28} 80 ${my} Q72 ${my+7} 64 ${my+7} L64 ${my+11} L56 ${my+11} L56 ${my+7} Q48 ${my+7} 40 ${my}Z" fill="#ffd23f" stroke="#9a4a0e"/>`; break; // geschnitztes Kürbisgrinsen mit Zahn
     case 'tongue': face += `<ellipse cx="60" cy="${my+4}" rx="4" ry="5" fill="#ff8fb0" stroke="#d65f86" stroke-width="1.5"/><path class="mouth" d="M53 ${my} Q56.5 ${my+4} 60 ${my} Q63.5 ${my+4} 67 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
     default:      face += `<path class="mouth" d="M55 ${my} Q60 ${my+5} 65 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
@@ -1426,15 +1539,22 @@ function petSVG(type, acc = {}){
     + S_(`M39 ${top - 3} Q60 ${top - 8} 81 ${top - 3}`, '#7a4f2a', 3.5) + E(76, top - 6, 4, 4, '#ffd23f'); // Forscherhut mit Band und Abzeichen
   if (t.pumpkin) front += P(`M55 ${top+5} C54 ${top-4} 56 ${top-12} 63 ${top-15} C67 ${top-11} 64 ${top-4} 65 ${top+5}Z`, '#6f8f3a')
     + E(76, top-3, 10, 5, '#7cc45a', -20) + S_(`M65 ${top-9} q9 -9 13 -2 q2 5 -4 5`, '#5f9e3a', 2);
+  if (t.beanie) front += P(`M33 ${top+12} C32 ${top-14} 88 ${top-14} 87 ${top+12}Z`, t.beanie)
+    + E(60, top+12, 29, 6, '#ffffff') + E(60, top-12, 7, 7, '#ffffff'); // Wintermütze mit Bommel
+  if (t.scarf) front += P(`M34 ${hy+hry-6} Q60 ${hy+hry+6} 86 ${hy+hry-6} L86 ${hy+hry+2} Q60 ${hy+hry+14} 34 ${hy+hry+2}Z`, t.scarf)
+    + P(`M70 ${hy+hry+4} L78 ${hy+hry+24} L68 ${hy+hry+24} L64 ${hy+hry+6}Z`, t.scarf); // Schal mit Zipfel
   if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
 
   /* --- Accessoires --- */
   let over = '';
   const em = (e, x, y, size, rot=0) => `<text class="acc-e" x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central"${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}>${e}</text>`;
-  if (acc.neck && ACCM[acc.neck]) over += em(ACCM[acc.neck].e, 60, blob ? hy+hry-8 : 92, 30);
-  if (acc.eyes && ACCM[acc.eyes]) over += em(ACCM[acc.eyes].e, 60, eyY+1, eyX*2 + 16);
-  if (acc.hat && ACCM[acc.hat]) over += em(ACCM[acc.hat].e, 60, t.hatY ?? top - 8, 48);
-  if (acc.side && ACCM[acc.side]) over += em(ACCM[acc.side].e, 92, top + 8, 26, 18);
+  const ac = (a, x, y, size, rot=0) => a.svg // eigene Zeichnung statt Emoji (Weihnachtsmütze, Geweih …)
+    ? `<svg x="${x - size/2}" y="${y - size/2}" width="${size}" height="${size}" viewBox="-50 -50 100 100" overflow="visible"><g transform="rotate(${rot})">${a.svg}</g></svg>`
+    : em(a.e, x, y, size, rot);
+  if (acc.neck && ACCM[acc.neck]) over += ac(ACCM[acc.neck], 60, blob ? hy+hry-8 : 92, 30);
+  if (acc.eyes && ACCM[acc.eyes]) over += ac(ACCM[acc.eyes], 60, eyY+1, eyX*2 + 16);
+  if (acc.hat && ACCM[acc.hat]) over += ac(ACCM[acc.hat], 60, t.hatY ?? top - 8, 48);
+  if (acc.side && ACCM[acc.side]) over += ac(ACCM[acc.side], 92, top + 8, 26, 18);
 
   return `<svg viewBox="0 -24 120 154" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t.label}">
     <ellipse cx="60" cy="125" rx="${blob ? 36 : 28}" ry="4.5" fill="rgba(40,30,70,.14)"/>
@@ -1515,6 +1635,8 @@ function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlic
       case 'tee':     body += S_('M54 81 Q60 86 66 81', line(top.c), 2); break;
       case 'stripes': body += [88,94,100].map(y => S_(`M42 ${y} L78 ${y}`, top.c2, 3.5)).join(''); sleeve = top.c2; break;
       case 'sweater': body += E(60,81,8,3,top.c2) + S_('M41 101 L79 101', top.c2, 3); break;
+      case 'xmas':    body += E(60,81,8,3,top.c2) + S_('M42 90 L46 87 L50 90 L54 87 L58 90 L62 87 L66 90 L70 87 L74 90 L78 87', top.c2, 2.2)
+                        + P('M60 91 L66 100 L54 100Z', '#3fae6a', true) + star(60, 90, 2.4, '#ffd23f') + S_('M41 101 L79 101', top.c2, 3); break; // Weihnachtspulli mit Tannenbaum
       case 'hoodie':
         body += P('M50 94 L70 94 L72 102 L48 102Z', top.c2, true) + S_('M56 82 L55 90 M64 82 L65 90', mix(top.c,'#000000',.25), 1.6);
         if (top.deco === 'spikes') body += Pp('M42 84 L44 76 L49 82Z', top.c2);
@@ -1553,6 +1675,8 @@ function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlic
     [68, 78, 88, 98].forEach((y, i) => front += E(60 + s*(33 + i), y, 6.5, 6.5, hc));
     front += E(60 + s*37, 106, 4, 3, '#ff7eb6');
   });
+  if (hat?.style === 'elf') front += P('M27 34 C30 12 46 4 62 5 C80 6 94 -4 104 -14 C102 2 98 18 94 34Z', '#3fae6a')
+    + S_('M27 33 Q60 40 94 33', '#e8424f', 7) + `<circle cx="104" cy="-14" r="5" ${fs('#ffd23f')}/>`; // Wichtelmütze mit Glöckchen
   if (hat){
     if (hat.e) over += hat.side ? em(hat.e, 88, 24, 20, 18) : em(hat.e, 60, 12, 36);
     if (hat.style === 'flowers') over += [[34,30,'🌸'],[44,20,'🌼'],[56,15,'🌷'],[68,15,'🌸'],[80,20,'🌼'],[88,30,'🌷']].map(([x,y,e]) => em(e, x, y, 12)).join('');
@@ -1845,6 +1969,8 @@ $('#giftBtns').addEventListener('click', e => {
   if (b.dataset.a === 'world'){ if (giftPet) S.hab = A[giftPet.type].hab; show('world'); }
   else if (b.dataset.a.startsWith('avatar:')) openAvatar(b.dataset.a.slice(7));
   else if (b.dataset.a === 'build'){ S.hab = 'haus'; show('world'); enterBuild(); }
+  else if (b.dataset.a === 'ward') openWard();
+  else if (b.dataset.a === 'sled'){ if (HAB[S.hab].indoor || HAB[S.hab].shared) S.hab = 'winter'; show('world'); setTimeout(openSled, 300); }
 });
 
 /* ================= Welt ================= */
@@ -1924,7 +2050,7 @@ function exitBuild(){
 function renderBuildbar(){
   $('#fcat').innerHTML = FURN_LIST.map(f => {
     const open = furnOpen(f);
-    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${f.e}</span><small>${open ? f.name : f.code ? '🔑 Code' : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
+    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${open && f.html && f.advent ? `<span class="fsvg">${f.html}</span>` : f.e}</span><small>${open ? f.name : f.code ? '🔑 Code' : f.advent ? '🗓️ ' + f.advent + '.' : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
   }).join('');
 }
 // Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
@@ -1940,7 +2066,7 @@ function furnRemoved(i){
 $('#fcat').addEventListener('click', e => {
   const b = e.target.closest('.fitem'); if (!b) return;
   const f = FURN[b.dataset.f];
-  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.code ? `${f.e} ${f.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
+  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.code ? `${f.e} ${f.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : f.advent ? `${f.e} ${f.name} steckt hinter Türchen ${f.advent} im Adventskalender 🗓️` : f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
   const list = furnOf(curRoom());
   list.push({ id:f.id, x:rnd(30, 70), y:f.wall ? rnd(24, 36) : rnd(66, 80) });
   selI = list.length - 1; SFX.dress(); furnChanged(); renderWorld();
@@ -2046,7 +2172,7 @@ function goThroughDoor(el, p, door){
   else { p.room = to; floorSpot(p); toast(`${nameOf(p)} geht ${ROOMS[to].in} ${ROOMS[to].e}`); }
   SFX.pop(); SFX.love();
   // reitet der Avatar auf diesem Tier, geht man mit
-  if (p.id === S.ride){ S.hab = where(p); if (p.at) S.room = roomOf(p); }
+  if (p.id === S.ride){ S.hab = where(p); if (inHouse(p)) S.room = roomOf(p); }
   el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'scale(.15)', opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
   save();
   setTimeout(renderWorld, 400);
@@ -2164,13 +2290,13 @@ function slideDown(el, p, d){
   }, 650);
 }
 function invite(id){
-  const p = S.pets.find(x => x.id === id); if (!p || p.at) return;
+  const p = S.pets.find(x => x.id === id); if (!p || inHouse(p)) return;
   p.at = 'haus'; p.room = S.room; floorSpot(p); // kommt in das Zimmer, in dem man gerade ist
   SFX.dress(); save();
 }
 function openInvite(){ $('#inviteModal').classList.add('open'); renderInvite(); }
 function renderInvite(){
-  const out = S.pets.filter(p => !p.at);
+  const out = S.pets.filter(p => !inHouse(p));
   $('#inviteGrid').innerHTML = out.length
     ? out.map(p => `<button class="acard" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${esc(nameOf(p))}</b><span>${HAB[A[p.type].hab].e} ${HAB[A[p.type].hab].name}</span></button>`).join('')
     : `<div class="habLocked">Alle Tiere sind schon im Haus! 🥳</div>`;
@@ -2182,17 +2308,252 @@ $('#inviteGrid').addEventListener('click', e => {
   renderInvite(); renderWorld();
 });
 $('#inviteClose').addEventListener('click', () => $('#inviteModal').classList.remove('open'));
+/* ================= Adventskalender 2026 =================
+   24 Türchen, jedes geht ab seinem Tag im Dezember 2026 auf (verpasste kann man nachholen). Was drin ist, steht an den Sachen selbst (advent:N).
+   Zum Ausprobieren: ?test&tag=7 tut so, als wäre der 7. Dezember. */
+const ADV_YEAR = 2026;
+const advToday = () => { const t = TEST && new URLSearchParams(location.search).get('tag'); return t ? new Date(ADV_YEAR, 11, +t, 12) : new Date(); };
+const doorReady = d => advToday() >= new Date(ADV_YEAR, 11, d);
+const ADV_ORDER = [7,18,2,23,11,4,15,9,21,1,13,6,19,10,3,16,8,22,5,12,20,14,17,24]; // Türchen gemischt wie bei einem echten Kalender
+const ADV_COLS = ['#d93a4a','#2f8f4e','#c9932b','#3b6fc4','#9a4fc2','#d9662e'];
+// Was steckt hinter Türchen d? (aus den Sachen mit advent:d)
+function advContent(d){
+  if (d === 24) return { kind:'sled', e:'🛷', name:'Der Zauberschlitten' };
+  const h = HABS.find(x => x.advent === d); if (h) return { kind:'world', item:h, e:h.e, name:h.name };
+  const t = ORDER.find(x => A[x].advent === d); if (t) return { kind:'pet', type:t, e:'🐾', name:A[t].name };
+  const f = FURN_LIST.find(x => x.advent === d); if (f) return { kind:'furn', item:f, e:f.e, name:f.name };
+  const a = ACC.find(x => x.advent === d); if (a) return { kind:'acc', item:a, e:a.e, name:a.name };
+  const c = CLOTHES.find(x => x.advent === d); if (c) return { kind:'cloth', item:c, e:c.e || '👕', name:c.name };
+  return { kind:'treats', e:'🍪', name:'Leckerlis' };
+}
+const ADV_TREATS = { 6:5, 23:8 }; // Nikolaus und kurz vor Weihnachten: Leckerlis für alle
+function advIcon(d){
+  const k = advContent(d);
+  if (k.kind === 'pet') return `<span class="reveal-mini">${petSVG(k.type)}</span>`;
+  if (k.kind === 'furn' && k.item.html) return k.item.html;
+  if (k.kind === 'acc') return accIcon(k.item);
+  if (k.kind === 'cloth') return k.item.e || (k.item.slot === 'hat' ? '🧝' : '🧶');
+  return k.e;
+}
+function openAdvent(){ renderAdvent(); $('#adventModal').classList.add('open'); }
+function renderAdvent(){
+  const now = advToday(), first = new Date(ADV_YEAR, 11, 1);
+  const days = Math.ceil((first - now) / 864e5);
+  $('#advInfo').textContent = days > 0 ? `Noch ${days} ${days === 1 ? 'Tag' : 'Tage'} bis zum 1. Dezember! Jeden Tag geht ein Türchen auf. ✨`
+    : now.getFullYear() === ADV_YEAR && now.getMonth() === 11 && now.getDate() <= 24 ? `Heute ist der ${now.getDate()}. Dezember – tippe auf die leuchtenden Türchen! ✨`
+    : 'Frohe Weihnachten! 🎄 Alle Türchen sind offen.';
+  $('#advGrid').innerHTML = ADV_ORDER.map((d, i) => {
+    const open = S.advent.includes(d), ready = !open && doorReady(d);
+    return `<button class="adoor ${d === 24 ? 'big' : ''} ${open ? 'open' : ready ? 'ready' : ''}" data-d="${d}" style="--dc:${d === 24 ? '#c9932b' : ADV_COLS[i % ADV_COLS.length]}">`
+      + (open ? `<span class="num"><span class="ic">${advIcon(d)}</span>${d}. ${esc(advContent(d).name)}</span>` : `<span class="num">${d}</span>${d === 24 ? '<span class="bow">🎀</span>' : ''}`)
+      + `</button>`;
+  }).join('');
+}
+$('#advGrid').addEventListener('click', e => {
+  const b = e.target.closest('.adoor'); if (!b) return;
+  const d = +b.dataset.d;
+  if (S.advent.includes(d)){ SFX.tap(); toast(`Türchen ${d}: ${advContent(d).name} ${advContent(d).e}`); return; }
+  if (!doorReady(d)){
+    SFX.no(); retrigger(b, 'shake');
+    const wait = Math.ceil((new Date(ADV_YEAR, 11, d) - advToday()) / 864e5);
+    toast(`Türchen ${d} geht am ${d}. Dezember auf – noch ${wait} ${wait === 1 ? 'Tag' : 'Tage'}! 🎄`); return;
+  }
+  b.classList.add('opening'); SFX.jingle();
+  setTimeout(() => { $('#adventModal').classList.remove('open'); openDoor(d); }, 550);
+});
+$('#advClose').addEventListener('click', () => $('#adventModal').classList.remove('open'));
+// Türchen öffnen: Inhalt bekommen und wie ein Geschenk zeigen
+function openDoor(d){
+  if (!S.advent.includes(d)) S.advent.push(d);
+  const k = advContent(d), stage = $('#giftStage');
+  let title = '', msg = '', btns = `<button class="btn alt" data-a="quiz">Weiter rechnen</button>`;
+  giftPet = null;
+  if (k.kind === 'world'){
+    stage.innerHTML = `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1;font-family:var(--emoji)">${k.e}</div>`;
+    title = `Neue Welt: ${k.name}!`; msg = 'Schnee, Tannenbäume und ein Weihnachtsdorf – hier wohnen bald die Weihnachtstiere.';
+    giftPet = { type:ORDER.find(t => A[t].hab === k.item.id) }; btns += `<button class="btn" data-a="world">Hinreisen ${k.e}</button>`;
+  } else if (k.kind === 'pet'){
+    let p = S.pets.find(x => x.type === k.type);
+    if (!p){ p = newPet(k.type); S.pets.push(p); S.newPet = p.id; }
+    giftPet = p;
+    stage.innerHTML = `<div class="reveal-pet">${petNode(p, 0)}</div>`;
+    title = `${A[k.type].name}, ${A[k.type].g} ${A[k.type].label}!`; msg = `${A[k.type].name} wohnt jetzt im ${HAB[A[k.type].hab].name}. „${A[k.type].say}“`;
+    btns += `<button class="btn" data-a="world">Besuchen ${HAB[A[k.type].hab].e}</button>`;
+  } else if (k.kind === 'furn'){
+    stage.innerHTML = `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1;font-family:var(--emoji)">${k.item.html || k.item.e}</div>`;
+    title = `${k.name}!`; msg = 'Du findest es beim Einrichten 🔨 im Möbel-Katalog – fürs Haus oder dein Zimmer im Schloss.';
+    btns += `<button class="btn" data-a="build">Einrichten 🔨</button>`;
+  } else if (k.kind === 'acc'){
+    const p = wardSel();
+    stage.innerHTML = `<div class="reveal-pet">${petSVG(p.type, { ...p.acc, [k.item.slot]:k.item.id })}</div>`;
+    title = `${k.name}!`; msg = 'Zieh es deinen Tieren an: 🧰 → 👗 Anziehen.';
+    btns += `<button class="btn" data-a="ward">Anziehen 👗</button>`;
+  } else if (k.kind === 'cloth'){
+    stage.innerHTML = `<div class="reveal-pet">${avatarSVG({ ...S.av, [k.item.slot]:k.item.id })}</div>`;
+    title = `${k.name}!`; msg = 'Für dich! Zieh es bei deinem Avatar an.';
+    btns += `<button class="btn" data-a="avatar:${k.item.slot}">Anziehen 🪞</button>`;
+  } else if (k.kind === 'sled'){
+    stage.innerHTML = `<div class="reveal-pet" style="width:240px">${sledNode([])}</div>`;
+    title = 'Der Zauberschlitten! 🛷'; msg = 'Frohe Weihnachten! Setz bis zu 3 Tiere hinein und fahr sie in jede Welt, die du magst.';
+    btns += `<button class="btn" data-a="sled">Losfahren 🛷</button>`;
+  }
+  const tr = ADV_TREATS[d];
+  if (tr){ Object.keys(S.treats).forEach(t => S.treats[t] += tr); msg += ` Und dazu ${tr}× jedes Leckerli! 🍎🥕🐟🧁`; }
+  save(); renderHUD();
+  $('#giftTitle').textContent = `Türchen ${d}: ${title}`; $('#giftMsg').textContent = msg; $('#giftBtns').innerHTML = btns;
+  $('#giftModal').classList.add('open');
+  SFX.gift(); confetti(innerWidth / 2, innerHeight / 3, 60, ['#e8424f','#2f8f4e','#ffd23f','#ffffff','#4cc9f0']);
+}
+// Beim Start im Dezember: Hinweis, wenn ein Türchen wartet
+setTimeout(() => { const d = ADV_ORDER.find(n => doorReady(n) && !S.advent.includes(n)); if (d) toast('🗓️ Im Adventskalender wartet ein Türchen auf dich! (🧰 → Adventskalender)'); }, 1800);
+
+/* ================= Schlitten: Tiere in andere Welten fahren (Adventskalender, 24. Dezember) =================
+   Bis zu 3 Tiere steigen ein, man sucht eine Welt aus, der Schlitten fährt mit Glöckchen los und kommt dort an.
+   Die Tiere bleiben dort zu Besuch (p.at = Welt), bis man sie wieder nach Hause fährt. */
+const SLED_MAX = 3;
+const sledOpen = () => adventHas(24) || (TEST && new URLSearchParams(location.search).has('schlitten')); // Vorschau: ?test&schlitten
+// rot-goldener Schlitten, fährt nach rechts; zwei Lagen, damit die Tiere „drinsitzen“ (Rückenlehne hinten, Seitenwand vorne)
+function sledSVG(part){
+  const red = '#e8424f', dark = '#b82a3a', gold = '#ffc53d';
+  if (part === 'back') return `<svg viewBox="0 0 240 140"><g stroke-width="3" stroke-linejoin="round" stroke-linecap="round">`
+    + P('M30 104 C22 70 24 34 46 26 C62 22 70 36 66 52 L66 104Z', dark)
+    + `</g></svg>`;
+  return `<svg viewBox="0 0 240 140"><g stroke-width="3" stroke-linejoin="round" stroke-linecap="round">`
+    + S_('M44 108 L44 126 M110 108 L110 126 M174 106 L174 126', mix(gold,'#a0700a',.3), 6)
+    + S_('M18 128 L196 128 C222 128 236 112 230 98 C226 88 214 90 216 100', mix(gold,'#a0700a',.4), 8)
+    + S_('M18 128 L196 128 C222 128 236 112 230 98 C226 88 214 90 216 100', gold, 5)
+    + P('M26 104 L26 76 C26 70 30 68 36 68 L172 68 C192 68 202 56 206 42 C210 32 226 34 226 48 C226 80 212 104 186 110 L38 110 C30 110 26 108 26 104Z', red)
+    + S_('M32 76 L172 76 C194 76 206 62 212 48', gold, 3.5)
+    + `<circle cx="214" cy="44" r="5" fill="${gold}"/>`
+    + star(70, 92, 7, gold) + star(112, 94, 5, '#fff3c4') + star(150, 91, 6, gold)
+    + `</g></svg>`;
+}
+const sledNode = pets => `<div class="sled">${sledSVG('back')}<div class="riders">${pets.map(p => `<div class="rp">${petSVG(p.type, p.acc)}</div>`).join('')}</div>${sledSVG()}</div>`;
+
+let sledSel = [];
+function openSled(){
+  sledSel = [];
+  $('#sledHero').outerHTML = `<div class="sled" id="sledHero"></div>`;
+  renderSledPets();
+  $('#sledModal').classList.add('open');
+}
+// Schlitten oben im Fenster zeigt, wer schon eingestiegen ist
+function renderSledHero(){
+  $('#sledHero').innerHTML = sledNode(sledSel.map(id => S.pets.find(p => p.id === id)).filter(Boolean)).replace(/^<div class="sled">|<\/div>$/g, '');
+  $('#sledNext').disabled = !sledSel.length;
+}
+function renderSledPets(){
+  $('#sledTitle').textContent = 'Schlittenfahrt! 🛷';
+  $('#sledInfo').textContent = `Wer fährt mit? Such dir bis zu ${SLED_MAX} Tiere aus.`;
+  $('#sledPets').hidden = false; $('#sledGo').hidden = true; $('#sledNext').hidden = false;
+  renderSledHero();
+  // Tiere dieser Welt zuerst
+  const list = [...S.pets].filter(p => !inHouse(p)).sort((a, b) => (where(b) === S.hab) - (where(a) === S.hab));
+  $('#sledPets').innerHTML = list.map(p => {
+    const h = HAB[where(p)];
+    return `<button class="acard ${sledSel.includes(p.id) ? 'on' : ''}" data-id="${p.id}">${petSVG(p.type, p.acc)}<b>${esc(nameOf(p))}</b><span>${h.e} ${h.name}</span></button>`;
+  }).join('') || `<div class="habLocked">Hier ist gerade niemand, der mitfahren kann.</div>`;
+}
+function renderSledGo(){
+  const riders = sledSel.map(id => S.pets.find(p => p.id === id));
+  $('#sledTitle').textContent = 'Wohin geht die Fahrt? 🗺️';
+  $('#sledInfo').textContent = riders.map(nameOf).join(', ') + (riders.length > 1 ? ' sitzen' : ' sitzt') + ' im Schlitten. Such eine Welt aus!';
+  $('#sledPets').hidden = true; $('#sledGo').hidden = false; $('#sledNext').hidden = true;
+  $('#sledGo').innerHTML = HABS.filter(h => !h.indoor && !h.shared && habOpen(h)).map(h => {
+    const home = riders.every(p => A[p.type].hab === h.id);
+    return `<button class="gobtn" data-h="${h.id}"><span>${h.e}</span>${h.name}${home ? ' 🏠' : ''}</button>`;
+  }).join('');
+}
+$('#sledPets').addEventListener('click', e => {
+  const b = e.target.closest('.acard'); if (!b) return;
+  const id = b.dataset.id;
+  if (sledSel.includes(id)) sledSel = sledSel.filter(x => x !== id);
+  else if (sledSel.length < SLED_MAX){ sledSel.push(id); SFX.pop(); }
+  else { SFX.no(); toast(`Im Schlitten ist Platz für ${SLED_MAX} Tiere 🛷`); return; }
+  b.classList.toggle('on', sledSel.includes(id)); renderSledHero(); // nicht alles neu zeichnen, sonst springt die Liste
+});
+$('#sledNext').addEventListener('click', () => { if (sledSel.length){ SFX.tap(); renderSledGo(); } });
+$('#sledClose').addEventListener('click', () => $('#sledModal').classList.remove('open'));
+$('#sledGo').addEventListener('click', e => {
+  const b = e.target.closest('.gobtn'); if (!b) return;
+  $('#sledModal').classList.remove('open');
+  sledRide(sledSel.map(id => S.pets.find(p => p.id === id)).filter(Boolean), b.dataset.h);
+});
+
+// Die Fahrt: Schlitten holt die Tiere ab, fährt davon, kommt in der neuen Welt an, Tiere hüpfen raus
+function sledRide(riders, dest){
+  if (!riders.length) return;
+  const h = HAB[dest], sr = scene.getBoundingClientRect();
+  const lane = document.createElement('div');
+  lane.className = 'sledride';
+  lane.style.top = (sr.top + sr.height * .5) + 'px'; lane.style.height = (sr.height * .38) + 'px';
+  document.body.appendChild(lane);
+  const W = Math.min(300, innerWidth * .62), mid = (innerWidth - W) / 2;
+  const drive = (from, to, ms, easing) => {
+    lane.querySelector('.sled').animate([{ transform:`translateX(${from}px)` }, { transform:`translateX(${to}px)` }], { duration:ms, easing, fill:'forwards' });
+    const t0 = performance.now();
+    const puff = setInterval(() => { // Schneegestöber hinter dem Schlitten
+      const k = Math.min(1, (performance.now() - t0) / ms), x = from + (to - from) * k;
+      const f = document.createElement('div'); f.className = 'flake'; f.textContent = pick(['❄️','✨','❄️','⭐']);
+      f.style.left = (x + 10) + 'px'; f.style.bottom = rnd(0, 40) + 'px'; f.style.fontSize = rnd(14, 24) + 'px';
+      lane.appendChild(f);
+      f.animate([{ transform:'translate(0,0) scale(1)', opacity:1 }, { transform:`translate(${-rnd(20, 60)}px,${-rnd(20, 70)}px) scale(.4)`, opacity:0 }], { duration:900, easing:'ease-out' }).onfinish = () => f.remove();
+    }, 70);
+    setTimeout(() => clearInterval(puff), ms);
+  };
+  const hidePets = ids => ids.forEach(id => { const el = $(`#pets .pet[data-id="${id}"]`); if (el) el.style.visibility = 'hidden'; });
+  // 1. leerer Schlitten kommt, Tiere steigen ein
+  lane.innerHTML = sledNode([]);
+  SFX.jingle(); drive(-W - 20, mid, 1100, 'cubic-bezier(.2,.8,.3,1)');
+  setTimeout(() => {
+    riders.forEach(p => { const el = $(`#pets .pet[data-id="${p.id}"]`); if (el) el.querySelector('.inner').animate([{ transform:'scale(1)' }, { transform:'translateY(-30%) scale(.2)', opacity:0 }], { duration:350, fill:'forwards' }); });
+    SFX.pop();
+    setTimeout(() => {
+      lane.innerHTML = sledNode(riders); lane.querySelector('.sled').style.transform = `translateX(${mid}px)`;
+      hidePets(riders.map(p => p.id));
+      // 2. los geht's!
+      setTimeout(() => {
+        SFX.jingle(); drive(mid, innerWidth + 40, 1000, 'cubic-bezier(.6,0,.9,.5)');
+        setTimeout(() => {
+          // 3. Welt wechseln, Tiere sind „unterwegs“
+          riders.forEach(p => {
+            delete p.seat; delete p.room;
+            if (A[p.type].hab === dest) delete p.at; else p.at = dest;
+            p.x = rnd(14, 86); p.y = (h.ymin || 58) + rnd(8, 26);
+          });
+          if (riders.some(p => p.id === S.ride)) S.me.hab = dest;
+          S.hab = dest; save(); renderWorld();
+          hidePets(riders.map(p => p.id));
+          // 4. Schlitten kommt in der neuen Welt an, Tiere hüpfen raus
+          SFX.jingle(); drive(-W - 20, mid, 1100, 'cubic-bezier(.2,.8,.3,1)');
+          setTimeout(() => {
+            lane.innerHTML = sledNode([]); lane.querySelector('.sled').style.transform = `translateX(${mid}px)`;
+            riders.forEach((p, i) => setTimeout(() => {
+              const el = $(`#pets .pet[data-id="${p.id}"]`); if (!el) return;
+              el.style.visibility = '';
+              el.querySelector('.inner').animate([{ transform:'translateY(-40%) scale(.3)', opacity:0 }, { transform:'translateY(-20%) scale(1.1)', opacity:1, offset:.6 }, { transform:'none' }], { duration:500, easing:'ease-out' });
+              SFX.pop();
+            }, i * 180));
+            toast(`Angekommen: ${h.e} ${h.name}!`);
+            setTimeout(() => { SFX.jingle(); drive(mid, innerWidth + 40, 1000, 'cubic-bezier(.6,0,.9,.5)'); setTimeout(() => lane.remove(), 1050); }, 700);
+          }, 1150);
+        }, 1050);
+      }, 450);
+    }, 350);
+  }, 1150);
+}
+
 function renderHabs(){
   $('#habs').innerHTML = HABS.map(h => {
     const open = habOpen(h), n = h.shared ? '👭 ' + (NET.meRef ? 1 + Object.keys(NET.others).length : '–') : S.pets.filter(p => where(p) === h.id).length;
-    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : h.code ? ' · 🔑 Code' : ` · Lv ${h.lvl}`}</button>`;
+    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : h.code ? ' · 🔑 Code' : h.advent ? ' · 🎄 Advent' : ` · Lv ${h.lvl}`}</button>`;
   }).join('');
   $('#habs .hchip.on')?.scrollIntoView({ inline:'center', block:'nearest' });
 }
 $('#habs').addEventListener('click', e => {
   const b = e.target.closest('.hchip'); if (!b) return;
   const h = HAB[b.dataset.h];
-  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(h.code ? `${h.e} ${h.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : `${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
+  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(h.code ? `${h.e} ${h.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : h.advent ? `${h.e} ${h.name} steckt hinter Türchen ${h.advent} im Adventskalender 🗓️` : `${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
   SFX.tap(); S.hab = h.id; save(); renderWorld();
 });
 function placePet(el, p){
@@ -2276,7 +2637,7 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore','night'].includes(mode);
+    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly'].includes(mode);
     let moved = false, stepper = null;
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
@@ -2384,7 +2745,7 @@ function dismount(){
   const p = ridePet();
   S.ride = null;
   if (p){
-    S.me.hab = where(p); if (p.at) S.me.room = roomOf(p); else delete S.me.room;
+    S.me.hab = where(p); if (inHouse(p)) S.me.room = roomOf(p); else delete S.me.room;
     S.me.x = clamp(p.x + (p.x > 50 ? -12 : 12), 7, 93); S.me.y = Math.max(p.y, (HAB[S.me.hab].ymin || 58) + 4); delete S.me.seat;
   }
   save(); SFX.pop(); renderWorld();
@@ -2570,7 +2931,7 @@ function renderRemote(){
   const wrap = $('#pets'), seen = new Set();
   const setHeld = (el, h, type) => {
     el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
-    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore','night'].includes(moveOf(type)));
+    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly'].includes(moveOf(type)));
   };
   const here = together().room;
   const setPose = (el, pz) => { // sitzt/liegt/badet die Freundin oder ihr Tier gerade?
@@ -2851,6 +3212,8 @@ function toolList(){
     ...(S.hab === 'haus' ? [['inviteBtn','📨','Einladen'],['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared && canBuild() ? [['buildBtn','🔨','Einrichten']] : []),
     ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
+    ...(sledOpen() && !HAB[S.hab].indoor && !HAB[S.hab].shared ? [['sledBtn','🛷','Schlittenfahrt']] : []),
+    ['adventBtn','🗓️','Adventskalender'],
     ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],['redeemBtn','🎁','Code einlösen'],
     ['calmBtn', S.calm ? '🐇' : '🐢', S.calm ? 'Mehr Bewegung' : 'Weniger Bewegung'],
   ];
@@ -2876,6 +3239,8 @@ function runTool(id){
   if (id === 'bringBtn') openBring();
   if (id === 'codeBtn') openTogether();
   if (id === 'redeemBtn') openRedeem();
+  if (id === 'sledBtn') openSled();
+  if (id === 'adventBtn') openAdvent();
   if (id === 'calmBtn'){ S.calm = !S.calm; save(); applyCalm(); }
   if (id === 'chatBtn'){
     NET.chatOpen = !NET.chatOpen;
@@ -3020,7 +3385,7 @@ function renderWard(){
   const inp = $('#petName'); inp.value = nameOf(p); inp.placeholder = A[p.type].name;
   $('#wardGrid').innerHTML = ACC.map(a => {
     const open = accOpen(a), on = p.acc[a.slot] === a.id;
-    return `<button class="acc ${on ? 'on' : ''} ${open ? '' : 'locked'}" data-a="${a.id}"><span class="e">${a.e}</span><small>${open ? a.name : '🔒 Level ' + a.lvl}</small></button>`;
+    return `<button class="acc ${on ? 'on' : ''} ${open ? '' : 'locked'}" data-a="${a.id}"><span class="e">${open ? accIcon(a) : a.advent ? '🗓️' : a.e}</span><small>${open ? a.name : a.advent ? 'Türchen ' + a.advent : '🔒 Level ' + a.lvl}</small></button>`;
   }).join('');
   $('#wardPets .wp.on')?.scrollIntoView({ inline:'center', block:'nearest' });
 }
@@ -3031,7 +3396,7 @@ $('#wardPets').addEventListener('click', e => {
 $('#wardGrid').addEventListener('click', e => {
   const b = e.target.closest('.acc'); if (!b) return;
   const a = ACCM[b.dataset.a], p = wardSel();
-  if (!accOpen(a)){ SFX.no(); retrigger(b, 'shake'); toast(`${a.e} ${a.name} gibt es ab Level ${a.lvl}!`); return; }
+  if (!accOpen(a)){ SFX.no(); retrigger(b, 'shake'); toast(a.advent ? `Das steckt hinter Türchen ${a.advent} im Adventskalender 🗓️` : `${a.e} ${a.name} gibt es ab Level ${a.lvl}!`); return; }
   if (p.acc[a.slot] === a.id) delete p.acc[a.slot]; else p.acc[a.slot] = a.id;
   S.sel = p.id;
   SFX.dress(); save(); renderWard();
@@ -3078,7 +3443,7 @@ function renderAvatarEditor(){
     h += `<div class="avgrid">`;
     if (slot === 'hat' || slot === 'extra') h += card(slot, '', avatarSVG({...S.av, [slot]:null}, crop), 'Nichts', !S.av[slot]);
     h += CLOTHES.filter(c => c.slot === slot).map(c => card(slot, c.id, avatarSVG({...S.av, [slot]:c.id}, crop), c.name, S.av[slot] === c.id,
-      clothOpen(c) ? '' : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
+      clothOpen(c) ? '' : c.advent ? `🗓️ Türchen ${c.advent}` : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
     h += `</div>`;
   }
   $('#avGrid').innerHTML = h;
