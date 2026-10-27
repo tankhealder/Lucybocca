@@ -700,7 +700,7 @@ const HABS = [
     decos:[['🌋',78,46,110],['🌴',8,54,96],['🌴',94,58,70],['🌿',20,90,40],['🦴',64,94,30],['🥚',36,84,26],['🥚',40,86,20],['🪨',86,88,34],['🌿',50,58,28]] },
   // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (geo.html, Großer Test ab 75 %); code statt Level
   // Adventskalender (Türchen 1): Weihnachtswelt
-  { id:'winter', name:'Winterwunderland', e:'🎄', lvl:1, advent:1, hills:['#ffffff','#eaf1fb'], fx:'snow',
+  { id:'winter', name:'Winterwunderland', e:'🎄', lvl:99, advent:1, hills:['#ffffff','#eaf1fb'], fx:'snow',
     decos:[['🎄',10,50,96],['🎄',88,47,84],['🏘️',50,46,74],['🎠',72,55,58],['🌙',84,12,44],['⭐',18,10,22],['⭐',58,7,16],['⭐',36,16,12],
            ['🎁',28,88,34],['🎁',34,91,24],['🔔',92,90,28],['🕯️',7,90,30],['⛸️',60,93,26],['🍪',78,92,24],['🎄',30,47,40],['🎄',66,46,36]] },
   { id:'reise', name:'Europa-Reise', e:'🧳', lvl:99, code:'welt', hills:['#9fdc8a','#8fd17a'], sun:true, fx:'clouds',
@@ -1166,7 +1166,7 @@ function load(){
     (S.pets || []).forEach(p => Object.entries(p.acc || {}).forEach(([k, id]) => { if (ACCM[id]?.advent && !adventHas(ACCM[id].advent)) delete p.acc[k]; }));
     if (HAB[S.hab]?.advent && !adventHas(HAB[S.hab].advent)) S.hab = 'wiese';
   }
-  if (TEST){ const max = Math.max(...HABS.filter(h => !h.code).map(h => h.lvl), ...ACC.map(a => a.lvl || 1), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
+  if (TEST){ const max = Math.max(...HABS.filter(h => !h.code && !h.advent).map(h => h.lvl), ...ACC.map(a => a.lvl || 1), ...CLOTHES.map(c => c.lvl || 1)); if (levelInfo(S.xp).l < max) S.xp = xpFor(max); }
   // Im Test immer alle Tiere da – auch neu eingebaute
   if (TEST) ORDER.forEach(type => { if (!HAB[A[type].hab].code && (!A[type].advent || adventHas(A[type].advent)) && !(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); }); // Code- und Kalender-Tiere nicht
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
@@ -1175,6 +1175,11 @@ function load(){
   if (!HAB[S.me.hab]) S.me.hab = 'haus';
   S.avOwned = S.avOwned || [];
   S.advent = S.advent || [];
+  S.pets = (S.pets || []).filter(p => !A[p.type]?.advent || adventHas(A[p.type].advent)); // Kalender-Tiere erst nach ihrem Türchen (auch wenn ein Fehler sie früher verschenkt hat)
+  if (HAB[S.hab]?.advent && !adventHas(HAB[S.hab].advent)) S.hab = 'wiese';
+  if (S.ride && !S.pets.some(p => p.id === S.ride)) S.ride = null;
+  if (S.me && HAB[S.me.hab]?.advent && !adventHas(HAB[S.me.hab].advent)){ S.me.hab = 'haus'; S.me.room = 'wohn'; delete S.me.seat; }
+  if (S.newPet && !S.pets.some(p => p.id === S.newPet)) S.newPet = null;
   S.furnOwned = S.furnOwned || [];
   if (TEST) S.furnOwned = FURN_LIST.filter(f => f.gift).map(f => f.id); // im Test alle Geschenk-Möbel
   if (TEST) S.avOwned = CLOTHES.filter(c => c.gift).map(c => c.id); // im Test alle Geschenk-Kleider
@@ -1916,7 +1921,7 @@ function openGift(){
 }
 function revealGift(){
   const owned = S.pets.map(p => p.type);
-  const free = ORDER.filter(t => !owned.includes(t) && level() >= HAB[A[t].hab].lvl);
+  const free = ORDER.filter(t => !owned.includes(t) && !A[t].advent && !HAB[A[t].hab].code && !HAB[A[t].hab].advent && level() >= HAB[A[t].hab].lvl); // Kalender- und Code-Tiere gibt es nie als Überraschung
   const giftClothes = CLOTHES.filter(c => c.gift && !clothOpen(c)); // Überraschungs-Kleidung, wenn alle Tiere da sind
   const giftFurn = FURN_LIST.filter(f => f.gift && !furnOpen(f));    // … oder Überraschungs-Möbel
   S.sinceGift = 0;
@@ -1954,7 +1959,7 @@ function revealGift(){
     giftPet = null;
     const got = []; for (let i=0; i<5; i++){ const k = pick(Object.keys(TREATS)); S.treats[k]++; got.push(TREATS[k]); }
     $('#giftStage').innerHTML = `<div class="reveal-pet" style="font-size:56px;width:auto">${got.join('')}</div>`;
-    const nextHab = HABS.find(h => !h.code && level() < h.lvl); // Code-Welten kommen nicht über Level
+    const nextHab = HABS.find(h => !h.code && !h.advent && level() < h.lvl); // Code-Welten kommen nicht über Level
     $('#giftTitle').textContent = 'Leckerli-Paket!';
     $('#giftMsg').textContent = nextHab
       ? `Alle Tiere hier sind schon da! Ab Level ${nextHab.lvl} öffnet sich die Welt „${nextHab.name}“ ${nextHab.e}.`
@@ -3501,7 +3506,7 @@ function openAlbum(){
   $('#stats').innerHTML = `<div>✅ ${S.total} gerechnet</div><div>🔥 Beste Serie: ${S.best}</div><div>⭐ ${S.xp} XP</div><div>👗 ${ACC.filter(accOpen).length} / ${ACC.length}</div>`;
   $('#album').innerHTML = HABS.filter(h => !h.indoor && !h.shared).map(h => {
     const types = ORDER.filter(t => A[t].hab === h.id), have = types.filter(t => owned[t]).length;
-    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>${h.code ? 'mit Code aus dem Europa-Entdecker 🧭' : 'ab Level ' + h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
+    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>${h.code ? 'mit Code aus dem Europa-Entdecker 🧭' : h.advent ? 'im Adventskalender 🗓️' : 'ab Level ' + h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
       const t = A[type], p = owned[type];
       return p
