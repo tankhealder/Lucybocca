@@ -123,6 +123,7 @@ main{flex:1;position:relative;min-height:0}
 .row .n small{display:block;font-weight:500;color:var(--ink-soft)}
 .code{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:17px;letter-spacing:1px;background:#fff;border:2px dashed var(--terra);border-radius:10px;padding:2px 8px;user-select:all;-webkit-user-select:all}
 .row.locked{opacity:.6}
+.row.me{background:#fff0e6;box-shadow:inset 0 0 0 2px var(--terra)}
 .row .copy{padding:6px 10px;border-radius:10px;background:var(--terra);color:#fff;font-weight:600;font-size:14px}
 .row .p{font-family:var(--emoji);font-size:22px}
 .stars{font-family:var(--emoji);font-size:14px;letter-spacing:1px;white-space:nowrap}
@@ -156,6 +157,7 @@ main{flex:1;position:relative;min-height:0}
         <button class="mode" data-mode="progress"><span class="e">⭐</span><b>Fortschritt</b><small>Was kannst du schon?</small></button>
         <button class="mode" data-mode="big"><span class="e">🏛️</span><b>Großer Test</b><small>Alle Vokabeln und Gruppen – Codes für MathPets 🎁</small></button>
         <button class="mode" data-mode="codes"><span class="e">🎁</span><b>Meine Codes</b><small>Belohnungen für MathPets</small></button>
+        <button class="mode" data-mode="scores" style="grid-column:1/-1"><span class="e">🥇</span><b>Bestenliste</b><small>Wer ist der beste Lateiner? (Test)</small></button>
       </div>
     </section>
 
@@ -206,7 +208,7 @@ main{flex:1;position:relative;min-height:0}
   <div class="score" id="endScore"></div>
   <p id="endInfo"></p>
   <div class="list" id="endList"></div>
-  <div class="btns"><button class="btn alt" id="endHome">Startseite</button><button class="btn" id="endAgain">Nochmal</button></div>
+  <div class="btns"><button class="btn alt" id="endHome">Startseite</button><button class="btn" id="endScores" style="background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #d9ab1c">🥇 Bestenliste</button><button class="btn" id="endAgain">Nochmal</button></div>
 </div></div>
 
 <div class="modal" id="codesModal"><div class="mcard">
@@ -215,6 +217,21 @@ main{flex:1;position:relative;min-height:0}
   <p>Schaff den <b>Großen Test</b> (alle Vokabeln und Gruppen) – dann gibt es Codes für MathPets. Dort: 🧰 → <b>🎁 Code einlösen</b>.</p>
   <div class="list" id="codesList"></div>
   <div class="btns"><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<div class="modal" id="scoreModal"><div class="mcard">
+  <h2>Bestenliste 🥇</h2>
+  <p>Die besten Latein-Tests (20 Fragen).</p>
+  <div class="list" id="scoreList"></div>
+  <p id="myName"></p>
+  <div class="btns"><button class="btn alt" id="nameChange">✏️ Name ändern</button><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<div class="modal" id="nameModal"><div class="mcard">
+  <div class="big">🫏</div>
+  <h2>Wie heißt du?</h2>
+  <p>Dein Name steht in der Bestenliste – alle, die die App benutzen, können ihn sehen. Nimm am besten einen Spitznamen.</p>
+  <div class="answer"><input id="nameInput" maxlength="16" autocomplete="off" placeholder="Spitzname" style="text-align:center"><button class="btn" id="nameOk">OK</button></div>
 </div></div>
 
 <div class="modal" id="progModal"><div class="mcard">
@@ -548,6 +565,7 @@ const KEY = 'latein-v1';
 let G;
 try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
 G = Object.assign({ sound:true, k:{}, lessons:LESSONS.map(l => l.id), dir:'mix', how:'type', best:0, codes:[] }, G); // codes: verdiente MathPets-Codes
+if (!G.name){ try { G.name = JSON.parse(localStorage.getItem('geo-v1'))?.name || ''; } catch {} } // gleicher Spitzname wie im Europa-Entdecker
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
 const know = id => G.k[id] ||= { ld:0, dl:0, gr:0, row:0 };
 const hasGroup = w => w.grp !== 'w'; // Verben und Nomen haben eine Konjugation/Deklination
@@ -685,6 +703,7 @@ $('#howChips').onclick = e => { const b = e.target.closest('[data-how]'); if (b)
 $('#setupGo').onclick = () => { closeModals(); startPractice(); };
 function startPractice(){ mode = 'practice'; round = { score:0, streak:0, n:0, last:null, results:[] }; show('quiz'); nextQ(); }
 function startTest(){
+  if (!G.name){ openName(startTest); return; }
   mode = 'test';
   // 10× Gruppe (Konjugation/Deklination), 10× Bedeutung (abwechselnd Latein→Deutsch und Deutsch→Latein)
   const gws = shuffle(pool().filter(hasGroup)).slice(0, 10).map(w => ({ w, dir:'gr' }));
@@ -856,6 +875,7 @@ function finish(){
     return;
   }
   const best = round.score > G.best; if (best) G.best = round.score; save();
+  submitScore();
   // Schulnote zum Spaß (wie üblich ab 50 % eine 4)
   const note = pct >= .92 ? 1 : pct >= .81 ? 2 : pct >= .67 ? 3 : pct >= .5 ? 4 : pct >= .3 ? 5 : 6;
   $('#endEmoji').textContent = note <= 1 ? '👑' : note <= 2 ? '🏆' : note <= 3 ? '🥈' : '💪';
@@ -866,6 +886,7 @@ function finish(){
   $('#endModal').classList.add('open'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 60);
 }
 $('#endHome').onclick = () => { closeModals(); show('menu'); };
+$('#endScores').onclick = () => { closeModals(); openScores(); };
 $('#endAgain').onclick = () => { closeModals(); mode === 'big' ? startBig() : startTest(); };
 
 /* ================= Karteikarten ================= */
@@ -924,12 +945,60 @@ $('#progReset').onclick = () => {
   G.k = {}; G.best = 0; save(); resetArmed = false; $('#progReset').textContent = 'Zurücksetzen'; openProgress(); renderMenu();
 };
 
+/* ================= Bestenliste (Firebase, gleiches Projekt wie MathPets und Europa-Entdecker) =================
+   Gemeinsamer Eintrag pro Gerät in geo/scores/<Gerät>: n = Name, s/s2 = Geo-Rekorde, l = Latein-Rekord (Test).
+   So braucht es keine neue Datenbank-Regel. Geo und Latein überschreiben gegenseitig nichts (…old). */
+const FB_CONFIG = {
+  apiKey:'AIzaSyAIueUvh1GZoLb_5zdZ5VaUAvTn476IgAY', authDomain:'mathpets-fbbab.firebaseapp.com',
+  databaseURL:'https://mathpets-fbbab-default-rtdb.europe-west1.firebasedatabase.app', projectId:'mathpets-fbbab',
+  storageBucket:'mathpets-fbbab.firebasestorage.app', messagingSenderId:'928845564235', appId:'1:928845564235:web:ad8c688183450d566bc0ce',
+};
+const NET = {};
+async function net(){
+  if (NET.db) return true;
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    const [appM, authM, dbM] = await Promise.all(['firebase-app.js','firebase-auth.js','firebase-database.js'].map(f => import(base + f)));
+    const app = appM.initializeApp(FB_CONFIG);
+    NET.uid = (await authM.signInAnonymously(authM.getAuth(app))).user.uid; NET.fb = dbM; NET.db = dbM.getDatabase(app);
+    return true;
+  } catch (e){ console.warn('Firebase', e); return false; }
+}
+async function submitScore(){
+  if (!G.name || !G.best || !await net()) return;
+  const { ref, get, set } = NET.fb, r = ref(NET.db, `geo/scores/${NET.uid}`);
+  try {
+    const old = (await get(r)).val() || {};
+    await set(r, { ...old, n:G.name, s:old.s || 0, l:Math.max(G.best, old.l || 0), t:Date.now() });
+  } catch (e){ console.warn(e); }
+}
+async function openScores(){
+  $('#myName').textContent = G.name ? `Dein Name: ${G.name}` : 'Du hast noch keinen Namen – den fragt der erste Test ab.';
+  $('#scoreList').innerHTML = '<p>Lade …</p>'; $('#scoreModal').classList.add('open');
+  if (!await net()){ $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar. Bist du im Internet?</p>'; return; }
+  try {
+    const { ref, get } = NET.fb, snap = await get(ref(NET.db, 'geo/scores'));
+    const rows = []; snap.forEach(c => { if (c.val().l > 0) rows.push({ uid:c.key, ...c.val() }); });
+    rows.sort((x, y) => y.l - x.l); rows.length = Math.min(rows.length, 15);
+    $('#scoreList').innerHTML = rows.length ? rows.map((r, i) => `<div class="row ${r.uid === NET.uid ? 'me' : ''}"><span class="p">${['🥇','🥈','🥉'][i] || (i + 1) + '.'}</span><span class="n">${esc(r.n)}</span><b>${r.l}</b></div>`).join('')
+      : '<p>Noch niemand da – mach den ersten Test! 🏆</p>';
+  } catch (e){ console.warn(e); $('#scoreList').innerHTML = '<p>Die Bestenliste ist gerade nicht erreichbar.</p>'; }
+}
+$('#nameChange').onclick = () => { closeModals(); openName(async () => { await submitScore(); openScores(); }); };
+let afterName = null;
+function openName(then){ afterName = then; $('#nameInput').value = G.name || ''; $('#nameModal').classList.add('open'); setTimeout(() => $('#nameInput').focus(), 200); }
+$('#nameOk').onclick = () => {
+  const v = $('#nameInput').value.trim().slice(0, 16); if (!v){ toast('Schreib einen Spitznamen hin ✏️'); return; }
+  G.name = v; save(); closeModals(); const f = afterName; afterName = null; f?.();
+};
+$('#nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#nameOk').click(); });
+
 /* ================= Navigation ================= */
 function closeModals(){ document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open')); }
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModals);
 document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
   SFX.tap();
-  ({ cards:startCards, practice:openSetup, memo:startMemo, gram:startGram, test:startTest, progress:openProgress, big:startBig, codes:openCodes })[b.dataset.mode]();
+  ({ cards:startCards, practice:openSetup, memo:startMemo, gram:startGram, test:startTest, progress:openProgress, big:startBig, codes:openCodes, scores:openScores })[b.dataset.mode]();
 });
 $('#homeBtn').onclick = () => { closeModals(); show('menu'); };
 $('#soundBtn').onclick = () => { G.sound = !G.sound; save(); renderMenu(); if (G.sound) SFX.hee(); };

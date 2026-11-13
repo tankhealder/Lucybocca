@@ -796,7 +796,7 @@ async function submitScore(){
   const { ref, get, set } = NET.fb, r = ref(NET.db, `geo/scores/${NET.uid}`);
   try {
     const old = (await get(r)).val() || {};
-    await set(r, { n:G.name, s:Math.max(G.best || 0, old.s || 0), s2:Math.max(G.best2 || 0, old.s2 || 0), t:Date.now() });
+    await set(r, { ...old, n:G.name, s:Math.max(G.best || 0, old.s || 0), s2:Math.max(G.best2 || 0, old.s2 || 0), t:Date.now() }); // ...old: Latein-Rekord (l) bleibt erhalten
   } catch (e){ console.warn(e); }
 }
 // Name ändern: gilt auch für den eigenen Eintrag in der Bestenliste (Punkte bleiben)
