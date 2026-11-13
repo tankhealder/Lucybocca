@@ -69,6 +69,17 @@ main{flex:1;position:relative;min-height:0}
 .dot{width:22px;height:22px;border-radius:50%;background:#eee8fa;display:grid;place-items:center;font-size:13px;transition:transform .3s}
 .dot.full{background:var(--yellow);transform:scale(1.1)}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:440px;width:100%;margin:4px auto 0}
+/* Brüche und Kommazahlen: 4 Spalten mit Bruchstrich- bzw. Komma-Taste, ✓ als breite Taste unten */
+.pad.wide{grid-template-columns:repeat(4,1fr)}
+.pad.wide .key.ok{grid-column:1/-1}
+.key.fsep{background:#efe7ff;color:var(--purple);font-size:34px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font-size:.62em;line-height:1.05;vertical-align:middle}
+.frac>span:first-child{border-bottom:.09em solid currentColor;padding:0 .12em .04em}
+.frac>span:last-child{padding:.04em .12em 0}
+.frac .slot{min-width:1.3em;border-bottom-width:4px;text-align:center}
+.frac .slot.act{background:#efe7ff;border-radius:8px}
+.frac.ans>span:first-child{border-bottom:none;padding:0}
+.frac.ans .bar{height:.09em;background:var(--purple);width:100%;margin:.05em 0}
 .key{height:clamp(50px,8.5vh,72px);border-radius:20px;background:#fff;font-size:30px;font-weight:700;box-shadow:0 5px 0 rgba(58,46,92,.15);transition:transform .06s,box-shadow .06s}
 .key:active,.key.press{transform:translateY(4px);box-shadow:0 1px 0 rgba(58,46,92,.15)}
 .key.del{background:#ffe3ec;color:#d9558f}
@@ -1820,11 +1831,40 @@ $('#infoBtns').addEventListener('click', e => {
 });
 
 /* ================= Rechnen ================= */
-let task = null, input = '', tries = 0, locked = false, lastText = '';
+let task = null, input = '', inputD = '', field = 'n', tries = 0, locked = false, lastText = '';
 const OPS = { '+':'+', '-':'−', '*':'×', '/':'÷' };
 const XP_OP = { '+':10, '-':10, '*':20, '/':30 };
+const FRAC = () => S.range === 'frac', DEC = () => S.range === 'dec';
+
+/* Brüche (Nenner bis 10, alle vier Rechenarten, Ergebnis vollständig gekürzt; unechte Brüche und ganze Zahlen erlaubt)
+   und Kommazahlen (Mal-Aufgaben, Ergebnis mit höchstens 3 Nachkommastellen) */
+const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+const fr = (n, d) => `<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+function makeFrac(op){
+  const one = () => { let d, n; do { d = rnd(2, 10); n = rnd(1, d - 1); } while (gcd(n, d) !== 1); return [n, d]; }; // echter, gekürzter Bruch, z. B. 3/8
+  let [a, b] = one(), [c, d] = one(), n, q;
+  if (op === '-' && a * d < c * b) [a, b, c, d] = [c, d, a, b]; // nichts Negatives
+  if (op === '-' && a * d === c * b) return makeFrac(op); // gleich groß: neu würfeln
+  if (op === '+'){ n = a * d + c * b; q = b * d; }
+  else if (op === '-'){ n = a * d - c * b; q = b * d; }
+  else if (op === '*'){ n = a * c; q = b * d; }
+  else { n = a * d; q = b * c; }
+  if (n <= 0) return makeFrac(op);
+  const g = gcd(n, q);
+  return { op, frac:true, ans:[n / g, q / g], text:`${a}/${b} ${OPS[op]} ${c}/${d}`, html:`${fr(a, b)} ${OPS[op]} ${fr(c, d)}` };
+}
+const comma = (m, k) => (m / 10 ** k).toFixed(k).replace('.', ','); // 25, 2 → „0,25“
+function makeDec(){
+  const [da, db] = pick([[1,1],[1,2],[2,1],[0,3],[3,0],[0,2],[2,0],[1,1]]); // Nachkommastellen der beiden Zahlen (zusammen höchstens 3)
+  const mant = k => { let m; do { m = k === 0 ? rnd(2, 9) : k === 3 ? pick([125, 375, 625, 875, 25, 75, 5, 15, 45, 12, 8, 4]) : rnd(2, 25); } while (k && m % 10 === 0); return m; }; // 3 Stellen: gut rechenbare Zahlen wie 0,125
+  const ma = mant(da), mb = mant(db), k = da + db;
+  const ans = ma * mb / 10 ** k;
+  return { op:'*', dec:true, ans, text:`${comma(ma, da)} × ${comma(mb, db)}`, html:`${comma(ma, da)} × ${comma(mb, db)}`, show:String(+ans.toFixed(k)).replace('.', ',') };
+}
 
 function makeTask(){
+  if (FRAC()) return makeFrac(pick(S.ops));
+  if (DEC()) return makeDec();
   const op = pick(S.ops), R = S.range;
   let a, b, ans;
   if (op === '+'){ a = rnd(1, R-1); b = rnd(1, R-a); ans = a + b; }
@@ -1840,13 +1880,14 @@ function makeTask(){
 function newTask(){
   let t, guard = 0;
   do { t = makeTask(); } while (t.text === lastText && guard++ < 20);
-  task = t; lastText = t.text; input = ''; tries = 0; locked = false;
+  task = t; lastText = t.text; input = ''; inputD = ''; field = 'n'; tries = 0; locked = false;
   $('#card').className = 'card';
   say('Wie viel ist das?');
   renderTask();
 }
 function renderTask(){
-  $('#task').innerHTML = `<span>${task.text} =</span><span class="slot" id="slot">${input || '&nbsp;'}</span>`;
+  if (task.frac) $('#task').innerHTML = `<span>${task.html} =</span><span class="frac ans"><span class="slot ${field === 'n' ? 'act' : ''}" data-f="n">${input || '&nbsp;'}</span><span class="bar"></span><span class="slot ${field === 'd' ? 'act' : ''}" data-f="d">${inputD || '&nbsp;'}</span></span>`;
+  else $('#task').innerHTML = `<span>${task.html || task.text} =</span><span class="slot" id="slot">${input || '&nbsp;'}</span>`;
   let dots = '';
   for (let i=0; i<5; i++) dots += `<div class="dot ${i < S.sinceGift ? 'full' : ''}">${i < S.sinceGift ? '⭐' : ''}</div>`;
   $('#dots').innerHTML = dots;
@@ -1857,22 +1898,49 @@ function say(t){ $('#speech').textContent = t; }
 function press(k){
   if (locked) return;
   SFX.tap();
-  if (k === 'del') input = input.slice(0, -1);
-  else if (k === 'ok') return submit();
-  else if (input.length < 3) input = (input === '0' ? '' : input) + k;
+  if (k === 'ok') return submit();
+  if (task.frac){ // Zähler und Nenner; „⁄“ springt in den Nenner, Löschen im leeren Nenner zurück in den Zähler
+    if (k === 'sep') field = field === 'n' ? 'd' : 'n';
+    else if (k === 'del'){ if (field === 'd' && !inputD) field = 'n'; else if (field === 'd') inputD = inputD.slice(0, -1); else input = input.slice(0, -1); }
+    else if (field === 'n'){ if (input.length < 3) input = (input === '0' ? '' : input) + k; }
+    else if (inputD.length < 3) inputD = (inputD === '0' ? '' : inputD) + k;
+  } else if (task.dec){ // Kommazahl, höchstens ein Komma
+    if (k === 'del') input = input.slice(0, -1);
+    else if (k === 'sep'){ if (!input.includes(',')) input = (input || '0') + ','; }
+    else if (input.length < 8) input = (input === '0' ? '' : input) + k;
+  } else {
+    if (k === 'del') input = input.slice(0, -1);
+    else if (k !== 'sep' && input.length < 3) input = (input === '0' ? '' : input) + k;
+  }
   renderTask();
 }
+// Ist die Eingabe richtig? Bei Brüchen: 'ok', 'kuerzen' (richtig, aber nicht gekürzt) oder false
+function judge(){
+  if (task.frac){
+    const n = +input, d = inputD === '' ? 1 : +inputD, [an, ad] = task.ans;
+    if (!d) return false;
+    if (n === an && d === ad) return 'ok';
+    return n * ad === an * d ? 'kuerzen' : false;
+  }
+  if (task.dec) return Math.abs(parseFloat(input.replace(',', '.')) - task.ans) < 1e-9 ? 'ok' : false;
+  return +input === task.ans ? 'ok' : false;
+}
+const ansText = () => task.frac ? (task.ans[1] === 1 ? String(task.ans[0]) : `${task.ans[0]}/${task.ans[1]}`) : task.dec ? task.show : String(task.ans);
 function submit(){
-  if (locked || input === '') return;
+  if (locked || input === '' || input === '0,') return;
   const card = $('#card'), [cx, cy] = centerOf(card);
   const mascot = $('#mascot');
-  if (+input === task.ans){
+  const res = judge();
+  if (res === 'kuerzen'){ // richtig gerechnet, aber noch nicht gekürzt: kein Fehler, nochmal
+    SFX.tap(); retrigger(card, 'shake'); say('Richtig gerechnet – jetzt noch kürzen! ✂️'); return;
+  }
+  if (res === 'ok'){
     locked = true;
     const first = tries === 0;
     S.total++;
     if (first){ S.streak++; S.best = Math.max(S.best, S.streak); }
     // XP je Rechenart; Serienbonus bleibt, im zweiten Versuch gibt es die Hälfte
-    const base = XP_OP[task.op];
+    const base = XP_OP[task.op] + (task.frac ? 15 : task.dec ? 10 : 0); // Brüche und Kommazahlen bringen mehr
     const gain = first ? base + Math.min(S.streak - 1, 10) : base / 2;
     const tk = pick(Object.keys(TREATS)); S.treats[tk]++;
     S.sinceGift++;
@@ -1890,37 +1958,47 @@ function submit(){
     retrigger(mascot.querySelector('.inner'), 'wobble');
     if (tries >= 2){
       locked = true;
-      input = String(task.ans); renderTask();
+      if (task.frac){ input = String(task.ans[0]); inputD = task.ans[1] === 1 ? '' : String(task.ans[1]); field = ''; } else input = ansText();
+      renderTask();
       card.className = 'card reveal';
-      say(`Das Ergebnis ist ${task.ans}. Beim nächsten Mal klappt's! 💜`);
+      say(`Das Ergebnis ist ${ansText()}. Beim nächsten Mal klappt's! 💜`);
       setTimeout(newTask, 2200);
     } else {
       say('Fast! Probier es nochmal 💪');
-      input = ''; renderTask();
+      input = ''; inputD = ''; field = 'n'; renderTask();
     }
   }
 }
 function buildPad(){
-  const keys = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
-  $('#pad').innerHTML = keys.map(k => `<button class="key ${k === 'del' ? 'del' : k === 'ok' ? 'ok' : ''}" data-k="${k}" aria-label="${k === 'del' ? 'Löschen' : k === 'ok' ? 'Prüfen' : k}">${k === 'del' ? '⌫' : k === 'ok' ? '✓' : k}</button>`).join('');
-  $('#pad').addEventListener('click', e => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
+  const wide = FRAC() || DEC();
+  const keys = wide ? ['1','2','3','del','4','5','6','sep','7','8','9','0','ok'] : ['1','2','3','4','5','6','7','8','9','del','0','ok'];
+  const label = k => k === 'del' ? '⌫' : k === 'ok' ? '✓' : k === 'sep' ? (FRAC() ? '⁄' : ',') : k;
+  const aria = k => k === 'del' ? 'Löschen' : k === 'ok' ? 'Prüfen' : k === 'sep' ? (FRAC() ? 'Zähler oder Nenner' : 'Komma') : k;
+  $('#pad').className = 'pad' + (wide ? ' wide' : '');
+  $('#pad').innerHTML = keys.map(k => `<button class="key ${k === 'sep' ? 'fsep' : ['del','ok'].includes(k) ? k : ''}" data-k="${k}" aria-label="${aria(k)}">${label(k)}</button>`).join('');
 }
+$('#pad').addEventListener('click', e => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
+// Bei Brüchen: auf Zähler oder Nenner tippen wählt das Feld
+$('#task').addEventListener('click', e => { const f = e.target.closest('[data-f]'); if (f && task?.frac && !locked){ field = f.dataset.f; SFX.tap(); renderTask(); } });
 function buildChips(){
   $('#chips').innerHTML =
     [10, 20, 100].map(r => `<button class="chip ${S.range === r ? 'on' : ''}" data-r="${r}">bis ${r}</button>`).join('') +
+    `<button class="chip ${FRAC() ? 'on' : ''}" data-r="frac">½ Brüche</button><button class="chip ${DEC() ? 'on' : ''}" data-r="dec">0,5 Komma</button>` +
     '<span class="sep"></span>' +
-    Object.keys(OPS).map(o => `<button class="chip op ${S.ops.includes(o) ? 'on' : ''}" data-o="${o}">${OPS[o]}</button>`).join('');
+    (DEC() ? `<button class="chip op on" data-o="*" title="Kommazahlen: Mal-Aufgaben">×</button>` // Kommazahlen gibt es als Mal-Aufgaben
+      : Object.keys(OPS).map(o => `<button class="chip op ${S.ops.includes(o) ? 'on' : ''}" data-o="${o}">${OPS[o]}</button>`).join(''));
 }
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   SFX.tap();
-  if (b.dataset.r) S.range = +b.dataset.r;
+  if (b.dataset.r) S.range = isNaN(+b.dataset.r) ? b.dataset.r : +b.dataset.r;
+  else if (DEC()){ toast('Bei Kommazahlen gibt es Mal-Aufgaben ✖️'); return; }
   else {
     const o = b.dataset.o;
     if (S.ops.includes(o)){ if (S.ops.length > 1) S.ops = S.ops.filter(x => x !== o); else { retrigger(b, 'shake'); return; } }
     else S.ops.push(o);
   }
-  save(); buildChips(); newTask();
+  save(); buildChips(); buildPad(); newTask();
 });
 function renderMascot(){
   const p = S.pets.find(x => x.id === S.sel) || S.pets[S.pets.length - 1];
@@ -3571,6 +3649,7 @@ document.addEventListener('keydown', e => {
   if (/^[0-9]$/.test(e.key)) k = e.key;
   else if (e.key === 'Backspace') k = 'del';
   else if (e.key === 'Enter') k = 'ok';
+  else if (['/', ',', '.', 'Tab'].includes(e.key) && (FRAC() || DEC())) k = 'sep';
   if (!k) return;
   e.preventDefault();
   const btn = document.querySelector(`.key[data-k="${k}"]`);
