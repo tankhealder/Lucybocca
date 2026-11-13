@@ -142,7 +142,7 @@ main{flex:1;position:relative;min-height:0}
       <div class="box rank"><b id="rankName"></b> · <span id="rankInfo"></span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
       <div class="box"><p class="label">Welche Vokabeln?</p><div class="chips" id="lessonChips"></div></div>
       <div class="modes">
-        <button class="mode" data-mode="gram" style="grid-column:1/-1;background:#fff4d6"><span class="e">🧠</span><b>Konjugation &amp; Deklination</b><small>Welche Gruppe? z. B. rogare → a-Konjugation</small></button>
+        <button class="mode" data-mode="gram" style="grid-column:1/-1;background:#fff4d6"><b>Konjugation &amp; Deklination</b><small>Welche Gruppe? z. B. rogare → a-Konjugation</small></button>
         <button class="mode" data-mode="cards"><span class="e">📇</span><b>Karteikarten</b><small>Umdrehen und merken</small></button>
         <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Schreiben oder auswählen</small></button>
         <button class="mode" data-mode="memo"><span class="e">🧩</span><b>Paare finden</b><small>Latein und Deutsch zusammenbringen</small></button>
@@ -432,7 +432,7 @@ function renderTop(){
   if (isTest()){
     $('#qMode').textContent = `${mode === 'big' ? '🏛️ Großer Test' : '🏆 Test'} ${round.n + 1}/${round.list.length}`;
     $('#dots').innerHTML = round.list.map((q, i) => `<i class="${round.results[i] === true ? 'ok' : round.results[i] === false ? 'no' : i === round.n ? 'now' : ''}"></i>`).join('');
-  } else { $('#qMode').textContent = mode === 'gram' ? '🧠 Konjugation & Deklination' : '🎯 Üben'; $('#dots').innerHTML = ''; }
+  } else { $('#qMode').textContent = mode === 'gram' ? 'Konjugation & Deklination' : '🎯 Üben'; $('#dots').innerHTML = ''; }
   $('#qScore').textContent = `${round.score} Punkte · 🔥 ${round.streak}`;
 }
 function setCard(type, word, forms, isDe){
