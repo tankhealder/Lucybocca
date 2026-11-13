@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Latein-Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Latein-Trainer: Vokabeln aus VIVA lernen – Karteikarten, Üben, Paare, Grammatik, Test. Gleicher Stil wie der Europa-Entdecker. */
+:root{
+  --ink:#2f3b4a; --ink-soft:#6a7685; --bg:#f6efe2; --card:#fff; --soft:#f7f2ea;
+  --terra:#c8553d; --terra-d:#9c3b28; --gold:#ffd23f; --green:#4cbf74; --red:#ff6b6b; --purple:#7b6cf0; --marble:#fbf8f2;
+  --font:Fredoka,"Segoe UI",system-ui,sans-serif; --emoji:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);overflow:hidden;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;color:inherit;border:0;cursor:pointer;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+#app{height:100%;display:flex;flex-direction:column;max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:0 0 22px 22px;box-shadow:0 4px 0 rgba(47,59,74,.07);z-index:5}
+.logo{font-weight:700;font-size:20px;white-space:nowrap}
+.logo span{font-family:var(--emoji)}
+.grow{flex:1;min-width:0}
+.pill{background:#fff4d6;border-radius:14px;padding:6px 10px;font-weight:600;font-size:16px;white-space:nowrap}
+.iconbtn{width:40px;height:40px;border-radius:14px;background:#f1ebe0;font-size:19px;flex:none;font-family:var(--emoji)}
+main{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:16px;gap:14px;align-items:center}
+.screen.active{display:flex}
+
+/* Startseite */
+.hero{display:flex;align-items:center;gap:12px;max-width:620px;width:100%}
+.mascot{font-size:64px;font-family:var(--emoji);line-height:1;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.speech{background:#fff;border-radius:18px;padding:10px 14px;font-weight:600;font-size:17px;box-shadow:0 3px 0 rgba(47,59,74,.08)}
+.box{max-width:620px;width:100%;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 5px 0 rgba(47,59,74,.08)}
+.rank b{font-size:19px}
+.bar{height:14px;background:#f1ebe0;border-radius:8px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff9f43);border-radius:8px;transition:width .6s}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{padding:8px 13px;border-radius:999px;background:#f1ebe0;font-weight:600;font-size:16px}
+.chip.on{background:var(--terra);color:#fff;box-shadow:0 3px 0 var(--terra-d)}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:620px;width:100%}
+.mode{background:#fff;border-radius:22px;padding:16px 12px;text-align:center;box-shadow:0 5px 0 rgba(47,59,74,.1)}
+.mode .e{font-size:40px;font-family:var(--emoji);display:block;line-height:1.1}
+.mode b{display:block;font-size:19px;margin-top:4px}
+.mode small{color:var(--ink-soft);font-size:14px}
+.mode:active{transform:translateY(3px)}
+.label{font-size:14px;color:var(--ink-soft);font-weight:600;margin:0 0 8px;text-align:center}
+
+/* Spiel */
+.top{display:flex;align-items:center;gap:8px;width:100%;max-width:620px;font-size:14px;color:var(--ink-soft);font-weight:600}
+.dots{display:flex;gap:3px;flex-wrap:wrap}
+.dots i{width:9px;height:9px;border-radius:50%;background:#e8dfd0}
+.dots i.ok{background:var(--green)}
+.dots i.no{background:var(--red)}
+.dots i.now{background:var(--purple)}
+.qcard{width:100%;max-width:620px;background:var(--marble);border-radius:26px;padding:22px 18px;text-align:center;box-shadow:0 6px 0 rgba(47,59,74,.12),inset 0 0 0 3px #efe5d3;transition:background .2s}
+.qcard.good{background:#e6f9ec}
+.qcard.bad{background:#ffecec}
+.qtype{font-size:14px;font-weight:600;color:var(--ink-soft)}
+.word{font-size:clamp(30px,8vw,44px);font-weight:700;margin:8px 0 4px;color:var(--terra-d);overflow-wrap:anywhere}
+.word.de{color:var(--ink)}
+.forms{font-size:16px;color:var(--ink-soft);font-weight:500}
+.answer{display:flex;gap:8px;width:100%;max-width:620px}
+.answer input{flex:1;min-width:0;font:inherit;font-size:20px;font-weight:600;color:var(--ink);border:3px solid #e8dfd0;border-radius:14px;padding:10px 12px;background:#fff;user-select:text;-webkit-user-select:text}
+.answer input:focus{outline:none;border-color:var(--purple)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:620px}
+.choice{background:#fff;border-radius:16px;padding:14px 10px;font-size:18px;font-weight:600;box-shadow:0 4px 0 rgba(47,59,74,.12);min-height:58px}
+.choice.ok{background:#d6f5df;box-shadow:inset 0 0 0 3px var(--green)}
+.choice.no{background:#ffdede;box-shadow:inset 0 0 0 3px var(--red)}
+.btn{padding:11px 16px;border-radius:14px;font-size:17px;font-weight:600;background:var(--terra);color:#fff;box-shadow:0 4px 0 var(--terra-d);white-space:nowrap}
+.btn.alt{background:#f1ebe0;color:var(--ink);box-shadow:0 4px 0 #ddd2bf}
+.btn.green{background:var(--green);box-shadow:0 4px 0 #36985a}
+.btn:active{transform:translateY(3px)}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%;max-width:620px}
+.feedback{font-size:18px;font-weight:600;min-height:1.4em;text-align:center;max-width:620px}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Karteikarten */
+.flip{width:100%;max-width:520px;aspect-ratio:3/2;perspective:900px;cursor:pointer}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.turned .in{transform:rotateY(180deg)}
+.flip .side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;box-shadow:0 6px 0 rgba(47,59,74,.14)}
+.flip .front{background:var(--marble);box-shadow:0 6px 0 rgba(47,59,74,.14),inset 0 0 0 4px #efe5d3}
+.flip .back{background:#fff8e6;transform:rotateY(180deg);box-shadow:0 6px 0 rgba(47,59,74,.14),inset 0 0 0 4px var(--gold)}
+.flip small{color:var(--ink-soft);font-weight:600}
+.tag{display:inline-block;margin-top:8px;background:#f1ebe0;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+
+/* Paare finden */
+.memo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:520px}
+.mcardx{aspect-ratio:4/3;border-radius:16px;font-weight:700;font-size:clamp(14px,4vw,19px);padding:6px;background:var(--terra);color:#fff;box-shadow:0 4px 0 var(--terra-d);overflow-wrap:anywhere;transition:transform .2s}
+.mcardx .t{display:none}
+.mcardx::before{content:"🏛️";font-family:var(--emoji);font-size:26px}
+.mcardx.up,.mcardx.done{background:#fff;color:var(--ink);box-shadow:0 4px 0 rgba(47,59,74,.14)}
+.mcardx.up::before,.mcardx.done::before{content:none}
+.mcardx.up .t,.mcardx.done .t{display:block}
+.mcardx.la .t{color:var(--terra-d)}
+.mcardx.done{background:#e6f9ec;box-shadow:inset 0 0 0 3px var(--green)}
+
+/* Fenster */
+.modal{position:fixed;inset:0;background:rgba(47,59,74,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+.modal.open{display:flex}
+.mcard{background:#fff;border-radius:26px;padding:20px 18px;max-width:460px;width:100%;max-height:92vh;overflow-y:auto;text-align:center;animation:mpop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mpop{from{transform:scale(.7);opacity:0}}
+.mcard h2{margin:4px 0 8px;font-size:25px}
+.mcard p{color:var(--ink-soft);margin:4px 0 12px}
+.big{font-size:60px;font-family:var(--emoji);line-height:1.1}
+.score{font-size:44px;font-weight:700;color:var(--terra)}
+.list{text-align:left;margin:8px 0;display:grid;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:7px 12px;font-weight:600;font-size:15px}
+.row .n{flex:1;min-width:0}
+.row .n small{display:block;font-weight:500;color:var(--ink-soft)}
+.code{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:17px;letter-spacing:1px;background:#fff;border:2px dashed var(--terra);border-radius:10px;padding:2px 8px;user-select:all;-webkit-user-select:all}
+.row.locked{opacity:.6}
+.row .copy{padding:6px 10px;border-radius:10px;background:var(--terra);color:#fff;font-weight:600;font-size:14px}
+.row .p{font-family:var(--emoji);font-size:22px}
+.stars{font-family:var(--emoji);font-size:14px;letter-spacing:1px;white-space:nowrap}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);background:var(--gold);padding:10px 18px;border-radius:18px;font-weight:700;font-size:17px;box-shadow:0 4px 0 #d9ab1c;z-index:60;animation:toast 2.4s forwards;max-width:calc(100% - 28px);text-align:center}
+@keyframes toast{0%{transform:translate(-50%,-120px)}12%,85%{transform:translate(-50%,0)}100%{transform:translate(-50%,-140px)}}
+.confetti{position:fixed;width:9px;height:13px;border-radius:3px;pointer-events:none;z-index:55}
+@media (max-width:420px){.logo{font-size:17px}.btn{padding:10px 12px;font-size:16px}.choice{font-size:16px}}
+@media (prefers-reduced-motion:reduce){.mascot{animation:none}.flip .in{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"><span>🏛️</span> Latein-Trainer</div>
+    <div class="grow"></div>
+    <div class="pill" id="hudStars">⭐ 0</div>
+    <button class="iconbtn" id="soundBtn" aria-label="Ton an/aus">🔊</button>
+    <button class="iconbtn" id="homeBtn" aria-label="Startseite">🏠</button>
+  </header>
+  <main>
+    <section class="screen active" id="menu">
+      <div class="hero"><div class="mascot">🫏</div><div class="speech" id="say">Salve! Ich bin Asinus, der Esel. Lernen wir Latein!</div></div>
+      <div class="box rank"><b id="rankName"></b> · <span id="rankInfo"></span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
+      <div class="box"><p class="label">Welche Vokabeln?</p><div class="chips" id="lessonChips"></div></div>
+      <div class="modes">
+        <button class="mode" data-mode="gram" style="grid-column:1/-1;background:#fff4d6"><span class="e">🧠</span><b>Konjugation &amp; Deklination</b><small>Welche Gruppe? z. B. rogare → a-Konjugation</small></button>
+        <button class="mode" data-mode="cards"><span class="e">📇</span><b>Karteikarten</b><small>Umdrehen und merken</small></button>
+        <button class="mode" data-mode="practice"><span class="e">🎯</span><b>Üben</b><small>Schreiben oder auswählen</small></button>
+        <button class="mode" data-mode="memo"><span class="e">🧩</span><b>Paare finden</b><small>Latein und Deutsch zusammenbringen</small></button>
+        <button class="mode" data-mode="test"><span class="e">🏆</span><b>Test</b><small>20 Fragen: Bedeutung und Gruppe</small></button>
+        <button class="mode" data-mode="progress"><span class="e">⭐</span><b>Fortschritt</b><small>Was kannst du schon?</small></button>
+        <button class="mode" data-mode="big"><span class="e">🏛️</span><b>Großer Test</b><small>Alle Vokabeln und Gruppen – Codes für MathPets 🎁</small></button>
+        <button class="mode" data-mode="codes"><span class="e">🎁</span><b>Meine Codes</b><small>Belohnungen für MathPets</small></button>
+      </div>
+    </section>
+
+    <section class="screen" id="quiz">
+      <div class="top"><span id="qMode"></span><div class="dots" id="dots"></div><div class="grow"></div><span id="qScore"></span></div>
+      <div class="qcard" id="qcard">
+        <div class="qtype" id="qType"></div>
+        <div class="word" id="qWord"></div>
+        <div class="forms" id="qForms"></div>
+      </div>
+      <div class="answer" id="answer" hidden>
+        <input id="ansInput" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="Deine Antwort">
+        <button class="btn" id="ansOk">✔</button>
+      </div>
+      <div class="choices" id="choices" hidden></div>
+      <div class="btns" id="showRow"><button class="btn alt" id="showBtn">💡 Weiß ich nicht</button></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="btns" id="nextRow" hidden><button class="btn" id="nextBtn">Weiter ➜</button></div>
+    </section>
+
+    <section class="screen" id="cards">
+      <div class="top"><span>📇 Karteikarten</span><div class="grow"></div><span id="cardInfo"></span></div>
+      <div class="flip" id="flip"><div class="in"><div class="side front" id="cardFront"></div><div class="side back" id="cardBack"></div></div></div>
+      <p class="label" id="cardHint">Tippe auf die Karte zum Umdrehen</p>
+      <div class="btns" id="cardBtns" hidden><button class="btn alt" id="cardAgain">🔁 Nochmal</button><button class="btn green" id="cardKnew">😊 Gewusst!</button></div>
+    </section>
+
+    <section class="screen" id="memo">
+      <div class="top"><span>🧩 Paare finden</span><div class="grow"></div><span id="memoInfo"></span></div>
+      <div class="memo" id="memoGrid"></div>
+      <p class="label">Finde zu jedem lateinischen Wort die deutsche Bedeutung!</p>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="setupModal"><div class="mcard">
+  <h2>Was möchtest du üben? 🎯</h2>
+  <p>Richtung</p>
+  <div class="chips" id="dirChips"></div>
+  <p>Antworten</p>
+  <div class="chips" id="howChips"></div>
+  <br><div class="btns"><button class="btn alt" data-close>Zurück</button><button class="btn" id="setupGo">Los geht’s!</button></div>
+</div></div>
+
+<div class="modal" id="endModal"><div class="mcard">
+  <div class="big" id="endEmoji">🏆</div>
+  <h2 id="endTitle">Geschafft!</h2>
+  <div class="score" id="endScore"></div>
+  <p id="endInfo"></p>
+  <div class="list" id="endList"></div>
+  <div class="btns"><button class="btn alt" id="endHome">Startseite</button><button class="btn" id="endAgain">Nochmal</button></div>
+</div></div>
+
+<div class="modal" id="codesModal"><div class="mcard">
+  <div class="big">🎁</div>
+  <h2>Codes für MathPets</h2>
+  <p>Schaff den <b>Großen Test</b> (alle Vokabeln und Gruppen) – dann gibt es Codes für MathPets. Dort: 🧰 → <b>🎁 Code einlösen</b>.</p>
+  <div class="list" id="codesList"></div>
+  <div class="btns"><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<div class="modal" id="progModal"><div class="mcard">
+  <h2>Dein Fortschritt ⭐</h2>
+  <p>⭐ Bedeutung gewusst · ⭐ Konjugation/Deklination gewusst (bei kleinen Wörtern: Deutsch → Latein) · ⭐ dreimal hintereinander richtig</p>
+  <div class="list" id="progList"></div>
+  <div class="btns"><button class="btn alt" id="progReset">Zurücksetzen</button><button class="btn" data-close>Schließen</button></div>
+</div></div>
+
+<script>
+/* ================= Vokabeln =================
+   Neue Lektion: einfach unten in LESSONS dazuschreiben.
+   [Latein (Grundform), so steht es in der Liste, Deutsch (Bedeutungen mit Komma), Gruppe, weitere richtige lateinische Formen]
+   Gruppen: a/e/kons/gem/unr = Konjugationen, o/3 = Deklinationen (mit Geschlecht m/f/n und Genitiv), w = kleines Wort */
+const LESSONS = [
+  { id:'v1l8', title:'VIVA 1 · Lektion 8', words:[
+    ['rogare','rogare','fragen, bitten','a',['rogo']],
+    ['magis','magis','mehr, eher','w'],
+    ['respondere','respondere','antworten','e',['respondeo']],
+    ['maxime','maxime','am meisten, besonders','w'],
+    ['inquit','inquit','er/sie sagt','unr'],
+    ['mecum','mecum','mit mir','w'],
+    ['habere','habere','haben','e',['habeo']],
+    ['equus','equus, equi (m.)','Pferd','o:m:equi'],
+    ['posse','posse, possum','können','unr',['possum']],
+    ['asinus','asinus, asini (m.)','Esel','o:m:asini'],
+    ['capere','capere, capio','fangen, nehmen, ergreifen, erobern','gem',['capio']],
+    ['pecus','pecus, pecoris (n.)','Vieh','3:n:pecoris'],
+    ['quaerere','quaerere, quaero','suchen, fragen','kons',['quaero']],
+    ['itaque','itaque','deshalb, daher','w'],
+    ['praebere','praebere, praebeo','geben, darbieten','e',['praebeo']],
+    ['neque','neque','und nicht, auch nicht','w'],
+    ['comprehendere','comprehendere','ergreifen, festnehmen, begreifen','kons',['comprehendo']],
+    ['denique','denique','schließlich, endlich','w'],
+    ['reprehendere','reprehendere','tadeln, zurechtweisen','kons',['reprehendo']],
+    ['hortus','hortus, horti (m.)','Garten','o:m:horti'],
+    ['properare','properare, propero','eilen, sich beeilen','a',['propero']],
+    ['amare','amare, amo','lieben, mögen','a',['amo'], 'Wiederholung'],
+  ]},
+];
+const GROUP = { a:'a-Konjugation', e:'e-Konjugation', kons:'konsonantische Konjugation', gem:'gemischte Konjugation', unr:'unregelmäßig', o:'o-Deklination', 3:'3. Deklination', w:'kleines Wort' };
+const GENUS = { m:'maskulin (m.)', f:'feminin (f.)', n:'neutrum (n.)' };
+const WORDS = LESSONS.flatMap(L => L.words.map(([la, forms, de, g, alt, note]) => {
+  const [grp, gen, gs] = g.split(':');
+  return { id:L.id + ':' + la, lesson:L.id, la, forms, de, grp, genus:gen, gen:gs, alt:alt || [], note };
+}));
+const WORD = Object.fromEntries(WORDS.map(w => [w.id, w]));
+
+/* ================= Spielstand ================= */
+const KEY = 'latein-v1';
+let G;
+try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
+G = Object.assign({ sound:true, k:{}, lessons:LESSONS.map(l => l.id), dir:'mix', how:'type', best:0, codes:[] }, G); // codes: verdiente MathPets-Codes
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
+const know = id => G.k[id] ||= { ld:0, dl:0, gr:0, row:0 };
+const hasGroup = w => w.grp !== 'w'; // Verben und Nomen haben eine Konjugation/Deklination
+const starsOf = id => { const k = know(id), w = WORD[id]; return (k.ld + k.dl > 0) + (hasGroup(w) ? (k.gr || 0) > 0 : k.dl > 0) + (k.row >= 3); };
+const pool = () => WORDS.filter(w => G.lessons.includes(w.lesson));
+const RANKS = [[0,'Tiro 🪖','Rekrut'],[10,'Discipulus 📜','Schüler'],[25,'Legionarius 🛡️','Legionär'],[40,'Centurio ⚔️','Hauptmann'],[55,'Senator 🏛️','Senator'],[66,'Caesar 👑','Kaiser']];
+
+/* ================= Kleinkram ================= */
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+let AC;
+function tone(f, d = .12, type = 'sine', when = 0, vol = .12, f2){
+  if (!G.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02);
+  } catch {}
+}
+const SFX = {
+  ok: () => [523,659,784,1047].forEach((f, i) => tone(f, .15, 'triangle', i * .07)),
+  no: () => tone(260, .22, 'triangle', 0, .1, 170),
+  tap: () => tone(700, .05, 'triangle', 0, .06),
+  flip: () => tone(500, .08, 'sine', 0, .08, 900),
+  win: () => [523,659,784,1047,1319,1568].forEach((f, i) => tone(f, .2, 'triangle', i * .09)),
+  hee: () => { tone(880, .18, 'square', 0, .05, 600); tone(440, .25, 'square', .2, .05, 300); }, // I-aah!
+};
+function toast(t){ document.querySelectorAll('.toast').forEach(o => o.remove()); const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2500); }
+function confetti(x, y, n = 30){
+  const cols = ['#c8553d','#ffd23f','#4cc9f0','#4cbf74','#7b6cf0','#ff9f43'];
+  for (let i = 0; i < n; i++){
+    const el = document.createElement('div'); el.className = 'confetti';
+    el.style.cssText = `left:${x}px;top:${y}px;background:${pick(cols)}`; document.body.appendChild(el);
+    const a = Math.random() * Math.PI * 2, v = 70 + Math.random() * 140;
+    el.animate([{ transform:'translate(0,0)', opacity:1 }, { transform:`translate(${Math.cos(a) * v}px,${Math.sin(a) * v - 50}px) rotate(${rnd(-300,300)}deg)`, opacity:1, offset:.6 },
+      { transform:`translate(${Math.cos(a) * v * 1.2}px,${Math.sin(a) * v + 110}px) rotate(${rnd(-600,600)}deg)`, opacity:0 }], { duration:1100 + Math.random() * 400 }).onfinish = () => el.remove();
+  }
+}
+
+/* ================= Antworten prüfen: kleine Tippfehler werden verziehen ================= */
+const norm = s => s.toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/\(.*?\)/g,'').replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();
+function lev(a, b){
+  const d = Array.from({ length:a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+// alle richtigen deutschen Antworten: jede Bedeutung, „er/sie sagt“ → „er sagt“, „sie sagt“, „sagt“; „sich beeilen“ auch ohne „sich“
+function deAnswers(w){
+  const out = new Set();
+  w.de.split(',').map(s => s.trim()).forEach(m => {
+    const parts = m.split(' ');
+    const slash = parts.findIndex(p => p.includes('/'));
+    const forms = slash < 0 ? [m] : [...parts[slash].split('/').map(x => [...parts.slice(0, slash), x, ...parts.slice(slash + 1)].join(' ')), parts.filter((_, i) => i !== slash).join(' ')];
+    forms.forEach(f => { out.add(norm(f)); if (/^sich /.test(f)) out.add(norm(f.slice(5))); });
+  });
+  return [...out].filter(Boolean);
+}
+// Eingetippte Gruppe erkennen: „a“, „a-Konjugation“, „konsonantisch“, „3. Dekl.“, „unregelmäßig“ … (kleine Tippfehler okay)
+const GROUP_NAMES = { a:['a','akonjugation','akonj'], e:['e','ekonjugation','ekonj'], kons:['kons','konsonantisch','konsonantischekonjugation','konsonantischekonj'],
+  gem:['gem','gemischt','gemischtekonjugation','gemischtekonj'], unr:['unr','unregelmaessig','unregelmaessigesverb','irregulaer'],
+  o:['o','odeklination','odekl'], 3:['3','3deklination','3dekl','drittedeklination','dritte'] };
+function groupOf(input){
+  const v = input.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]/g,'');
+  if (!v) return null;
+  for (const [g, names] of Object.entries(GROUP_NAMES)) if (names.includes(v)) return g;
+  if (v.includes('gemischt')) return 'gem';
+  if (v.includes('konsonant') || v.startsWith('kons')) return 'kons';
+  if (v.includes('unregel')) return 'unr';
+  if (/^(3|drei|dritt)/.test(v)) return '3';
+  let best = null, bd = 3;
+  for (const [g, names] of Object.entries(GROUP_NAMES)) for (const n of names) if (n.length > 3){ const d = lev(n, v); if (d < bd){ bd = d; best = g; } }
+  return bd <= 2 ? best : null;
+}
+const laAnswers = w => [w.la, ...w.alt].map(norm);
+const answersOf = (w, dir) => dir === 'ld' ? deAnswers(w) : laAnswers(w);
+// 'exact' | 'close' | false – bei Deutsch zählt auch eine von mehreren Bedeutungen („fragen, bitten“ → „fragen“)
+function check(w, dir, input){
+  const tries = dir === 'ld' ? input.split(/[,;]| und /).map(norm).filter(Boolean) : [norm(input)];
+  if (!tries.length) return false;
+  const answers = answersOf(w, dir);
+  if (tries.some(t => answers.includes(t))) return 'exact';
+  const dist = t => Math.min(...answers.map(a => lev(a, t)));
+  for (const t of tries){
+    const tol = t.length > 7 ? 2 : t.length > 3 ? 1 : 0, mine = dist(t);
+    if (mine > tol) continue;
+    // passt die Eingabe genauso gut zu einer anderen Vokabel, ist es kein Tippfehler
+    if (WORDS.some(o => o !== w && Math.min(...answersOf(o, dir).map(a => lev(a, t))) <= mine)) continue;
+    return 'close';
+  }
+  return false;
+}
+
+/* ================= Startseite ================= */
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); if (id === 'menu') renderMenu(); }
+function renderMenu(){
+  $('#lessonChips').innerHTML = LESSONS.map(L => `<button class="chip ${G.lessons.includes(L.id) ? 'on' : ''}" data-l="${L.id}">${L.title} · ${L.words.length}</button>`).join('');
+  const s = pool().reduce((a, w) => a + starsOf(w.id), 0), max = pool().length * 3;
+  const scale = max / 66; // Ränge passen sich der Wortzahl an
+  const r = [...RANKS].reverse().find(([m]) => s >= m * scale), next = RANKS.find(([m]) => m * scale > s);
+  $('#rankName').textContent = r[1];
+  $('#rankInfo').textContent = `${s} von ${max} Sternen` + (next ? ` · noch ${Math.ceil(next[0] * scale - s)} bis „${next[1]}“` : ' · Ave, Caesar! 🎉');
+  $('#rankBar').style.width = (s / Math.max(1, max) * 100) + '%';
+  $('#hudStars').textContent = `⭐ ${WORDS.reduce((a, w) => a + starsOf(w.id), 0)}`;
+  $('#soundBtn').textContent = G.sound ? '🔊' : '🔇';
+  $('#say').textContent = s === 0 ? 'Salve! Ich bin Asinus, der Esel (asinus 🫏). Lernen wir Latein!'
+    : pick([`Optime! Du hast schon ${s} Sterne! ⭐`, 'Weißt du noch, was „equus“ heißt? 🐴', 'Properare – beeil dich, die nächste Runde wartet! 🏃', 'Repetitio est mater studiorum – Wiederholen hilft! 📜', 'I-aah! Noch eine Runde? 🫏']);
+}
+$('#lessonChips').onclick = e => { const b = e.target.closest('[data-l]'); if (!b) return;
+  const id = b.dataset.l; G.lessons = G.lessons.includes(id) ? (G.lessons.length > 1 ? G.lessons.filter(x => x !== id) : G.lessons) : [...G.lessons, id]; save(); SFX.tap(); renderMenu(); };
+
+/* ================= Üben und Test ================= */
+let mode = null, Q = null, round = null;
+const isTest = () => mode === 'test' || mode === 'big';
+// Wörter mit wenig Sternen kommen öfter dran
+function nextWord(list, avoid){
+  const w = list.map(x => (4 - starsOf(x.id)) ** 2 + (x.id === avoid ? -100 : 0));
+  let r = Math.random() * w.reduce((s, v) => s + Math.max(0, v), 0);
+  for (let i = 0; i < list.length; i++){ r -= Math.max(0, w[i]); if (r <= 0) return list[i]; }
+  return list[0];
+}
+function openSetup(){
+  $('#dirChips').innerHTML = [['ld','🇻🇦 Latein → Deutsch'],['dl','🇩🇪 Deutsch → Latein'],['mix','🔀 Gemischt']].map(([id, l]) => `<button class="chip ${G.dir === id ? 'on' : ''}" data-dir="${id}">${l}</button>`).join('');
+  $('#howChips').innerHTML = [['type','✏️ Schreiben'],['choice','👆 Auswählen']].map(([id, l]) => `<button class="chip ${G.how === id ? 'on' : ''}" data-how="${id}">${l}</button>`).join('');
+  $('#setupModal').classList.add('open');
+}
+$('#dirChips').onclick = e => { const b = e.target.closest('[data-dir]'); if (b){ G.dir = b.dataset.dir; save(); SFX.tap(); openSetup(); } };
+$('#howChips').onclick = e => { const b = e.target.closest('[data-how]'); if (b){ G.how = b.dataset.how; save(); SFX.tap(); openSetup(); } };
+$('#setupGo').onclick = () => { closeModals(); startPractice(); };
+function startPractice(){ mode = 'practice'; round = { score:0, streak:0, n:0, last:null, results:[] }; show('quiz'); nextQ(); }
+function startTest(){
+  mode = 'test';
+  // 10× Gruppe (Konjugation/Deklination), 10× Bedeutung (abwechselnd Latein→Deutsch und Deutsch→Latein)
+  const gws = shuffle(pool().filter(hasGroup)).slice(0, 10).map(w => ({ w, dir:'gr' }));
+  const vws = shuffle(pool()).slice(0, 20 - gws.length).map((w, i) => ({ w, dir:i % 2 ? 'dl' : 'ld' }));
+  const list = [...gws, ...vws];
+  round = { score:0, streak:0, n:0, list:shuffle(list), results:[], wrong:[] };
+  show('quiz'); nextQ();
+}
+// Großer Test: jede Vokabel einmal (Bedeutung) und jede Gruppe einmal – danach Codes für MathPets
+function startBig(){
+  mode = 'big';
+  const list = [...pool().map(w => ({ w, dir:pick(['ld','dl']) })), ...pool().filter(hasGroup).map(w => ({ w, dir:'gr' }))];
+  round = { score:0, streak:0, n:0, list:shuffle(list), results:[], wrong:[] };
+  show('quiz'); nextQ();
+}
+/* Codes für MathPets (gleiche Codes wie dort in UNLOCKS) – ab 50 %, 75 %, 100 % richtig im Großen Test */
+const LAT_CODES = [
+  { key:'lectus', need:.5,  code:'LECTUS-2471', e:'🛋️', what:'Römische Chaiselongue' },
+  { key:'laurus', need:.75, code:'LAURUS-6385', e:'🌿', what:'Lorbeerkranz für deinen Avatar' },
+  { key:'asinus', need:1,   code:'ASINUS-9152', e:'🫏', what:'Asinus, der Esel' },
+];
+const codeRows = () => LAT_CODES.map(c => G.codes.includes(c.key)
+  ? `<div class="row"><span class="p">${c.e}</span><span class="n">${c.what}<br><span class="code">${c.code}</span></span><button class="copy" data-code="${c.code}">📋</button></div>`
+  : `<div class="row locked"><span class="p">🔒</span><span class="n">${c.what}<small>Großer Test mit ${c.need * 100} % richtig</small></span></div>`).join('');
+function openCodes(){ $('#codesList').innerHTML = codeRows(); $('#codesModal').classList.add('open'); }
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-code]'); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.code); toast('Code kopiert! 📋 Jetzt in MathPets einlösen'); } catch { toast('Code: ' + b.dataset.code); }
+});
+function renderTop(){
+  if (isTest()){
+    $('#qMode').textContent = `${mode === 'big' ? '🏛️ Großer Test' : '🏆 Test'} ${round.n + 1}/${round.list.length}`;
+    $('#dots').innerHTML = round.list.map((q, i) => `<i class="${round.results[i] === true ? 'ok' : round.results[i] === false ? 'no' : i === round.n ? 'now' : ''}"></i>`).join('');
+  } else { $('#qMode').textContent = mode === 'gram' ? '🧠 Konjugation & Deklination' : '🎯 Üben'; $('#dots').innerHTML = ''; }
+  $('#qScore').textContent = `${round.score} Punkte · 🔥 ${round.streak}`;
+}
+function setCard(type, word, forms, isDe){
+  $('#qcard').className = 'qcard'; $('#qType').innerHTML = type; $('#qWord').textContent = word; $('#qWord').classList.toggle('de', !!isDe); $('#qForms').innerHTML = forms || '';
+  $('#feedback').textContent = ''; $('#nextRow').hidden = true; $('#showRow').hidden = false;
+}
+function nextQ(){
+  if (isTest() && round.n >= round.list.length) return finish();
+  if (mode === 'gram') return nextGram();
+  let w, dir;
+  if (isTest()){ ({ w, dir } = round.list[round.n]); if (dir === 'gr') return askGroup(w); }
+  else { w = nextWord(pool(), round.last); round.last = w.id; dir = G.dir === 'mix' ? pick(['ld','dl']) : G.dir; }
+  const how = isTest() ? 'type' : G.how;
+  Q = { w, dir, how, done:false };
+  renderTop();
+  if (dir === 'ld') setCard('Was heißt das auf Deutsch?', w.forms, w.note ? `<span class="tag">🔁 ${w.note}</span>` : '');
+  else setCard('Wie heißt das auf Latein?', w.de, w.grp === 'w' ? '' : `<span class="tag">${w.grp === 'o' || w.grp === '3' ? 'Nomen' : 'Verb'}</span>`, true);
+  if (how === 'type'){
+    $('#answer').hidden = false; $('#choices').hidden = true;
+    $('#ansInput').value = ''; $('#ansInput').placeholder = dir === 'ld' ? 'auf Deutsch …' : 'auf Latein …';
+    setTimeout(() => $('#ansInput').focus({ preventScroll:true }), 120);
+  } else {
+    $('#answer').hidden = true; $('#choices').hidden = false;
+    const others = shuffle(pool().filter(o => o !== w)).slice(0, 3);
+    const label = o => dir === 'ld' ? o.de : o.forms;
+    $('#choices').innerHTML = shuffle([w, ...others]).map(o => `<button class="choice" data-id="${o.id}">${esc(label(o))}</button>`).join('');
+  }
+}
+const points = () => 10 + Math.min(round.streak * 2, 10);
+function solution(w){ return `<b>${esc(w.forms)}</b> = <b>${esc(w.de)}</b>` + (w.grp !== 'w' ? ` <span class="tag">${GROUP[w.grp]}</span>` : ''); }
+function right(how){
+  const w = Q.w, k = know(w.id);
+  Q.done = true; round.streak++;
+  if (Q.dir === 'ld') k.ld++; else k.dl++;
+  k.row++;
+  const p = points(); round.score += p;
+  if (isTest()) round.results[round.n] = true;
+  save();
+  $('#qcard').className = 'qcard good';
+  $('#feedback').innerHTML = (how === 'close' ? 'Fast richtig geschrieben! ' : pick(['Optime! ','Bene! ','Richtig! ','Super! '])) + `+${p} · ` + solution(w);
+  SFX.ok(); const r = $('#qcard').getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + 30, 24);
+  after();
+}
+function wrong(given){
+  const w = Q.w, k = know(w.id);
+  Q.done = true; round.streak = 0; k.row = 0;
+  if (isTest()){ round.results[round.n] = false; round.wrong.push(w); }
+  save();
+  $('#qcard').className = 'qcard bad'; $('#qcard').classList.add('shake'); setTimeout(() => $('#qcard').classList.remove('shake'), 400);
+  $('#feedback').innerHTML = (given ? 'Nicht ganz. ' : '') + 'Richtig ist: ' + solution(w) + ' 💪';
+  SFX.no(); after();
+}
+function after(){ $('#answer').hidden = true; $('#showRow').hidden = true; $('#nextRow').hidden = false; renderTop(); $('#nextBtn').focus({ preventScroll:true }); }
+function submit(){
+  if (Q && !Q.done && Q.gram) return submitGram();
+  if (!Q || Q.done || Q.how !== 'type') return;
+  const v = $('#ansInput').value; if (!norm(v)) { $('#ansInput').focus(); return; }
+  const res = check(Q.w, Q.dir, v);
+  res ? right(res) : wrong(v);
+}
+$('#ansOk').onclick = submit;
+$('#ansInput').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+$('#choices').onclick = e => {
+  const b = e.target.closest('.choice'); if (!b || !Q || Q.done) return;
+  const ok = b.dataset.id === Q.w.id;
+  document.querySelectorAll('.choice').forEach(c => { if (c.dataset.id === Q.w.id) c.classList.add('ok'); });
+  if (!ok) b.classList.add('no');
+  ok ? right('exact') : wrong(b.textContent);
+};
+$('#showBtn').onclick = () => { if (Q && !Q.done){ Q.gram ? gramDone(false, null) : wrong(''); } };
+$('#nextBtn').onclick = () => { if (isTest()) round.n++; nextQ(); };
+
+/* ================= Konjugation & Deklination: Gruppe eintippen =================
+   z. B. „rogare (fragen, bitten)“ → „a-Konjugation“. Kurz geht auch: a, e, kons, gemischt, unregelmäßig, o, 3. */
+function startGram(){ mode = 'gram'; round = { score:0, streak:0, n:0, last:null, results:[] }; show('quiz'); nextGram(); }
+function askGroup(w){
+  Q = { gram:true, w, done:false };
+  renderTop();
+  setCard(`Welche ${w.grp === 'o' || w.grp === '3' ? 'Deklination' : 'Konjugation'}? ✏️`, w.forms, `<span class="tag">${esc(w.de)}</span>`);
+  $('#answer').hidden = false; $('#choices').hidden = true;
+  $('#ansInput').value = ''; $('#ansInput').placeholder = 'z. B. a-Konjugation';
+  setTimeout(() => $('#ansInput').focus({ preventScroll:true }), 120);
+}
+function nextGram(){
+  const ws = pool().filter(hasGroup);
+  const w = nextWordGram(ws, round.last); round.last = w.id;
+  askGroup(w);
+}
+// Wörter, deren Gruppe noch nicht sitzt, kommen öfter dran
+function nextWordGram(list, avoid){
+  const wt = list.map(x => { const k = know(x.id); return (k.gr ? 1 : 6) + (x.id === avoid ? -100 : 0); });
+  let r = Math.random() * wt.reduce((s, v) => s + Math.max(0, v), 0);
+  for (let i = 0; i < list.length; i++){ r -= Math.max(0, wt[i]); if (r <= 0) return list[i]; }
+  return list[0];
+}
+function submitGram(){
+  const v = $('#ansInput').value; if (!v.trim()){ $('#ansInput').focus(); return; }
+  const g = groupOf(v);
+  if (!g){ toast('Das kenne ich nicht 🤔 Schreib z. B. „a-Konjugation“ oder „o-Deklination“'); $('#ansInput').select(); return; }
+  gramDone(g === Q.w.grp, g);
+}
+function gramDone(ok, given){
+  const w = Q.w, k = know(w.id);
+  Q.done = true;
+  if (isTest()) round.results[round.n] = ok;
+  if (ok){
+    k.gr = (k.gr || 0) + 1; k.row++; round.streak++;
+    const p = points(); round.score += p;
+    $('#qcard').className = 'qcard good';
+    $('#feedback').innerHTML = pick(['Optime! ','Bene! ','Richtig! ']) + `+${p} · <b>${esc(w.la)}</b> gehört zur <b>${GROUP[w.grp]}</b>` + (w.genus ? ` (${GENUS[w.genus]}, Genitiv ${esc(w.gen)})` : '');
+    SFX.ok(); const r = $('#qcard').getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + 30, 20);
+  } else {
+    k.row = 0; round.streak = 0;
+    if (isTest()) round.wrong.push(w);
+    $('#qcard').className = 'qcard bad'; $('#qcard').classList.add('shake'); setTimeout(() => $('#qcard').classList.remove('shake'), 400);
+    $('#feedback').innerHTML = (given ? `Nicht ${GROUP[given]}. ` : '') + `<b>${esc(w.la)}</b> gehört zur <b>${GROUP[w.grp]}</b>` + (w.genus ? ` (${GENUS[w.genus]}, Genitiv ${esc(w.gen)})` : '') + ' 💪';
+    SFX.no();
+  }
+  save(); after();
+}
+
+/* ================= Test-Ende ================= */
+function finish(){
+  const ok = round.results.filter(Boolean).length, total = round.list.length, pct = ok / total;
+  $('#endList').innerHTML = '';
+  if (mode === 'big'){ // Großer Test: Codes statt Note
+    const earned = LAT_CODES.filter(c => pct >= c.need), fresh = earned.filter(c => !G.codes.includes(c.key));
+    G.codes = [...new Set([...G.codes, ...earned.map(c => c.key)])]; save();
+    $('#endEmoji').textContent = [...LAT_CODES].reverse().find(c => pct >= c.need)?.e || '💪';
+    $('#endTitle').textContent = pct === 1 ? 'ALLES RICHTIG! Ave, Caesar! 👑' : pct >= .75 ? 'Optime! Super stark!' : pct >= .5 ? 'Bene! Geschafft!' : 'Weiter üben – du schaffst das!';
+    $('#endScore').textContent = Math.round(pct * 100) + ' %';
+    $('#endInfo').textContent = `${ok} von ${total} richtig` + (fresh.length ? ' · Neue Codes für MathPets! 🎁' : earned.length ? '' : ' · Ab 50 % gibt es den ersten Code 🎁');
+    $('#endList').innerHTML = codeRows();
+    $('#endModal').classList.add('open'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 40 + earned.length * 30);
+    return;
+  }
+  const best = round.score > G.best; if (best) G.best = round.score; save();
+  // Schulnote zum Spaß (wie üblich ab 50 % eine 4)
+  const note = pct >= .92 ? 1 : pct >= .81 ? 2 : pct >= .67 ? 3 : pct >= .5 ? 4 : pct >= .3 ? 5 : 6;
+  $('#endEmoji').textContent = note <= 1 ? '👑' : note <= 2 ? '🏆' : note <= 3 ? '🥈' : '💪';
+  $('#endTitle').textContent = note <= 1 ? 'Optime – wie ein Caesar!' : note <= 2 ? 'Bene! Sehr gut gemacht!' : note <= 3 ? 'Gut gemacht!' : 'Weiter üben – du schaffst das!';
+  $('#endScore').textContent = `${ok} / ${total}`;
+  $('#endInfo').textContent = `Das wäre ungefähr eine ${note} · ${round.score} Punkte` + (best ? ' · neuer Rekord! 🎉' : '');
+  $('#endList').innerHTML = round.wrong.length ? `<p style="margin:6px 0">Diese Wörter üben wir nochmal:</p>` + round.wrong.map(w => `<div class="row"><span class="n">${esc(w.forms)}<small>${esc(w.de)}</small></span></div>`).join('') : '';
+  $('#endModal').classList.add('open'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 60);
+}
+$('#endHome').onclick = () => { closeModals(); show('menu'); };
+$('#endAgain').onclick = () => { closeModals(); mode === 'big' ? startBig() : startTest(); };
+
+/* ================= Karteikarten ================= */
+let deck = [], cardDone = 0;
+function startCards(){ deck = shuffle(pool()); cardDone = 0; show('cards'); showCard(); }
+function showCard(){
+  if (!deck.length){ toast('Alle Karten geschafft! 🎉'); SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 50); show('menu'); return; }
+  const w = deck[0];
+  $('#flip').classList.remove('turned'); $('#cardBtns').hidden = true; $('#cardHint').hidden = false;
+  $('#cardFront').innerHTML = `<small>Latein</small><div class="word">${esc(w.forms)}</div>${w.note ? `<span class="tag">🔁 ${w.note}</span>` : ''}`;
+  setTimeout(() => { $('#cardBack').innerHTML = `<small>Deutsch</small><div class="word de">${esc(w.de)}</div>` + (w.grp !== 'w' ? `<span class="tag">${GROUP[w.grp]}${w.genus ? ' · ' + GENUS[w.genus] : ''}</span>` : ''); }, 250);
+  $('#cardInfo').textContent = `${cardDone} geschafft · noch ${deck.length}`;
+}
+$('#flip').onclick = () => { if ($('#flip').classList.contains('turned')) return; $('#flip').classList.add('turned'); SFX.flip(); $('#cardBtns').hidden = false; $('#cardHint').hidden = true; };
+$('#cardKnew').onclick = () => { const w = deck.shift(); know(w.id).ld++; save(); cardDone++; SFX.ok(); showCard(); };
+$('#cardAgain').onclick = () => { const w = deck.shift(); deck.splice(Math.min(deck.length, rnd(2, 4)), 0, w); SFX.tap(); showCard(); };
+
+/* ================= Paare finden ================= */
+let memo = null;
+function startMemo(){
+  const ws = shuffle(pool()).slice(0, 6);
+  const cards = shuffle(ws.flatMap(w => [{ id:w.id, la:true, t:w.la }, { id:w.id, la:false, t:w.de.split(',')[0] }]));
+  memo = { cards, open:[], found:0, tries:0, lock:false };
+  show('memo'); renderMemo();
+}
+function renderMemo(){
+  $('#memoGrid').innerHTML = memo.cards.map((c, i) => `<button class="mcardx ${c.la ? 'la' : ''} ${c.done ? 'done' : memo.open.includes(i) ? 'up' : ''}" data-i="${i}"><span class="t">${esc(c.t)}</span></button>`).join('');
+  $('#memoInfo').textContent = `${memo.found} / 6 Paare · ${memo.tries} Versuche`;
+}
+$('#memoGrid').onclick = e => {
+  const b = e.target.closest('.mcardx'); if (!b || memo.lock) return;
+  const i = +b.dataset.i, c = memo.cards[i];
+  if (c.done || memo.open.includes(i)) return;
+  memo.open.push(i); SFX.flip(); renderMemo();
+  if (memo.open.length < 2) return;
+  memo.tries++;
+  const [a, z] = memo.open.map(k => memo.cards[k]);
+  if (a.id === z.id && a.la !== z.la){
+    a.done = z.done = true; memo.open = []; memo.found++; SFX.ok(); know(a.id).ld++; save();
+    renderMemo();
+    if (memo.found === 6){ setTimeout(() => { SFX.win(); confetti(innerWidth / 2, innerHeight / 3, 60); toast(`Alle Paare gefunden – mit ${memo.tries} Versuchen! 🎉`); }, 300); setTimeout(() => show('menu'), 2600); }
+  } else { memo.lock = true; setTimeout(() => { memo.open = []; memo.lock = false; renderMemo(); }, 1000); }
+};
+
+/* ================= Fortschritt ================= */
+function openProgress(){
+  $('#progList').innerHTML = LESSONS.map(L => `<h3 style="text-align:left;margin:10px 0 4px">${L.title}</h3>` + L.words.map(([la]) => {
+    const w = WORD[L.id + ':' + la], s = starsOf(w.id);
+    return `<div class="row"><span class="n">${esc(w.forms)}<small>${esc(w.de)}</small></span><span class="stars">${'⭐'.repeat(s)}${'☆'.repeat(3 - s)}</span></div>`;
+  }).join('')).join('');
+  $('#progModal').classList.add('open');
+}
+let resetArmed = false;
+$('#progReset').onclick = () => {
+  if (!resetArmed){ resetArmed = true; $('#progReset').textContent = 'Wirklich? Nochmal tippen'; setTimeout(() => { resetArmed = false; $('#progReset').textContent = 'Zurücksetzen'; }, 3000); return; }
+  G.k = {}; G.best = 0; save(); resetArmed = false; $('#progReset').textContent = 'Zurücksetzen'; openProgress(); renderMenu();
+};
+
+/* ================= Navigation ================= */
+function closeModals(){ document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open')); }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModals);
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  SFX.tap();
+  ({ cards:startCards, practice:openSetup, memo:startMemo, gram:startGram, test:startTest, progress:openProgress, big:startBig, codes:openCodes })[b.dataset.mode]();
+});
+$('#homeBtn').onclick = () => { closeModals(); show('menu'); };
+$('#soundBtn').onclick = () => { G.sound = !G.sound; save(); renderMenu(); if (G.sound) SFX.hee(); };
+$('.mascot').onclick = () => { SFX.hee(); toast('I-aah! 🫏 (Esel auf Latein: asinus)'); };
+renderMenu();
+</script>
+</body>
+</html>

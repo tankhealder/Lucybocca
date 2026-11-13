@@ -832,6 +832,7 @@ const FURN_LIST = [
   {id:'schneemann', e:'⛄', name:'Schneemann', s:18, gift:true},
   // Superspecial: nur mit Freischaltcode aus dem Europa-Entdecker (Großer Test ab 50 %)
   {id:'zauberglobus', e:'🌍', html:'<span class="zglobe"><i></i></span>', name:'Zauberglobus', s:26, code:'globus'},
+  {id:'chaiselongue', e:'🛋️', name:'Römische Chaiselongue', s:24, code:'lectus', seat:LIE([-.12,.2], .55), html:'<svg viewBox="0 0 160 100" style="width:1.6em;height:1em;overflow:visible;display:block"><g stroke="#9a6a14" stroke-width="3" stroke-linejoin="round"><path d="M22 76 C18 86 20 94 28 96 L34 96 C34 88 32 82 34 76Z" fill="#e0aa3e"/><path d="M126 76 C124 82 122 88 122 96 L128 96 C136 94 138 86 134 76Z" fill="#e0aa3e"/><rect x="10" y="62" width="142" height="18" rx="8" fill="#e0aa3e"/><rect x="14" y="48" width="136" height="20" rx="10" fill="#c8333f" stroke="#8f1f2a"/><path d="M14 66 C2 44 8 18 30 14 C44 12 48 26 40 32 C32 38 28 46 32 60Z" fill="#c8333f" stroke="#8f1f2a"/><path d="M30 20 C38 18 42 26 36 28" fill="none" stroke="#ffd23f" stroke-width="3"/><ellipse cx="34" cy="46" rx="15" ry="9" fill="#ffd23f" stroke="#c9932b"/></g><path d="M20 71 L148 71" stroke="#fff3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>'}, // Latein-Trainer
   // Adventskalender (advent = Türchen)
   {id:'adventskranz',    e:'🕯️', name:'Adventskranz',      s:18, advent:3,  html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><ellipse cx="50" cy="74" rx="46" ry="17" fill="#2f8f4e" stroke="#1d5e33" stroke-width="3"/><ellipse cx="50" cy="72" rx="28" ry="8" fill="#1d5e33"/><rect x="17" y="46" width="10" height="28" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="22" cy="40" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="22" cy="42" rx="2" ry="3.5" fill="#fff6c4"/><rect x="35" y="40" width="10" height="34" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="40" cy="34" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="40" cy="36" rx="2" ry="3.5" fill="#fff6c4"/><rect x="55" y="40" width="10" height="34" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="60" cy="34" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="60" cy="36" rx="2" ry="3.5" fill="#fff6c4"/><rect x="73" y="46" width="10" height="28" rx="3" fill="#e8424f" stroke="#a82634" stroke-width="2"/><ellipse cx="78" cy="40" rx="4" ry="7" fill="#ffd23f"/><ellipse cx="78" cy="42" rx="2" ry="3.5" fill="#fff6c4"/><circle cx="12" cy="72" r="3.5" fill="#e8424f"/><circle cx="30" cy="86" r="3.5" fill="#e8424f"/><circle cx="50" cy="90" r="3.5" fill="#e8424f"/><circle cx="70" cy="86" r="3.5" fill="#e8424f"/><circle cx="88" cy="72" r="3.5" fill="#e8424f"/></svg>'},
   {id:'nikolausstiefel', e:'🥾', name:'Nikolausstiefel',   s:14, advent:6,  html:'<svg viewBox="0 0 100 100" style="width:1em;height:1em;overflow:visible;display:block"><path d="M30 30 L62 30 L62 66 C62 72 70 74 80 76 C92 78 94 96 80 96 L34 96 C28 96 26 92 26 86 Z" fill="#e8424f" stroke="#a82634" stroke-width="3"/><rect x="24" y="22" width="44" height="16" rx="7" fill="#ffffff" stroke="#d9dde6" stroke-width="3"/><path d="M38 22 L36 4 M50 22 L54 2" stroke="#7a4f2a" stroke-width="5" stroke-linecap="round"/><circle cx="36" cy="6" r="7" fill="#ffd23f"/><circle cx="55" cy="6" r="7" fill="#5cc97b"/></svg>'},
@@ -998,6 +999,7 @@ Object.assign(A, {
   ella: {hab:'reise', name:'Ella', label:'Entdecker-Eule', g:'die', c:'#3fb6a8', b:'#fff3d6', ears:'owl', eyeRing:true, bigEyes:true, mouth:'beak', arms:'wing', limb:'#2f9a8e', feet:'#ffa94d', explorer:true, fav:'apfel', say:'Auf zur nächsten Entdeckung! 🧭'},
   // Lucys Halloween-Wünsche: Großer Test 90 % und 95 %
   jacky: {hab:'reise', name:'Jack', label:'Leuchtkürbis', g:'der', c:'#ff9a2e', body:'blob', pumpkin:true, fy:76, eyeY:70, eyeX:17, nose:'none', mouth:'jack', fav:'muffin', say:'Buuuh! Süßes oder Saures? 🎃'},
+  esel: {hab:'reise', name:'Asinus', label:'Esel', g:'der', c:'#a9a4b8', b:'#ebe8f2', ears:'donkey', earC:'#9a95aa', inner:'#f2c9d6', hair:'#5b566b', tail:'horse', muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'I-aah! Salve! 🫏'}, // Latein-Trainer
   fledermaus: {hab:'reise', name:'Flatti', label:'Fledermaus', g:'die', c:'#8273b8', b:'#e2d9f7', ears:'bat', inner:'#ffb8d2', wings:['#5d4e94','#a99ad8'], bat:true, limb:'#6c5ca6', feet:'#5d4e94', bigEyes:true, nose:'tri', mouth:'w', fang:true, fav:'apfel', say:'Ich hänge gern kopfüber ab! 🦇'},
 });
 // Weihnachtstiere aus dem Adventskalender (advent = Türchen)
@@ -1024,7 +1026,7 @@ const MOVE = {
   einhorn:'gallop', schildi:'slow', pferd:'gallop',
   greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
   trex:'stomp', mammut:'stomp', brachio:'slow',
-  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', fledermaus:'night',
+  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', fledermaus:'night', esel:'gallop',
   rentier:'xmasfly', lebki:'cookie', schneeeule:'snowfly', schneemann:'slow',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
@@ -1107,6 +1109,7 @@ const CLOTHES = [
   {id:'zauberstab', slot:'extra', name:'Zauberstab',       lvl:17, e:'🪄'},
   {id:'drachenfluegel', slot:'extra', name:'Drachenflügel',gift:true, style:'dragonwings', c:'#f4cdbd'},
   {id:'ballon',     slot:'extra', name:'Luftballon',       gift:true, style:'balloon'},
+  {id:'lorbeerkranz', slot:'hat', name:'Lorbeerkranz',     code:'laurus', style:'laurel'}, // Latein-Trainer
   // Adventskalender
   {id:'xmaspulli',   slot:'top',   name:'Weihnachtspulli',  advent:5,  style:'xmas', c:'#e8424f', c2:'#ffffff'},
   {id:'wichtelmuetze', slot:'hat', name:'Wichtelmütze',     advent:11, style:'elf'},
@@ -1117,10 +1120,14 @@ const CL = Object.fromEntries(CLOTHES.map(c => [c.id, c]));
 /* ---------- Freischaltcodes aus dem Europa-Entdecker (geo.html, Großer Test) ----------
    Gleiche Codes stehen in geo.html (GEO_CODES). Groß/klein, Leerzeichen und Striche sind egal. */
 const UNLOCKS = {
-  globus:{ code:'GLOBUS-7341', e:'🌍', title:'Der Zauberglobus!', msg:'Ein leuchtender, sich drehender Globus für dein Haus. Du findest ihn beim Einrichten 🔨 im Möbel-Katalog.' },
+  globus:{ code:'GLOBUS-7341', furn:'zauberglobus', e:'🌍', title:'Der Zauberglobus!', msg:'Ein leuchtender, sich drehender Globus für dein Haus. Du findest ihn beim Einrichten 🔨 im Möbel-Katalog.' },
   welt:  { code:'REISE-5826',  e:'🧳', title:'Neue Welt: Europa-Reise!', msg:'Eiffelturm, Kolosseum, Akropolis und mehr – besuch die neue Welt oben in der Weltenleiste.' },
   kuerbis:{ code:'KUERBIS-6208', pet:'jacky', e:'🎃', title:'Jack, der Leuchtkürbis!', msg:'Jack wohnt jetzt in der Europa-Reise. Nimm ihn hoch – er hüpft und verteilt Süßigkeiten!' },
   fleder:{ code:'FLEDER-3954', pet:'fledermaus', e:'🦇', title:'Flatti, die Fledermaus!', msg:'Flatti wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie flattert unter Mond und Sternen!' },
+  // Latein-Trainer (Großer Test 50 / 75 / 100 %)
+  lectus:{ code:'LECTUS-2471', furn:'chaiselongue', e:'🛋️', title:'Die römische Chaiselongue!', msg:'Zum Liegen wie die alten Römer. Du findest sie beim Einrichten 🔨 im Möbel-Katalog.' },
+  laurus:{ code:'LAURUS-6385', cloth:'lorbeerkranz', e:'🌿', title:'Der Lorbeerkranz!', msg:'Wie ein echter Caesar! Zieh ihn bei deinem Avatar an: 🎩 Kopf.' },
+  asinus:{ code:'ASINUS-9152', pet:'esel', e:'🫏', title:'Asinus, der Esel!', msg:'Asinus wohnt jetzt in der Europa-Reise. I-aah! Nimm ihn hoch – er trabt los!' },
   tier:  { code:'ELLA-9147', pet:'ella', e:'🦉', title:'Ella, die Entdecker-Eule!', msg:'Ella wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie fliegt mit Weltkugeln und Landkarten!' },
 };
 const codeKey = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -1246,7 +1253,7 @@ const meHere = () => !ridePet() && S.me.hab === S.hab && (!HAB[S.hab].indoor || 
 const accOpen = a => a.advent ? adventHas(a.advent) : level() >= a.lvl;
 // Accessoire als Bild: eigene Zeichnung (svg) oder Emoji
 const accIcon = a => a.svg ? `<svg viewBox="-50 -50 100 100" style="width:1em;height:1em;overflow:visible;vertical-align:middle">${a.svg}</svg>` : a.e;
-const clothOpen = c => c.advent ? adventHas(c.advent) : c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
+const clothOpen = c => c.code ? (S.unlocks || []).includes(c.code) : c.advent ? adventHas(c.advent) : c.lvl ? level() >= c.lvl : S.avOwned.includes(c.id);
 
 /* ================= Sound ================= */
 let AC;
@@ -1398,6 +1405,7 @@ function petSVG(type, acc = {}){
     case 'mouse':  back += Ep(24,30,17,17,ec) + Ep(24,30,10,10,inner,0,true); break;
     case 'pig':    back += Pp('M30 34 L27 12 L48 24Z', ec) + Pp('M32 29 L31 17 L43 25Z', inner, true); break;
     case 'owl':    back += Pp('M24 38 L18 8 L46 24Z', ec); break;
+    case 'donkey': back += Ep(33,2,10,25,ec,-22) + Ep(33,5,5,17,inner,-22,true); break;
     case 'deer':   back += Ep(16,38,15,7,ec,-28) + Ep(17,38,9,3.5,inner,-28,true); break;
     case 'bat':    back += Pp('M30 42 L16 -4 L54 22Z', ec) + Pp('M33 33 L23 6 L46 23Z', inner, true); break;
     case 'small':  back += Ep(22,34,8,8,ec) + Ep(22,34,4,4,inner,0,true); break;
@@ -1680,6 +1688,10 @@ function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlic
     [68, 78, 88, 98].forEach((y, i) => front += E(60 + s*(33 + i), y, 6.5, 6.5, hc));
     front += E(60 + s*37, 106, 4, 3, '#ff7eb6');
   });
+  if (hat?.style === 'laurel') for (let i = 0; i <= 10; i++){ // Lorbeerkranz wie bei Caesar: Blätter rund um den Kopf
+    const a = (165 - i * 15) * Math.PI / 180, x = 60 + 36 * Math.cos(a), y = 44 - 26 * Math.sin(a), rot = 90 - (165 - i * 15) + (i % 2 ? 35 : -35);
+    front += E(+x.toFixed(1), +y.toFixed(1), 7, 3.4, i % 2 ? '#5fa84a' : '#78c25e', rot);
+  }
   if (hat?.style === 'elf') front += P('M27 34 C30 12 46 4 62 5 C80 6 94 -4 104 -14 C102 2 98 18 94 34Z', '#3fae6a')
     + S_('M27 33 Q60 40 94 33', '#e8424f', 7) + `<circle cx="104" cy="-14" r="5" ${fs('#ffd23f')}/>`; // Wichtelmütze mit Glöckchen
   if (hat){
@@ -3448,7 +3460,7 @@ function renderAvatarEditor(){
     h += `<div class="avgrid">`;
     if (slot === 'hat' || slot === 'extra') h += card(slot, '', avatarSVG({...S.av, [slot]:null}, crop), 'Nichts', !S.av[slot]);
     h += CLOTHES.filter(c => c.slot === slot).map(c => card(slot, c.id, avatarSVG({...S.av, [slot]:c.id}, crop), c.name, S.av[slot] === c.id,
-      clothOpen(c) ? '' : c.advent ? `🗓️ Türchen ${c.advent}` : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
+      clothOpen(c) ? '' : c.code ? '🔑 Code' : c.advent ? `🗓️ Türchen ${c.advent}` : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
     h += `</div>`;
   }
   $('#avGrid').innerHTML = h;
@@ -3489,11 +3501,12 @@ $('#redeemGo').addEventListener('click', () => {
   $('#redeemModal').classList.remove('open');
   // wie ein Geschenk auspacken
   $('#giftStage').innerHTML = giftPet ? `<div class="reveal-pet">${petNode(giftPet, 0)}</div>`
-    : key === 'globus' ? `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1">${FURN.zauberglobus.html}</div>`
+    : u.furn ? `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1;font-family:var(--emoji)">${FURN[u.furn].html || FURN[u.furn].e}</div>`
+    : u.cloth ? `<div class="reveal-pet">${avatarSVG({ ...S.av, [CL[u.cloth].slot]:u.cloth })}</div>`
     : `<div class="reveal-pet" style="font-size:96px;width:auto;line-height:1;font-family:var(--emoji)">${u.e}</div>`;
   $('#giftTitle').textContent = u.title; $('#giftMsg').textContent = u.msg;
-  $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button>` + (key === 'globus'
-    ? `<button class="btn" data-a="build">Einrichten 🔨</button>` : `<button class="btn" data-a="world">Hinreisen 🧳</button>`);
+  $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button>` + (u.furn ? `<button class="btn" data-a="build">Einrichten 🔨</button>`
+    : u.cloth ? `<button class="btn" data-a="avatar:${CL[u.cloth].slot}">Anziehen 🪞</button>` : `<button class="btn" data-a="world">Hinreisen 🧳</button>`);
   if (key === 'welt') giftPet = { type:'ella' }; // „Hinreisen“ führt in die Europa-Reise
   $('#giftModal').classList.add('open');
   SFX.gift(); confetti(innerWidth / 2, innerHeight / 3, 60);
