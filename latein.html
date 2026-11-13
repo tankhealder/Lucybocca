@@ -33,7 +33,13 @@ main{flex:1;position:relative;min-height:0}
 
 /* Startseite */
 .hero{display:flex;align-items:center;gap:12px;max-width:620px;width:100%}
-.mascot{font-size:64px;font-family:var(--emoji);line-height:1;animation:bob 2.4s ease-in-out infinite}
+.mascot{width:86px;flex:none;animation:bob 2.4s ease-in-out infinite;cursor:pointer}
+.mascot svg{width:100%;height:auto;display:block;overflow:visible}
+.mascot .eo{animation:blink 4.5s infinite;transform-box:fill-box;transform-origin:center}
+.mascot .eh,.mascot .es{display:none}
+.mascot.happy .eo{display:none}
+.mascot.happy .eh{display:inline}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
 @keyframes bob{50%{transform:translateY(-6px)}}
 .speech{background:#fff;border-radius:18px;padding:10px 14px;font-weight:600;font-size:17px;box-shadow:0 3px 0 rgba(47,59,74,.08)}
 .box{max-width:620px;width:100%;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 5px 0 rgba(47,59,74,.08)}
@@ -138,7 +144,7 @@ main{flex:1;position:relative;min-height:0}
   </header>
   <main>
     <section class="screen active" id="menu">
-      <div class="hero"><div class="mascot">🫏</div><div class="speech" id="say">Salve! Ich bin Asinus, der Esel. Lernen wir Latein!</div></div>
+      <div class="hero"><div class="mascot" id="mascot"></div><div class="speech" id="say">Salve! Ich bin Asinus, der Esel. Lernen wir Latein!</div></div>
       <div class="box rank"><b id="rankName"></b> · <span id="rankInfo"></span><div class="bar"><i id="rankBar" style="width:0"></i></div></div>
       <div class="box"><p class="label">Welche Vokabeln?</p><div class="chips" id="lessonChips"></div></div>
       <div class="modes">
@@ -219,6 +225,286 @@ main{flex:1;position:relative;min-height:0}
 </div></div>
 
 <script>
+/* ================= Asinus: dieselbe Zeichnung wie in MathPets (aus Lucybocca/index.html übernommen) ================= */
+const A = { esel: {hab:'reise', name:'Asinus', label:'Esel', g:'der', c:'#a9a4b8', b:'#ebe8f2', ears:'donkey', earC:'#9a95aa', inner:'#f2c9d6', hair:'#5b566b', tail:'horse', muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'I-aah! Salve! 🫏'} };
+const ACCM = {};
+const INK = '#2d2440';
+function mix(a, b, t){
+  const p = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
+  const x = p(a), y = p(b);
+  return '#' + x.map((v,i) => Math.round(v + (y[i]-v)*t).toString(16).padStart(2,'0')).join('');
+}
+const line = f => mix(f, '#3a2e5c', .42);
+const fs = (f, ns) => ns ? `fill="${f}"` : `fill="${f}" stroke="${line(f)}"`;
+const E  = (cx,cy,rx,ry,f,rot=0,ns) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${fs(f,ns)}${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+const Ep = (cx,cy,rx,ry,f,rot=0,ns) => E(cx,cy,rx,ry,f,rot,ns) + E(120-cx,cy,rx,ry,f,-rot,ns);
+const P  = (d,f,ns) => `<path d="${d}" ${fs(f,ns)}/>`;
+const mir = d => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m,x,y) => `${+(120-x).toFixed(2)} ${y}`);
+const Pp = (d,f,ns) => P(d,f,ns) + P(mir(d),f,ns);
+const S_ = (d,c,w=2.4) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+const star = (x,y,r,f) => `<path d="M${x} ${y-r} Q${x} ${y} ${x+r} ${y} Q${x} ${y} ${x} ${y+r} Q${x} ${y} ${x-r} ${y} Q${x} ${y} ${x} ${y-r}Z" fill="${f}"/>`;
+function spikes(cx,cy,rx,ry,out,n,a0,a1,f){
+  let d = '';
+  for (let i=0; i<=n*2; i++){
+    const a = (a0 + (a1-a0)*i/(n*2)) * Math.PI/180, o = i % 2 ? out : 0;
+    d += (i ? 'L' : 'M') + (cx + (rx+o)*Math.cos(a)).toFixed(1) + ' ' + (cy + (ry+o)*Math.sin(a)).toFixed(1) + ' ';
+  }
+  return P(d + 'Z', f);
+}
+
+function petSVG(type, acc = {}){
+  const t = A[type], c = t.c, b = t.b || mix(c, '#ffffff', .6), blob = t.body === 'blob';
+  const ec = t.earC || c, inner = t.inner || '#ffb8d2', limb = t.limb || c, feet = t.feet || limb;
+  const hy = t.hy ?? (blob ? 78 : 56), hrx = t.hrx ?? (blob ? 46 : 42), hry = t.hry ?? (blob ? 40 : 36);
+  const top = hy - hry;
+  const fy = t.fy ?? (blob ? 80 : 60);
+  const eyY = t.eyeY ?? fy, eyX = t.eyeX ?? 17;
+  let back = '', body = '', head = '', face = '', front = '';
+
+  /* --- hinter dem Kopf --- */
+  if (t.mane) back += E(38,20,12,12,'#c7a8ff') + E(54,12,12,12,'#ffa8d6') + E(72,14,11,11,'#8fd8ff') + E(86,25,9,9,'#fff0a0');
+  if (t.wool) for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; back += E((60 + 45*Math.cos(a)).toFixed(1), (hy + 39*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+  if (t.lmane){ // Löwenmähne: Kranz aus Locken um den Kopf, außen dunkler
+    for (let i=0; i<16; i++){ const a = i/16*Math.PI*2; back += E((60 + 46*Math.cos(a)).toFixed(1), (hy + 40*Math.sin(a)).toFixed(1), 14, 14, t.lmane); }
+    for (let i=0; i<16; i++){ const a = (i+.5)/16*Math.PI*2; back += E((60 + 38*Math.cos(a)).toFixed(1), (hy + 33*Math.sin(a)).toFixed(1), 12, 12, mix(t.lmane,'#ffd166',.35), 0, true); }
+  }
+  if (t.spikes) back += spikes(60, hy, 40, 34, 14, 12, 150, 390, t.spikes);
+  if (t.pspikes) back += spikes(60, hy, 44, 38, 8, 18, 0, 360, mix(c, '#ff9f43', .35));
+  if (t.luck){ // Kuscheldrache nach Lucys Plüschtier
+    const pk = t.luck;
+    // kleine Glitzerflügel mit gewelltem Rand (wie Finger), links gebaut und gespiegelt
+    const wing = s => {
+      const X = x => s < 0 ? x : 120 - x;
+      return [[2,64,6,11,-50],[9,55,6,11,-30],[19,51,6,11,-10],[29,54,5.5,10,10]].map(([x,y,rx,ry,r]) => E(X(x),y,rx,ry,pk,s*-r)).join('')
+        + E(X(23),77,17,12,pk,-s*35)
+        + [[16,72],[25,68],[22,82],[11,64]].map(([x,y]) => `<circle cx="${X(x)}" cy="${y}" r="1.3" fill="#ffffff"/>`).join('');
+    };
+    back += `<g class="wing dwl">${wing(-1)}</g><g class="wing dwr">${wing(1)}</g>`;
+    // große, seitlich abstehende Ohren
+    back += Ep(12,44,19,10,c,-12) + Ep(13,44,11,5,pk,-12,true);
+    // zwei Hörner neben den Ohren, leicht nach außen gebogen
+    back += Pp('M31 34 C26 24 23 14 25 4 C32 9 38 19 42 30Z', pk) + Pp('M28 12 C30 14 32 16 33 18', mix(pk,'#ffffff',.5), true);
+    // kurzer, dicker Schwanz mit Zacke
+    back += `<g class="ltail">${E(96,114,17,8,c,-25)}${E(106,104,3.5,4.5,pk)}</g>`;
+  }
+  if (t.wings){ // große Flügel hinter dem Körper (Federn oder Haut wie beim Flugsaurier), schlagen beim Fliegen
+    const [wc, wi] = t.wings;
+    const w = t.bat ? 'M46 96 C30 70 10 50 -10 40 C-2 56 0 66 6 72 C12 70 16 74 18 80 C24 78 30 84 34 90Z'
+                    : 'M46 98 C24 100 2 84 -6 34 C6 46 14 50 20 50 C16 62 20 70 28 72 C24 82 32 90 46 90Z';
+    const iw = t.bat ? 'M42 92 C30 76 14 60 0 52 C6 64 10 72 22 82Z' : 'M42 94 C26 94 10 80 4 54 C14 66 22 72 30 76 C32 84 38 88 42 90Z';
+    back += `<g class="wing dwl">${P(w,wc)}${P(iw,wi,true)}</g><g class="wing dwr">${P(mir(w),wc)}${P(mir(iw),wi,true)}</g>`;
+  }
+  if (t.antlers){ // Rentiergeweih: verzweigt, links gebaut und gespiegelt
+    const d = 'M44 26 C40 14 34 6 26 -2 M37 14 C31 13 24 15 18 12 M32 6 C33 -2 38 -8 42 -12 M28 1 C22 -3 18 -9 18 -14';
+    back += S_(d + ' ' + mir(d), line(t.antlers), 7) + S_(d + ' ' + mir(d), t.antlers, 4.4);
+  }
+  if (t.crest) back += P(`M56 ${top+8} C68 ${top-12} 94 ${top-20} 110 ${top-18} C96 ${top-6} 80 ${top+4} 68 ${top+12}Z`, t.crest); // Flugsaurier-Kamm
+  if (t.hump) back += E(90,90,16,15,c);
+  switch (t.tail){
+    case 'squirrel': back += P('M80 118 C118 118 124 70 104 44 C94 32 74 40 84 56 C92 70 90 92 76 100Z', c) + P('M86 104 C108 100 112 74 100 58', mix(c,'#ffffff',.5), true); break;
+    case 'gecko':    back += P('M76 116 C100 126 114 108 104 94 C98 88 90 94 96 100 C100 108 90 112 78 108Z', c); break;
+    case 'jerboa':   back += S_('M80 116 C106 120 108 94 112 76', line(c), 3) + E(112,72,6,8,'#ffffff'); break;
+    case 'lion':     back += S_('M80 112 C104 118 112 100 106 82', line(t.bodyC || c), 5) + S_('M80 112 C104 118 112 100 106 82', t.bodyC || c, 3) + E(106,78,7,9,t.tuft || t.lmane); break;
+    case 'horse':    { const d = 'M80 104 C100 100 110 112 104 128'; back += S_(d, line(t.hair), 11) + S_(d, t.hair, 8); break; }
+    case 'plume': { // Papillon: großer, flauschiger Puschelschwanz (Lucys Wunsch)
+      const cx = 110, cy = 84;
+      back += S_('M78 108 C88 106 98 100 104 94', line('#ffffff'), 12) + S_('M78 108 C88 106 98 100 104 94', '#ffffff', 9);
+      for (let i=0; i<12; i++){ const a = i/12*Math.PI*2; back += E((cx + 22*Math.cos(a)).toFixed(1), (cy + 22*Math.sin(a)).toFixed(1), 11, 11, '#ffffff'); }
+      back += E(cx, cy, 25, 25, '#ffffff', 0, true) + E(cx-6, cy-8, 8, 5, '#f4efe9', -20, true) + E(cx+8, cy+8, 7, 4, '#f4efe9', 20, true); break;
+    }
+    case 'kangaroo': back += P('M76 112 C98 124 118 120 122 106 C110 112 96 110 80 102Z', c); break;
+    case 'dino':     back += P('M78 114 C100 120 118 110 121 92 C112 102 98 104 82 102Z', c); break;
+    case 'phoenix':  back += P('M78 110 C100 112 118 96 121 76 C112 90 102 94 94 94 C106 86 110 74 107 60 C98 78 90 88 80 98Z', '#ff6b4a')
+                       + P('M82 106 C98 106 110 96 114 84 C106 92 98 96 88 98Z', '#ffd166', true); break;
+    case 'fish':     back += P('M98 80 L119 62 L115 96Z', mix(c,'#ff9f43',.35)); break;
+    case 'whale':    back += P('M96 98 C106 92 108 80 119 70 C121 86 117 100 104 106Z', c); break;
+  }
+  if (t.tentacles) [24,42,60,78,96].forEach((x,i) => back += `<g class="tent${i%2 ? ' t2' : ''}">${E(x, 104 + (i%2)*3, 9, 14, c, (x-60)/3)}</g>`);
+  if (t.fins) back += Ep(12,86,10,6,mix(c,'#ff9f43',.35),25);
+  if (t.flippers) back += Ep(16,104,13,7,c,35);
+  if (t.crab){
+    back += S_(`M44 ${top+4} L44 ${eyY+6} M76 ${top+4} L76 ${eyY+6}`, line(c), 4);
+    back += S_(mir('M22 100 L8 112 M28 108 L16 122') + ' M22 100 L8 112 M28 108 L16 122', line(c), 3.5);
+    back += Ep(12,64,8,13,c,-25) + Ep(22,62,8,13,c,25);
+    back += Ep(60-eyX, eyY, 10, 10, '#ffffff');
+  }
+  switch (t.ears){
+    case 'cat':    back += Pp('M28 40 L26 6 L54 24Z', ec) + Pp('M32 32 L31 14 L46 25Z', inner, true); break;
+    case 'bunny':  back += Ep(44,0,10,25,ec,-12) + Ep(44,3,5,17,inner,-12,true); break;
+    case 'round':  back += Ep(28,26,12,12,ec) + Ep(28,26,6,6,t.earIn || b,0,true); break;
+    case 'mouse':  back += Ep(24,30,17,17,ec) + Ep(24,30,10,10,inner,0,true); break;
+    case 'pig':    back += Pp('M30 34 L27 12 L48 24Z', ec) + Pp('M32 29 L31 17 L43 25Z', inner, true); break;
+    case 'owl':    back += Pp('M24 38 L18 8 L46 24Z', ec); break;
+    case 'donkey': back += Ep(33,2,10,25,ec,-22) + Ep(33,5,5,17,inner,-22,true); break;
+    case 'deer':   back += Ep(16,38,15,7,ec,-28) + Ep(17,38,9,3.5,inner,-28,true); break;
+    case 'bat':    back += Pp('M30 42 L16 -4 L54 22Z', ec) + Pp('M33 33 L23 6 L46 23Z', inner, true); break;
+    case 'small':  back += Ep(22,34,8,8,ec) + Ep(22,34,4,4,inner,0,true); break;
+    case 'fennec': back += Ep(22,8,13,28,ec,-32) + Ep(23,10,7,19,inner,-32,true); break;
+    case 'jerboa': back += Ep(36,-2,11,22,ec,-18) + Ep(36,1,6,15,inner,-18,true); break;
+    case 'frog':   back += Ep(40,eyY,15,15,c); break;
+    case 'koala': back += Ep(20,34,19,18,c) + Ep(21,35,12,11,'#f4f6f8',0,true) + [[8,26],[10,42],[16,20]].map(([x,y]) => Ep(x,y,4,4,'#f4f6f8',0,true)).join(''); break;
+    case 'puffy': { // Papillon (Lucys Wunsch): Ohren als lange, schräg aufgestellte Fell-Puschel
+      const [cx, cy, rx, ry, rot] = [19, 13, 11, 24, -42], th = rot * Math.PI / 180;
+      for (let i=0; i<14; i++){
+        const a = i/14*Math.PI*2, px = rx*Math.cos(a), py = ry*Math.sin(a);
+        back += Ep(+(cx + px*Math.cos(th) - py*Math.sin(th)).toFixed(1), +(cy + px*Math.sin(th) + py*Math.cos(th)).toFixed(1), 7.5, 7.5, ec);
+      }
+      back += Ep(cx, cy, rx+3, ry+3, ec, rot, true) + Ep(cx+2, cy+4, 4.5, 13, inner, rot, true); break;
+    }
+    case 'butterfly': { // Papillon: große, schräg aufgestellte Ohren wie Schmetterlingsflügel, außen lange helle Fransen
+      const fr = t.fringe || mix(ec, '#ffffff', .6);
+      back += [[2,-6,-30],[-4,5,-15],[-5,17,0],[-1,28,15],[7,38,30]].map(([x,y,r]) => Ep(x,y,5,13,fr,r)).join('')
+            + Pp('M44 30 C32 12 16 -4 2 -10 C-4 6 0 24 12 36 C22 44 34 40 44 34Z', ec)
+            + Pp('M38 28 C28 16 18 6 8 1 C8 14 14 26 24 32Z', inner, true); break;
+    }
+  }
+
+  /* --- Körper (stehende Tiere) --- */
+  if (!blob){
+    const bc = t.bodyC || c;
+    body += `<g class="foot fl">${E(47,119,9,6,feet)}</g><g class="foot fr">${E(73,119,9,6,feet)}</g>`;
+    if (t.wool) [[44,96],[60,92],[76,96],[42,108],[78,108],[60,114]].forEach(([x,y]) => body += E(x,y,11,11,bc));
+    if (t.fluffy){ // flauschiger Wolken-Körper wie ein Puschel
+      for (let i=0; i<14; i++){ const a = i/14*Math.PI*2; body += E((60 + 23*Math.cos(a)).toFixed(1), (101 + 17*Math.sin(a)).toFixed(1), 9, 9, bc); }
+      body += E(60,101,26,20,bc,0,true) + E(52,106,6,4,'#f4efe9',-15,true) + E(70,96,5,3.5,'#f4efe9',15,true);
+    } else body += E(60,100,25,20,bc);
+    if (t.shell){
+      body += E(60,101,29,21,t.shell);
+      const s = mix(t.shell,'#ffffff',.3);
+      body += E(60,99,8,6,s,0,true) + Ep(45,96,5,4,s,0,true) + Ep(48,109,5,4,s,0,true);
+    } else if (!t.wool) {
+      body += E(60,104,15,12,b,0,true);
+    }
+    if (t.flank) body += E(81,96,7,8,t.flank,-15); // dunkler Fleck an der Seite
+    if (t.pouch){ // Känguru: Baby schaut aus dem Beutel
+      body += Ep(55,93,2.5,4,c) + E(60,99,7,6,c) + `<circle cx="57.5" cy="99" r="1.3" fill="${INK}"/><circle cx="62.5" cy="99" r="1.3" fill="${INK}"/>`
+            + E(60,108,14,8,mix(b,'#c08a5a',.3));
+    }
+    if (t.ruff){ // flauschige Brustmähne: außen Locken mit Kontur, innen ohne, damit es weich ineinander übergeht
+      [[45,93,9],[75,93,9],[49,105,8],[71,105,8],[60,112,7]].forEach(([x,y,r]) => body += E(x,y,r,r,'#ffffff'));
+      body += E(60,100,16,13,'#ffffff',0,true);
+    }
+    if (t.neck){ // Brachiosaurus: langer, kräftiger Hals und dicker Bauch mit Flecken
+      const d = `M60 ${hy+8} L60 92`;
+      body += E(60,104,31,22,c) + E(60,108,18,12,b,0,true) + S_(d, line(c), 33) + S_(d, c, 28)
+            + [[40,98,4],[78,100,5],[72,110,3],[60,60,3],[57,74,2.5]].map(([x,y,r]) => E(x,y,r,r*.8,mix(c,'#3a8f7d',.35),0,true)).join('');
+    }
+    if (t.icing) body += [[60,96,'#e8424f'],[60,106,'#3fae6a']].map(([x,y,f]) => E(x,y,3.2,3.2,f)).join('')
+                       + S_('M31 104 Q33 100 35 104 Q37 100 39 104 ' + mir('M31 104 Q33 100 35 104 Q37 100 39 104'), '#ffffff', 2); // Zuckerguss-Knöpfe und -Ärmel
+    if (t.snowman) body += [94,103,112].map(y => E(60,y,2.6,2.6,'#3a3446',0,true)).join(''); // Kohleknöpfe
+    if (t.speckles) body += [[52,96],[66,100],[58,108],[70,92]].map(([x,y]) => S_(`M${x-2} ${y} Q${x} ${y+2} ${x+2} ${y}`, t.speckles, 1.8)).join('');
+    body += t.arms === 'wing'
+      ? `<g class="wing wl">${E(35,98,6,11,limb,35)}</g><g class="wing wr">${E(85,98,6,11,limb,-35)}</g>`
+      : t.arms === 'twig'
+      ? S_('M38 96 L20 84 M27 88 L24 80 M27 88 L18 90' + ' ' + mir('M38 96 L20 84 M27 88 L24 80 M27 88 L18 90'), '#7a4f2a', 3)
+      : Ep(37,98,6,8,limb,30);
+  }
+
+  /* --- Kopf / Hauptform --- */
+  head += E(60, hy, hrx, hry, c);
+  if (blob && t.belly) head += E(60, hy+16, 28, 18, b, 0, true);
+  if (t.icing) head += S_(`M${60-hrx+7} ${hy-6} Q${60-hrx+6} ${top+4} 60 ${top+3} Q${60+hrx-6} ${top+4} ${60+hrx-7} ${hy-6}`, '#ffffff', 2.4)
+                     .replace('fill="none"', 'fill="none" stroke-dasharray="5 3"');
+  if (t.pumpkin) [13, 27].forEach(dx => head += S_(`M${60-dx} ${top+4} Q${60-dx*1.4} ${hy} ${60-dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2) + S_(`M${60+dx} ${top+4} Q${60+dx*1.4} ${hy} ${60+dx} ${hy+hry-3}`, mix(c,'#c25a10',.5), 2));
+  head += `<ellipse cx="${60-hrx*.48}" cy="${hy-hry*.5}" rx="10" ry="6" fill="#ffffff" opacity=".5" transform="rotate(-20 ${60-hrx*.48} ${hy-hry*.5})"/>`;
+
+  /* --- Gesicht --- */
+  if (t.mask) face += P('M60 30 C46 18 22 28 24 54 C26 76 44 86 60 86 C76 86 94 76 96 54 C98 28 74 18 60 30Z', '#ffffff', true);
+  if (t.muzzle) face += E(60, fy+8, 13, 9, b, 0, true);
+  if (t.luck) face += E(60, eyY-9, 4, 8, t.luck, 0, true) + E(60, fy+9, 18, 12, b); // Stirnfleck + breite Schnauze
+  if (t.patches) face += Ep(60-eyX, eyY, 10, 11, t.patches, 15, true);
+  if (t.pmask){ // Papillon-Maske: außen dunkel, um die Augen rotbraun, schmale weiße Blesse in der Mitte
+    face += Pp('M57 22 C44 20 26 26 22 42 C20 54 30 64 44 62 C52 60 56 50 56 40Z', t.pmask, true);
+    if (t.tanC) face += Pp('M54 40 C46 38 36 44 36 54 C36 62 46 66 54 62 C56 56 56 46 54 40Z', t.tanC, true);
+  }
+  if (t.spots) face += E(88, hy-14, 5, 4, t.spots, 0, true) + E(94, hy-2, 3.5, 3, t.spots, 0, true) + E(30, hy-20, 4, 3, t.spots, 0, true);
+  if (t.stripes) face += S_('M54 24 L55 31 M60 22 L60 30 M66 24 L65 31', line(c), 2.4);
+  if (t.moon) face += P('M64 20 A9 9 0 1 0 64 38 A7 7 0 1 1 64 20Z', '#ffe27a');
+  if (t.eyeRing) face += Ep(60-eyX, eyY, 13, 13, b);
+  const er = t.bigEyes ? [8, 9.5] : [6.5, 7.5], ex = [60-eyX, 60+eyX];
+  face += `<g class="eo">` + ex.map(x => t.pumpkin
+    ? `<path d="M${x-9} ${eyY+6} L${x+9} ${eyY+6} L${x} ${eyY-9}Z" fill="#ffd23f" stroke="#9a4a0e"/>` + P(`M${x-4} ${eyY+4} L${x+4} ${eyY+4} L${x} ${eyY-3}Z`, '#fff6b8', true)
+    : `<ellipse cx="${x}" cy="${eyY}" rx="${er[0]}" ry="${er[1]}" fill="${INK}"/><circle cx="${x+2.3}" cy="${eyY-3}" r="${(er[0]*.42).toFixed(1)}" fill="#fff"/><circle cx="${x-2.2}" cy="${eyY+3.2}" r="${(er[0]*.2).toFixed(1)}" fill="#fff"/>`
+  ).join('') + `</g>`;
+  if (t.pumpkin) face += `<path d="M56.5 ${fy+4} L63.5 ${fy+4} L60 ${fy-1}Z" fill="#ffd23f" stroke="#9a4a0e"/>`;
+  face += `<g class="eh">` + ex.map(x => S_(`M${x-6} ${eyY+1} Q${x} ${eyY-6} ${x+6} ${eyY+1}`, INK, 3)).join('') + `</g>`;
+  face += `<g class="es">` + ex.map(x => S_(`M${x-6} ${eyY} Q${x} ${eyY+5} ${x+6} ${eyY}`, INK, 3)).join('') + `</g>`; // Schlafaugen
+  face += `<g opacity=".6">` + Ep(60-(t.blushX ?? eyX+12), fy+9, t.neck ? 5 : 7, t.neck ? 3.5 : 4.5, '#ff8fb8', 0, true) + `</g>`;
+  if (t.whiskers) face += `<g fill="${line(b)}">` + [[50,fy+9],[46,fy+12],[70,fy+9],[74,fy+12]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('') + `</g>`;
+
+  let my = fy + (t.nose === 'snout' ? 14 : t.muzzle ? 11 : 8);
+  switch (t.nose){
+    case 'tri':      face += P(`M57.5 ${fy+3} L62.5 ${fy+3} L60 ${fy+6}Z`, '#ff8fb8', true); break;
+    case 'dot':      face += E(60, fy+4, 3, 2.2, INK, 0, true); break;
+    case 'snout':    face += E(60, fy+7, 8, 5.5, '#ff9cc2') + E(57, fy+7, 1.5, 2.2, '#d0578a', 0, true) + E(63, fy+7, 1.5, 2.2, '#d0578a', 0, true); break;
+    case 'koala':    face += E(60, fy+1, 7, 9, '#4a4458', 0, true) + E(58, fy-3, 2, 2.5, '#8a8496', 0, true); my += 4; break; // große Koala-Nase
+    case 'nostrils': face += E(56, fy+5, 1.5, 1.2, INK, 0, true) + E(64, fy+5, 1.5, 1.2, INK, 0, true); break;
+    case 'red':      face += `<ellipse cx="60" cy="${fy+4}" rx="11" ry="9" fill="#ff5a64" opacity=".25"/>` + E(60, fy+4, 6.5, 5.5, '#ff3b47') + E(58, fy+2, 2, 1.4, '#ffffff', 0, true); my += 2; break; // Rudis Leuchtnase
+    case 'carrot':   face += P(`M58 ${fy+1} L80 ${fy+5} L58 ${fy+8}Z`, '#ff8a1c') + S_(`M66 ${fy+3} l1 2 M72 ${fy+4} l1 2`, mix('#ff8a1c','#7a3b00',.4), 1.5); my += 3; break;
+  }
+  switch (t.mouth){
+    case 'w':     face += `<path class="mouth" d="M54 ${my} Q57 ${my+4} 60 ${my} Q63 ${my+4} 66 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
+    case 'wide':  face += `<path class="mouth" d="M46 ${my-2} Q60 ${my+9} 74 ${my-2}" fill="none" stroke="${INK}" stroke-width="2.4"/>`; break;
+    case 'o':     face += `<ellipse class="mouth" cx="60" cy="${my+1}" rx="3.5" ry="4" fill="#c2455f"/>`; break;
+    case 'beak':  face += `<path class="mouth" d="M55 ${fy+4} L65 ${fy+4} L60 ${fy+10}Z" ${fs(t.beakC || '#ffa94d')}/>`; break;
+    case 'longbeak': face += `<path class="mouth" d="M54 ${fy+3} L66 ${fy+3} L60 ${fy+20}Z" ${fs('#ffb84d')}/>`; break;
+    case 'none':  break;
+    case 'coal':  face += [-8,-4,0,4,8].map(dx => `<circle cx="${60+dx}" cy="${my + 2 - Math.abs(dx) * .3 + (dx ? 1.6 : 2.4)}" r="1.6" fill="#3a3446"/>`).join(''); break; // Schneemann: Kohlemund
+    case 'icing': face += `<path class="mouth" d="M53 ${my} Q60 ${my+6} 67 ${my}" fill="none" stroke="#ffffff" stroke-width="2.6"/>`; break;
+    case 'jack':  face += `<path class="mouth" d="M40 ${my} Q60 ${my+28} 80 ${my} Q72 ${my+7} 64 ${my+7} L64 ${my+11} L56 ${my+11} L56 ${my+7} Q48 ${my+7} 40 ${my}Z" fill="#ffd23f" stroke="#9a4a0e"/>`; break; // geschnitztes Kürbisgrinsen mit Zahn
+    case 'tongue': face += `<ellipse cx="60" cy="${my+4}" rx="4" ry="5" fill="#ff8fb0" stroke="#d65f86" stroke-width="1.5"/><path class="mouth" d="M53 ${my} Q56.5 ${my+4} 60 ${my} Q63.5 ${my+4} 67 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`; break;
+    default:      face += `<path class="mouth" d="M55 ${my} Q60 ${my+5} 65 ${my}" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
+  }
+  if (t.fang) face += P(`M62 ${my+1.5} L65.5 ${my+1} L63.8 ${my+5}Z`, '#ffffff');
+  if (t.teeth) [[51,my+1.5],[57,my+3.5],[63,my+3.5],[69,my+1.5]].forEach(([x,y]) => face += P(`M${x-2.5} ${y} L${x+2.5} ${y} L${x} ${y+4.5}Z`, '#ffffff')); // T-Rex
+  if (t.trunk){ // Mammut: Stoßzähne und Rüssel
+    const tk = `M50 ${fy+6} C45 ${fy+20} 50 ${fy+30} 58 ${fy+31}`;
+    face += S_(tk, line('#fff8e8'), 7) + S_(tk, '#fff8e8', 4.5) + S_(mir(tk), line('#fff8e8'), 7) + S_(mir(tk), '#fff8e8', 4.5);
+    const tr = `M60 ${fy-4} C59 ${fy+12} 56 ${fy+24} 62 ${fy+31} C68 ${fy+36} 72 ${fy+29} 67 ${fy+26}`;
+    face += S_(tr, line(c), 12) + S_(tr, c, 9);
+  }
+
+  /* --- vor dem Kopf --- */
+  switch (t.ears){
+    case 'tuft':   front += P('M56 22 C52 8 60 4 61 14 C63 2 73 8 65 22Z', c); break;
+    case 'floppy': front += Ep(20,56,10,21,ec,18); break;
+    case 'sheep':  front += Ep(17,50,11,6,ec,28); break;
+    case 'flame':  // Phönix: Flammenkrone
+      front += P('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z', '#ff9f43') + P(mir('M50 26 C40 20 42 10 45 2 C50 10 56 16 52 26Z'), '#ff9f43')
+             + P('M60 24 C48 14 54 2 60 -8 C66 2 72 14 60 24Z', '#ffd166'); break;
+  }
+  if (t.horn) front += P('M55 24 L60 -8 L65 24Z', '#ffd966') + S_('M56.5 15 L63.5 12 M58 5 L62 3', '#e0a800', 2);
+  if (t.hair) front += E(53,22,7,7,t.hair) + E(61,18,8,8,t.hair) + E(69,22,6,6,t.hair);
+  if (t.narhorn) front += P(`M57 ${top+4} L60 ${top-34} L63 ${top+4}Z`, '#fff3d6') + S_(`M57.8 ${top-6} L62.2 ${top-9} M58.6 ${top-18} L61.4 ${top-20}`, '#d8c39a', 1.6);
+  if (t.spout) front += S_(`M60 ${top+2} C60 ${top-8} 52 ${top-12} 47 ${top-18} M60 ${top+2} C60 ${top-8} 68 ${top-12} 73 ${top-18}`, '#bfe9ff', 4) + `<circle cx="45" cy="${top-22}" r="3" fill="#bfe9ff"/><circle cx="75" cy="${top-22}" r="3" fill="#bfe9ff"/>`;
+  if (t.moon) front += star(92, 12, 6, '#ffe27a') + star(26, 6, 4, '#ffe27a');
+  if (t.explorer) front += E(60, top + 3, 36, 7, '#a0703f') + P(`M38 ${top + 3} C38 ${top - 20} 82 ${top - 20} 82 ${top + 3}Z`, '#c8925a')
+    + S_(`M39 ${top - 3} Q60 ${top - 8} 81 ${top - 3}`, '#7a4f2a', 3.5) + E(76, top - 6, 4, 4, '#ffd23f'); // Forscherhut mit Band und Abzeichen
+  if (t.pumpkin) front += P(`M55 ${top+5} C54 ${top-4} 56 ${top-12} 63 ${top-15} C67 ${top-11} 64 ${top-4} 65 ${top+5}Z`, '#6f8f3a')
+    + E(76, top-3, 10, 5, '#7cc45a', -20) + S_(`M65 ${top-9} q9 -9 13 -2 q2 5 -4 5`, '#5f9e3a', 2);
+  if (t.beanie) front += P(`M33 ${top+12} C32 ${top-14} 88 ${top-14} 87 ${top+12}Z`, t.beanie)
+    + E(60, top+12, 29, 6, '#ffffff') + E(60, top-12, 7, 7, '#ffffff'); // Wintermütze mit Bommel
+  if (t.scarf) front += P(`M34 ${hy+hry-6} Q60 ${hy+hry+6} 86 ${hy+hry-6} L86 ${hy+hry+2} Q60 ${hy+hry+14} 34 ${hy+hry+2}Z`, t.scarf)
+    + P(`M70 ${hy+hry+4} L78 ${hy+hry+24} L68 ${hy+hry+24} L64 ${hy+hry+6}Z`, t.scarf); // Schal mit Zipfel
+  if (t.citrus) front += E(66, top+1, 9, 8, '#ff9f1c') + E(69, top-7, 4, 2, '#5cc97b', -25) + `<circle cx="63" cy="${top-1}" r="2" fill="#ffd27a"/>`; // Capybara mit Mandarine auf dem Kopf
+
+  /* --- Accessoires --- */
+  let over = '';
+  const em = (e, x, y, size, rot=0) => `<text class="acc-e" x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central"${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}>${e}</text>`;
+  const ac = (a, x, y, size, rot=0) => a.svg // eigene Zeichnung statt Emoji (Weihnachtsmütze, Geweih …)
+    ? `<svg x="${x - size/2}" y="${y - size/2}" width="${size}" height="${size}" viewBox="-50 -50 100 100" overflow="visible"><g transform="rotate(${rot})">${a.svg}</g></svg>`
+    : em(a.e, x, y, size, rot);
+  if (acc.neck && ACCM[acc.neck]) over += ac(ACCM[acc.neck], 60, blob ? hy+hry-8 : 92, 30);
+  if (acc.eyes && ACCM[acc.eyes]) over += ac(ACCM[acc.eyes], 60, eyY+1, eyX*2 + 16);
+  if (acc.hat && ACCM[acc.hat]) over += ac(ACCM[acc.hat], 60, t.hatY ?? top - 8, 48);
+  if (acc.side && ACCM[acc.side]) over += ac(ACCM[acc.side], 92, top + 8, 26, 18);
+
+  return `<svg viewBox="0 -24 120 154" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t.label}">
+    <ellipse cx="60" cy="125" rx="${blob ? 36 : 28}" ry="4.5" fill="rgba(40,30,70,.14)"/>
+    <g stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">${back}${body}${head}${face}${front}</g>${over}
+  </svg>`;
+}
+
 /* ================= Vokabeln =================
    Neue Lektion: einfach unten in LESSONS dazuschreiben.
    [Latein (Grundform), so steht es in der Liste, Deutsch (Bedeutungen mit Komma), Gruppe, weitere richtige lateinische Formen]
@@ -647,7 +933,8 @@ document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
 });
 $('#homeBtn').onclick = () => { closeModals(); show('menu'); };
 $('#soundBtn').onclick = () => { G.sound = !G.sound; save(); renderMenu(); if (G.sound) SFX.hee(); };
-$('.mascot').onclick = () => { SFX.hee(); toast('I-aah! 🫏 (Esel auf Latein: asinus)'); };
+$('#mascot').innerHTML = petSVG('esel');
+$('#mascot').onclick = () => { SFX.hee(); toast('I-aah! 🫏 (Esel auf Latein: asinus)'); $('#mascot').classList.add('happy'); setTimeout(() => $('#mascot').classList.remove('happy'), 1200); };
 renderMenu();
 </script>
 </body>
