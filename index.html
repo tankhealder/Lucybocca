@@ -1985,6 +1985,7 @@ function buildChips(){
     [10, 20, 100].map(r => `<button class="chip ${S.range === r ? 'on' : ''}" data-r="${r}">bis ${r}</button>`).join('') +
     `<button class="chip ${FRAC() ? 'on' : ''}" data-r="frac">½ Brüche</button><button class="chip ${DEC() ? 'on' : ''}" data-r="dec">0,5 Komma</button>` +
     '<span class="sep"></span>' +
+    (FRAC() || DEC() ? `<a class="chip on" href="rechenweg.html" style="background:var(--green);box-shadow:0 3px 0 #3a9e57;text-decoration:none;color:#fff">📝 Rechenweg</a>` : '') + // Schritt für Schritt üben
     (DEC() ? `<button class="chip op on" data-o="*" title="Kommazahlen: Mal-Aufgaben">×</button>` // Kommazahlen gibt es als Mal-Aufgaben
       : Object.keys(OPS).map(o => `<button class="chip op ${S.ops.includes(o) ? 'on' : ''}" data-o="${o}">${OPS[o]}</button>`).join(''));
 }
