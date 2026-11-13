@@ -368,6 +368,10 @@ body.newtop .hint,body.newtop .hint.low,body.newtop .hint.lower{top:auto;bottom:
 .gobtn{display:flex;align-items:center;gap:8px;padding:12px;border-radius:16px;background:var(--soft);font-weight:600;font-size:17px;box-shadow:0 3px 0 #d6cdee}
 .gobtn span{font-size:28px;font-family:var(--emoji)}
 .gobtn:active{transform:translateY(2px)}
+.gogrid.learn{grid-template-columns:1fr}
+.gogrid.learn .gobtn{text-decoration:none;color:var(--ink);text-align:left}
+.gogrid.learn .gobtn b{font-weight:700}
+.gogrid.learn .gobtn small{display:block;font-weight:500;font-size:14px;color:var(--ink-soft)}
 /* Adventskalender */
 .mcard.advcard{background:linear-gradient(#1f3b70,#2e5a9e);color:#fff}
 .advcard h2{color:#fff}
@@ -532,6 +536,7 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
       <div class="xptext" id="xptext">0 / 60 XP</div>
     </div>
     <div class="pill" id="streak" title="Serie">🔥 0</div>
+    <button class="iconbtn" id="learnBtn" aria-label="Mehr lernen: Latein, Geo, Rechenweg">📚</button>
     <button class="iconbtn" id="soundBtn" aria-label="Ton an/aus">🔊</button>
   </header>
 
@@ -676,6 +681,18 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
   <div class="album" id="sledPets"></div>
   <div class="gogrid" id="sledGo" hidden></div>
   <br><div class="btnrow"><button class="btn alt" id="sledClose">Doch nicht</button><button class="btn" id="sledNext">Weiter ➜</button></div>
+</div></div>
+
+<div class="modal" id="learnModal"><div class="mcard">
+  <h2>Mehr lernen 📚</h2>
+  <p>Deine anderen Übungen – mit 🐾 kommst du von dort wieder zurück zu MathPets.</p>
+  <div class="gogrid learn">
+    <a class="gobtn" href="rechenweg.html"><span>📝</span><b>Rechenweg-Werkstatt<small>Brüche und Kommazahlen Schritt für Schritt</small></b></a>
+    <a class="gobtn" href="latein.html"><span>🏛️</span><b>Latein-Trainer<small>Vokabeln, Konjugation &amp; Deklination</small></b></a>
+    <a class="gobtn" href="geo.html"><span>🧭</span><b>Europa-Entdecker<small>Meere, Flüsse, Gebirge, Städte</small></b></a>
+    <a class="gobtn" href="tiergenerator.html"><span>🎡</span><b>Tiergenerator<small>Glücksrad mit deinen Tieren</small></b></a>
+  </div>
+  <br><button class="btn alt" id="learnClose">Weiter rechnen</button>
 </div></div>
 
 <div class="modal" id="inviteModal"><div class="mcard wide">
@@ -3317,7 +3334,7 @@ function toolList(){
     ...(HAB[S.hab].shared ? [['chatBtn','💬', NET.chatOpen ? 'Chat zu' : 'Chat'],['bringBtn','🐾','Tiere mitbringen'],['codeBtn','🔑','Weltcode']] : []),
     ...(sledOpen() && !HAB[S.hab].indoor && !HAB[S.hab].shared ? [['sledBtn','🛷','Schlittenfahrt']] : []),
     ['adventBtn','🗓️','Adventskalender'],
-    ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],['redeemBtn','🎁','Code einlösen'],
+    ['wardBtn','👗','Anziehen'],['albumBtn','📖','Album'],['redeemBtn','🎁','Code einlösen'],['learnBtn','📚','Mehr lernen'],
     ['calmBtn', S.calm ? '🐇' : '🐢', S.calm ? 'Mehr Bewegung' : 'Weniger Bewegung'],
   ];
 }
@@ -3342,6 +3359,7 @@ function runTool(id){
   if (id === 'bringBtn') openBring();
   if (id === 'codeBtn') openTogether();
   if (id === 'redeemBtn') openRedeem();
+  if (id === 'learnBtn') $('#learnModal').classList.add('open');
   if (id === 'sledBtn') openSled();
   if (id === 'adventBtn') openAdvent();
   if (id === 'calmBtn'){ S.calm = !S.calm; save(); applyCalm(); }
@@ -3642,6 +3660,8 @@ function show(id){
   }
 }
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { SFX.tap(); show(t.dataset.go); }));
+$('#learnBtn').addEventListener('click', () => { SFX.tap(); $('#learnModal').classList.add('open'); });
+$('#learnClose').addEventListener('click', () => $('#learnModal').classList.remove('open'));
 $('#soundBtn').addEventListener('click', () => { S.sound = !S.sound; save(); renderHUD(); SFX.tap(); });
 
 document.addEventListener('keydown', e => {

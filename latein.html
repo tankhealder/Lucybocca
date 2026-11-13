@@ -132,6 +132,7 @@ main{flex:1;position:relative;min-height:0}
 .confetti{position:fixed;width:9px;height:13px;border-radius:3px;pointer-events:none;z-index:55}
 @media (max-width:420px){.logo{font-size:17px}.btn{padding:10px 12px;font-size:16px}.choice{font-size:16px}}
 @media (prefers-reduced-motion:reduce){.mascot{animation:none}.flip .in{transition:none}}
+@media (max-width:420px){header{gap:6px;padding:8px 10px}.iconbtn{width:35px;height:35px;font-size:17px}.logo{font-size:16px!important}.pill{padding:5px 8px;font-size:15px}} /* Platz für 🐾 auf dem Handy */
 </style>
 </head>
 <body>
@@ -140,6 +141,7 @@ main{flex:1;position:relative;min-height:0}
     <div class="logo"><span>🏛️</span> Latein-Trainer</div>
     <div class="grow"></div>
     <div class="pill" id="hudStars">⭐ 0</div>
+    <a class="iconbtn" href="index.html" aria-label="Zu MathPets" style="display:grid;place-items:center;text-decoration:none">🐾</a>
     <button class="iconbtn" id="soundBtn" aria-label="Ton an/aus">🔊</button>
     <button class="iconbtn" id="homeBtn" aria-label="Startseite">🏠</button>
   </header>
