@@ -1232,6 +1232,7 @@ function load(){
   // Im Test immer alle Tiere da – auch neu eingebaute
   if (TEST) ORDER.forEach(type => { if (!HAB[A[type].hab].code && (!A[type].advent || adventHas(A[type].advent)) && !(S.pets || []).some(p => p.type === type)) (S.pets = S.pets || []).push(newPet(type)); }); // Code- und Kalender-Tiere nicht
   S.treats = Object.assign({...DEFAULT.treats}, S.treats);
+  if (TEST && !(S.treats.petersilie > 0)) S.treats.petersilie = 9; // im Test immer Petersilie da, um Opa auszuprobieren
   S.av = Object.assign({...DEFAULT.av}, S.av);
   S.me = Object.assign({...DEFAULT.me}, S.me, { id:'me', type:'me' });
   if (!HAB[S.me.hab]) S.me.hab = 'haus';
