@@ -1909,7 +1909,7 @@ function renderTask(){
   for (let i=0; i<5; i++) dots += `<div class="dot ${i < S.sinceGift ? 'full' : ''}">${i < S.sinceGift ? '⭐' : ''}</div>`;
   $('#dots').innerHTML = dots;
   const left = Math.max(0, 5 - S.sinceGift);
-  $('#giftText').textContent = `Noch ${left} bis zur Überraschung 🎁`;
+  $('#giftText').textContent = (FRAC() || DEC()) ? `Noch ${left} bis zur Überraschung 🎁` : 'Überraschungen 🎁 gibt es bei ½ Brüchen und 0,5 Komma';
 }
 function say(t){ $('#speech').textContent = t; }
 function press(k){
@@ -1960,7 +1960,7 @@ function submit(){
     const base = XP_OP[task.op] + (task.frac ? 15 : task.dec ? 10 : 0); // Brüche und Kommazahlen bringen mehr
     const gain = first ? base + Math.min(S.streak - 1, 10) : base / 2;
     const tk = pick(Object.keys(TREATS)); S.treats[tk]++;
-    S.sinceGift++;
+    if (task.frac || task.dec) S.sinceGift++; // Überraschungen gibt es nur bei Brüchen und Kommazahlen
     card.className = 'card good';
     say(S.streak >= 3 && first ? `${S.streak}er-Serie! 🔥` : pick(PRAISE));
     SFX.ok(); confetti(cx, cy - 20);
@@ -1968,7 +1968,7 @@ function submit(){
     retrigger(mascot.querySelector('.inner'), 'jump'); happy(mascot);
     setTimeout(() => { retrigger($('#avCoach .inner'), 'jump'); happy($('#avCoach')); }, 120); // Avatar freut sich mit
     addXP(gain); renderTask(); save();
-    setTimeout(() => { newTask(); if (S.sinceGift >= 5) queueModal(openGift); }, 1000);
+    setTimeout(() => { newTask(); if (S.sinceGift >= 5 && (task.frac || task.dec)) queueModal(openGift); }, 1000);
   } else {
     tries++; S.streak = 0; renderHUD(); save();
     SFX.no(); card.className = 'card bad'; retrigger(card, 'shake');
