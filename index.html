@@ -3481,7 +3481,7 @@ function feed(el, k){
   happy(el, 1500);
   SFX.eat(); SFX.love();
   bubble(el, fav ? 'Mein Lieblingsessen! 😍' : k === 'petersilie' ? 'Mmmh, Petersilie! 🌿' : pick(['Mmmh, lecker!','Danke! 💕','Mjam mjam!']));
-  if (k === 'petersilie') setTimeout(() => opaKommt(el), 700);
+  if (k === 'petersilie' && !opaBusy){ const said = opaSpeak(); setTimeout(() => opaKommt(el, said), 700); } // Stimme sofort starten – Handys brauchen oft 1–2 s, bis sie loslegen
   sprinkle(el, ['❤️','💖','💕'], fav ? 6 : 3, 300);
   const [x, y] = centerOf(el);
   floatText(`+${fav ? 5 : 2} XP`, x, y - 60);
@@ -3519,7 +3519,20 @@ const OPA_SVG = `<svg viewBox="0 0 100 170" xmlns="http://www.w3.org/2000/svg">
   <path d="M42 62 q8 -6 16 0 q-8 3 -16 0z" fill="#7a1f2b"/>
   <path d="M30 34 q-3 -3 -1 -7 M70 34 q3 -3 1 -7" stroke="#d9455f" stroke-width="2" fill="none"/>
 </svg>`;
-function opaKommt(el){
+// Opas Ruf: liefert ein Versprechen, das erfüllt ist, wenn er fertig gesprochen hat (oder spätestens nach 7 s)
+function opaSpeak(){
+  if (!S.sound || !('speechSynthesis' in window)) return Promise.resolve();
+  return new Promise(done => {
+    const t = setTimeout(done, 7000);
+    try { // deutsche Stimme, damit das „u“ wie „u“ klingt (eine englische Stimme macht daraus „a“); Bindestriche helfen bei der Betonung
+      const vs = speechSynthesis.getVoices(), v = vs.find(x => /^de/i.test(x.lang) && /stefan|markus|male|mann/i.test(x.name)) || vs.find(x => /^de/i.test(x.lang)) || vs.find(x => /^it/i.test(x.lang));
+      const u = new SpeechSynthesisUtterance('Me-um Petru-silium!'); u.lang = v ? v.lang : 'de-DE'; if (v) u.voice = v; u.pitch = .4; u.rate = .85;
+      u.onend = u.onerror = () => { clearTimeout(t); done(); };
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch { clearTimeout(t); done(); }
+  });
+}
+function opaKommt(el, said = Promise.resolve()){
   if (opaBusy || !el.isConnected) return; opaBusy = true;
   const [px, py] = centerOf(el), fromLeft = px > innerWidth / 2; // kommt von der Seite, die weiter weg ist
   const startX = fromLeft ? -60 : innerWidth + 60, stopX = Math.max(60, Math.min(innerWidth - 60, px + (fromLeft ? -90 : 90)));
@@ -3535,11 +3548,8 @@ function opaKommt(el){
     const sh = document.createElement('div'); sh.className = 'shout'; sh.textContent = 'Meum petrusilium! 😠';
     opa.appendChild(sh);
     SFX.no(); tone(140, .25, 'sawtooth', 0, .06); tone(120, .3, 'sawtooth', .28, .06);
-    if (S.sound && 'speechSynthesis' in window){ try { // deutsche Stimme, damit das „u“ wie „u“ klingt (eine englische Stimme macht daraus „a“); Bindestriche helfen bei der Betonung
-      const vs = speechSynthesis.getVoices(), v = vs.find(x => /^de/i.test(x.lang) && /stefan|markus|male|mann/i.test(x.name)) || vs.find(x => /^de/i.test(x.lang)) || vs.find(x => /^it/i.test(x.lang));
-      const u = new SpeechSynthesisUtterance('Me-um Petru-silium!'); u.lang = v ? v.lang : 'de-DE'; if (v) u.voice = v; u.pitch = .4; u.rate = .85; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch {} }
     if (el.isConnected){ bubble(el, 'Ups! 😳'); retrigger(el.querySelector('svg'), 'wobble'); }
-    return new Promise(r => setTimeout(r, 2400));
+    return Promise.all([new Promise(r => setTimeout(r, 2400)), said.then(() => new Promise(r => setTimeout(r, 400)))]); // bleibt, bis er fertig geschimpft hat
   }).then(() => {
     opa.querySelector('.shout')?.remove(); opa.classList.remove('angry'); opa.classList.toggle('flip');
     return run(stopX, startX, 900);
