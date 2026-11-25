@@ -49,6 +49,12 @@ main{flex:1;position:relative;min-height:0}
 /* ---------- Quiz ---------- */
 #quiz{padding:12px 16px 8px;gap:10px;overflow-y:auto}
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+/* Bruch-Abenteuer: Fortschritt je Sorte (20 je Sorte = 100 %) */
+.advrow{flex-basis:100%;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;align-items:center;font-weight:600;font-size:14px}
+.advk{background:#fff;border-radius:999px;padding:3px 9px;box-shadow:0 2px 0 rgba(58,46,92,.1);white-space:nowrap}
+.advk.done{background:#d8f5e1;color:#2d8a4e}
+.advk.low{outline:2px solid #ffb3cf}
+.advsum{flex-basis:100%;text-align:center;font-size:13px;color:var(--purple);font-weight:600}
 .chip{padding:6px 12px;border-radius:999px;background:#fff;font-weight:600;font-size:15px;box-shadow:0 3px 0 rgba(58,46,92,.12);opacity:.55;transition:opacity .15s,transform .1s}
 .chip.on{opacity:1;background:var(--blue);color:#fff;box-shadow:0 3px 0 #2a9fc4}
 .chip.op.on{background:var(--pink);box-shadow:0 3px 0 #d9558f}
@@ -97,6 +103,7 @@ main{flex:1;position:relative;min-height:0}
 .scene.wueste{background:linear-gradient(#ffe7b8,#ffc27a 44%,#f7d58a 44%,#e9b45f)}
 .scene.eis{background:linear-gradient(#a9dcff,#e3f5ff 44%,#f7fcff 44%,#cfe6f7)}
 .scene.zauber{background:linear-gradient(#a98cff,#ffc4e6 46%,#ffe8f5 46%,#f3c2ff)}
+.scene.zahlenwald{background:linear-gradient(#241d5c,#5a3fa6 46%,#4b9a83 46%,#2f6f5c)}
 .scene.schloss{container-type:size}
 /* Schloss-Möbel: Bällebad, Thron, Schulbänke, Tafel, Spielzeugkiste */
 .pitbox{display:block;width:1.7em;height:.72em;border-radius:.12em .12em .3em .3em;border:.05em solid #9b5de5;
@@ -758,6 +765,9 @@ const HABS = [
   { id:'winter', name:'Winterwunderland', e:'🎄', lvl:99, advent:1, hills:['#ffffff','#eaf1fb'], fx:'snow',
     decos:[['🎄',10,50,96],['🎄',88,47,84],['🏘️',50,46,74],['🎠',72,55,58],['🌙',84,12,44],['⭐',18,10,22],['⭐',58,7,16],['⭐',36,16,12],
            ['🎁',28,88,34],['🎁',34,91,24],['🔔',92,90,28],['🕯️',7,90,30],['⛸️',60,93,26],['🍪',78,92,24],['🎄',30,47,40],['🎄',66,46,36]] },
+  // Bruch-Abenteuer: öffnet sich mit der ersten richtigen Abenteuer-Aufgabe (bruch in UNLOCKS, keine Codes)
+  { id:'zahlenwald', name:'Zahlen-Zauberwald', e:'🔮', lvl:99, code:'zwald', hills:['#4b9a83','#3d8a73'], fx:'sparkle',
+    decos:[['🌲',6,52,100],['🌲',93,52,92],['🍄',14,86,40],['🔮',78,60,30],['🌙',84,12,40],['🍄',68,92,30],['🧪',42,94,28],['📜',56,90,26],['✨',30,44,20],['🌲',24,47,50],['🍄',88,74,24],['⭐',20,14,20],['⭐',56,8,16]] },
   { id:'reise', name:'Europa-Reise', e:'🧳', lvl:99, code:'welt', hills:['#9fdc8a','#8fd17a'], sun:true, fx:'clouds',
     decos:[['🗼',14,52,96],['🏟️',36,56,62],['🏛️',58,52,58],['🕌',84,52,78],['🎡',70,58,52],['⛵',48,47,26],['🌷',22,88,30],['🚂',62,90,36],['🧳',90,92,30],['🗺️',8,90,30]] },
 ];
@@ -880,6 +890,7 @@ const FURN_LIST = [
   {id:'planet', e:'🪐', name:'Planet', s:12, lvl:18, wall:true},
   {id:'regenbogen', e:'🌈', name:'Regenbogen', s:22, lvl:20, wall:true},
   // Nur als Überraschung
+  {id:'kristallkugel', e:'🔮', name:'Zauber-Kristallkugel', s:20, code:'zkugel'}, // Bruch-Abenteuer 75 %
   {id:'tannenbaum', e:'🎄', name:'Weihnachtsbaum', s:26, gift:true},
   {id:'pinata', e:'🪅', name:'Piñata', s:14, gift:true, wall:true},
   {id:'zirkus', e:'🎪', name:'Zirkuszelt', s:30, gift:true, seat:SIT([0], .7)},
@@ -1057,6 +1068,12 @@ Object.assign(A, {
   esel: {hab:'reise', name:'Asinus', label:'Esel', g:'der', c:'#a9a4b8', b:'#ebe8f2', ears:'donkey', earC:'#9a95aa', inner:'#f2c9d6', hair:'#5b566b', tail:'horse', muzzle:true, nose:'nostrils', mouth:'smile', fav:'karotte', say:'I-aah! Salve! 🫏'}, // Latein-Trainer
   fledermaus: {hab:'reise', name:'Flatti', label:'Fledermaus', g:'die', c:'#8273b8', b:'#e2d9f7', ears:'bat', inner:'#ffb8d2', wings:['#5d4e94','#a99ad8'], bat:true, limb:'#6c5ca6', feet:'#5d4e94', bigEyes:true, nose:'tri', mouth:'w', fang:true, fav:'apfel', say:'Ich hänge gern kopfüber ab! 🦇'},
 });
+// Zahlen-Zauberwald (Bruch-Abenteuer): erste Aufgabe, 50 % und 100 %
+Object.assign(A, {
+  zifferfuchs:{hab:'zahlenwald', name:'Ziffer', label:'Zauberfuchs', g:'der', c:'#8b74e8', b:'#efe9ff', ears:'cat', inner:'#ffd0f0', muzzle:true, nose:'dot', mouth:'w', moon:true, fav:'apfel', say:'Ein halber Apfel plus ein halber Apfel? Ein ganzer! 🍎'},
+  kommahase:  {hab:'zahlenwald', name:'Komma', label:'Zauberhase', g:'der', c:'#9fe7d8', b:'#effffb', ears:'bunny', inner:'#ffd6ec', nose:'tri', mouth:'w', fav:'karotte', say:'Null Komma fünf – das ist ein Halb! 🐰'},
+  bruchdrache:{hab:'zahlenwald', name:'Bruno', label:'Bruch-Drache', g:'der', c:'#b49bff', b:'#f4efff', luck:'#ffd23f', feet:'#ffd23f', wings:['#7d5fe0','#ffe680'], nose:'nostrils', mouth:'smile', fav:'muffin', say:'Ich teile alles gerecht – Drachen-Ehrenwort! 🐉'},
+});
 // Weihnachtstiere aus dem Adventskalender (advent = Türchen)
 Object.assign(A, {
   rentier:  {hab:'winter', advent:4,  name:'Rudi', label:'Rentier', g:'das', c:'#b9825a', b:'#f3e2cd', ears:'deer', earC:'#a8724c', inner:'#f3e2cd', antlers:'#8a5a35', muzzle:true, nose:'red', mouth:'smile', fav:'karotte', say:'Meine Nase leuchtet! 🔴✨'},
@@ -1081,7 +1098,7 @@ const MOVE = {
   einhorn:'gallop', schildi:'slow', pferd:'gallop',
   greif:'gold', pegasus:'party', ptera:'fly', phoenix:'blaze',
   trex:'stomp', mammut:'stomp', brachio:'slow',
-  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', fledermaus:'night', esel:'gallop',
+  kaenguru:'hop', capybara:'slow', koala:'slow', ella:'explore', jacky:'spook', zifferfuchs:'magic', kommahase:'hop', bruchdrache:'fraction', fledermaus:'night', esel:'gallop',
   rentier:'xmasfly', lebki:'cookie', schneeeule:'snowfly', schneemann:'slow',
   oktopus:'swim', wal:'swim', narwal:'swim', robbe:'swim', kugelfisch:'puff', krabbe:'crab',
 };
@@ -1165,6 +1182,7 @@ const CLOTHES = [
   {id:'drachenfluegel', slot:'extra', name:'Drachenflügel',gift:true, style:'dragonwings', c:'#f4cdbd'},
   {id:'ballon',     slot:'extra', name:'Luftballon',       gift:true, style:'balloon'},
   {id:'lorbeerkranz', slot:'hat', name:'Lorbeerkranz',     code:'laurus', style:'laurel'}, // Latein-Trainer
+  {id:'zauberhut',  slot:'hat', name:'Zahlen-Zauberhut',   code:'zhut', style:'wizard'}, // Bruch-Abenteuer 75 %
   // Adventskalender
   {id:'xmaspulli',   slot:'top',   name:'Weihnachtspulli',  advent:5,  style:'xmas', c:'#e8424f', c2:'#ffffff'},
   {id:'wichtelmuetze', slot:'hat', name:'Wichtelmütze',     advent:11, style:'elf'},
@@ -1183,9 +1201,19 @@ const UNLOCKS = {
   lectus:{ code:'LECTUS-2471', furn:'chaiselongue', e:'🛋️', title:'Die römische Chaiselongue!', msg:'Zum Liegen wie die alten Römer. Du findest sie beim Einrichten 🔨 im Möbel-Katalog.' },
   laurus:{ code:'LAURUS-6385', cloth:'lorbeerkranz', e:'🌿', title:'Der Lorbeerkranz!', msg:'Wie ein echter Caesar! Zieh ihn bei deinem Avatar an: 🎩 Kopf.' },
   asinus:{ code:'ASINUS-9152', pet:'esel', e:'🫏', title:'Asinus, der Esel!', msg:'Asinus wohnt jetzt in der Europa-Reise. I-aah! Nimm ihn hoch – er trabt los!' },
+  // Bruch-Abenteuer (MathPets selbst, ohne Code): erste Aufgabe, 50, 75 und 100 richtige
+  zwald: { bruch:1,   pet:'zifferfuchs', e:'🔮', title:'Neue Welt: Zahlen-Zauberwald!', msg:'Du hast das Bruch-Abenteuer begonnen! Ziffer, der Zauberfuchs, wartet im Zauberwald auf dich.' },
+  zkomma:{ bruch:50,  pet:'kommahase', e:'🐰', title:'Komma, der Zauberhase!', msg:'Halbzeit im Bruch-Abenteuer! Komma wohnt jetzt im Zahlen-Zauberwald. Nimm ihn hoch – er hüpft!' },
+  zhut:  { bruch:75,  cloth:'zauberhut', e:'🧙', title:'Der Zahlen-Zauberhut!', msg:'75 % geschafft! Zieh den Zauberhut bei deinem Avatar an: 🎩 Kopf.' },
+  zkugel:{ bruch:75,  furn:'kristallkugel', e:'🔮', title:'Die Zauber-Kristallkugel!', msg:'Und dazu eine Kristallkugel für dein Haus. Du findest sie beim Einrichten 🔨 im Möbel-Katalog.' },
+  zdrache:{ bruch:100, pet:'bruchdrache', e:'🐉', title:'Bruno, der Bruch-Drache!', msg:'100 %! Du bist ein echter Bruch-Profi! Nimm Bruno hoch – er lässt Bruchstücke regnen!' },
   tier:  { code:'ELLA-9147', pet:'ella', e:'🦉', title:'Ella, die Entdecker-Eule!', msg:'Ella wohnt jetzt in der Europa-Reise. Nimm sie hoch – sie fliegt mit Weltkugeln und Landkarten!' },
 };
 const codeKey = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+// Wo bekommt man eine gesperrte Sache? (Code aus dem Europa-Entdecker/Latein oder Bruch-Abenteuer)
+const isBruch = code => !!UNLOCKS[code]?.bruch;
+const lockShort = code => isBruch(code) ? '🔮 Abenteuer' : '🔑 Code';
+const lockLong = (code, what) => isBruch(code) ? `${what} gibt es im 🔮 Bruch-Abenteuer – rechne Brüche und Kommazahlen!` : `${what} bekommst du mit einem Code aus dem Europa-Entdecker 🧭`;
 const AV_SLOTS = [['top','👕 Oben'],['bottom','👖 Unten'],['shoes','👟 Schuhe'],['hat','🎩 Kopf'],['extra','✨ Extra']];
 
 const PRAISE = ['Super! 🎉','Klasse! ⭐','Richtig! 👏','Wow, toll! 🌟','Spitze! 💪','Genau! 🥳','Du bist ein Rechen-Profi! 🏆'];
@@ -1200,6 +1228,7 @@ const ADVENT_PREVIEW = TEST && new URLSearchParams(location.search).has('advent'
 const adventHas = d => ADVENT_PREVIEW || ((typeof S !== 'undefined' && S && S.advent) || []).includes(d);
 // Speicher-Schlüssel tragen noch den alten Namen „Rechen-Zoo“ – nicht ändern, sonst ist der Spielstand weg
 const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
+const BRUCH_KINDS = ['+','-','*','/','d'], BRUCH_MAX = 20; // Bruch-Abenteuer: Sorten (d = Kommazahlen) und Ziel je Sorte
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
   treats:{apfel:2, karotte:1, fisch:1, muffin:1, petersilie:0}, pets:[], range:10, ops:['+','-'],
   sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{},
@@ -1265,7 +1294,11 @@ function load(){
   // Rechenarten und Zahlenraum aufräumen: nur gültige Zeichen, keine doppelten (sonst „undefined“ statt Rechenzeichen)
   S.ops = [...new Set((Array.isArray(S.ops) ? S.ops : []).filter(o => ['+','-','*','/'].includes(o)))];
   if (!S.ops.length) S.ops = ['+','-'];
-  if (![10, 20, 100, 'frac', 'dec'].includes(S.range)) S.range = 10;
+  if (![10, 20, 100, 'frac', 'dec', 'abenteuer'].includes(S.range)) S.range = 10;
+  // Bruch-Abenteuer: richtige Aufgaben je Sorte (höchstens 20 je Sorte)
+  S.bruch = Object.fromEntries(BRUCH_KINDS.map(k => [k, clamp(Math.floor(+(S.bruch || {})[k] || 0), 0, BRUCH_MAX)]));
+  bruchEarned().forEach(k => { const u = UNLOCKS[k]; if (u.pet && !S.pets.some(p => p.type === u.pet)) S.pets.push(newPet(u.pet)); });
+  if (TEST) S.unlocks = [...new Set([...S.unlocks, ...bruchEarned()])]; // im Test oben gelöscht – selbst Errechnetes zählt aber
   // Level wiederherstellen (für Eltern): index.html?level=12 hebt die XP auf mindestens Level 12, danach verschwindet der Zusatz aus der Adresse
   const lv = parseInt(new URLSearchParams(location.search).get('level'), 10);
   if (lv > 1 && lv <= 60 && S.xp < xpFor(lv)){ S.xp = S.xpSafe = xpFor(lv); }
@@ -1361,6 +1394,7 @@ const STEP = {
   fly:[320, SFX.flap], explore:[300, SFX.flap, ['🌍','✨','🗺️','🧭']], party:[280, SFX.flap, el => { const [x, y] = centerOf(el); confetti(x, y, 9); }],
   gold:[280, () => { SFX.flap(); tone(1760, .08, 'sine', 0, .03); }, el => { const [x, y] = centerOf(el); confetti(x, y, 9, GOLD); sprinkle(el, ['🪙','✨'], 1); }], blaze:[320, SFX.flap, ['🔥','✨']], stomp:[500, SFX.stomp], glide:[600, () => { SFX.flap(); SFX.twinkle(); }, ['✨','🍀']], float:[900, SFX.twinkle, ['☁️','✨']], walk:[300, SFX.step], slow:[750, SFX.step], waddle:[260, SFX.step],
   hop:[500, SFX.hop], spook:[500, SFX.hop, ['🍬','👻','✨']], cookie:[500, SFX.hop, ['🍪','🍬','✨']],
+  magic:[340, () => { SFX.step(); SFX.twinkle(); }, ['✨','½','⭐']], fraction:[300, () => { SFX.flap(); tone(1318, .08, 'triangle', 0, .03); }, ['½','¼','¾','⅓','✨','🍕']],
   xmasfly:[300, () => { SFX.flap(); tone(2093, .1, 'triangle', 0, .03); }, ['❄️','⭐','✨']], snowfly:[320, SFX.flap, ['❄️','✨']], night:[260, SFX.flap, ['🌙','⭐','✨']], gallop:[400, SFX.clop, ['✨','🌈']], swim:[700, SFX.blub, ['🫧']], puff:[700, SFX.blub, ['🫧']], crab:[280, SFX.click],
 };
 
@@ -1759,6 +1793,10 @@ function avatarSVG(av, crop, sit){ // sit = reitet auf einem Tier (Beine seitlic
     const a = (165 - i * 15) * Math.PI / 180, x = 60 + 36 * Math.cos(a), y = 44 - 26 * Math.sin(a), rot = 90 - (165 - i * 15) + (i % 2 ? 35 : -35);
     front += E(+x.toFixed(1), +y.toFixed(1), 7, 3.4, i % 2 ? '#5fa84a' : '#78c25e', rot);
   }
+  if (hat?.style === 'wizard') front += P('M24 36 C40 22 50 0 58 -26 C66 -6 80 18 96 36Z', '#5b45c9') // Zahlen-Zauberhut mit Sternen und ½
+    + S_('M20 36 Q60 46 100 36', '#3c2b99', 8) + `<circle cx="58" cy="-26" r="5" ${fs('#ffd23f')}/>`
+    + `<text x="58" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#ffd23f" stroke="none" font-family="Fredoka,sans-serif">½</text>`
+    + `<path d="M42 8 l2 4 4 .6 -3 3 .7 4 -3.7 -2 -3.7 2 .7 -4 -3 -3 4 -.6z M76 14 l1.6 3 3 .5 -2.2 2.2 .5 3 -2.9 -1.5 -2.9 1.5 .5 -3 -2.2 -2.2 3 -.5z" fill="#ffe680" stroke="none"/>`;
   if (hat?.style === 'elf') front += P('M27 34 C30 12 46 4 62 5 C80 6 94 -4 104 -14 C102 2 98 18 94 34Z', '#3fae6a')
     + S_('M27 33 Q60 40 94 33', '#e8424f', 7) + `<circle cx="104" cy="-14" r="5" ${fs('#ffd23f')}/>`; // Wichtelmütze mit Glöckchen
   if (hat){
@@ -1884,7 +1922,25 @@ $('#infoBtns').addEventListener('click', e => {
 let task = null, input = '', inputD = '', field = 'n', tries = 0, locked = false, lastText = '';
 const OPS = { '+':'+', '-':'−', '*':'×', '/':'÷' };
 const XP_OP = { '+':10, '-':10, '*':20, '/':30 };
-const FRAC = () => S.range === 'frac', DEC = () => S.range === 'dec';
+const FRAC = () => S.range === 'frac', DEC = () => S.range === 'dec', ADV = () => S.range === 'abenteuer';
+const WIDE = () => FRAC() || DEC() || ADV(); // Brüche/Komma: Tastenfeld mit Bruchstrich- bzw. Kommataste
+/* Bruch-Abenteuer: die App mischt alle Sorten (man kann sie nicht wählen) und nimmt öfter die, bei der am wenigsten geschafft ist.
+   Nur beim ersten Versuch richtige zählen, höchstens 20 je Sorte – so muss man auch die schweren Sorten können. 5 × 20 = 100 %. */
+const BRUCH_LABEL = { '+':'½ +', '-':'½ −', '*':'½ ×', '/':'½ ÷', d:'0,5 ×' };
+const bruchSum = () => BRUCH_KINDS.reduce((s, k) => s + S.bruch[k], 0);
+const bruchEarned = () => Object.keys(UNLOCKS).filter(k => UNLOCKS[k].bruch && bruchSum() >= UNLOCKS[k].bruch);
+function makeAdv(){
+  const open = BRUCH_KINDS.filter(k => S.bruch[k] < BRUCH_MAX), list = open.length ? open : BRUCH_KINDS;
+  const w = k => BRUCH_MAX + 2 - Math.min(S.bruch[k], BRUCH_MAX); // weniger geschafft = öfter dran
+  let r = Math.random() * list.reduce((s, k) => s + w(k), 0), kind = list[0];
+  for (const k of list){ r -= w(k); if (r < 0){ kind = k; break; } }
+  const t = kind === 'd' ? makeDec() : makeFrac(kind);
+  t.kind = kind; return t;
+}
+// Neue Abenteuer-Belohnungen auspacken (nach einer Aufgabe, und wenn die Rechenweg-Werkstatt Punkte gebracht hat)
+function checkBruch(){
+  bruchEarned().filter(k => !S.unlocks.includes(k)).forEach(k => queueModal(() => grantUnlock(k)));
+}
 
 /* Brüche (Nenner bis 10, alle vier Rechenarten, Ergebnis vollständig gekürzt; unechte Brüche und ganze Zahlen erlaubt)
    und Kommazahlen (Mal-Aufgaben, Ergebnis mit höchstens 3 Nachkommastellen) */
@@ -1913,6 +1969,7 @@ function makeDec(){
 }
 
 function makeTask(){
+  if (ADV()) return makeAdv();
   if (FRAC()) return makeFrac(pick(S.ops));
   if (DEC()) return makeDec();
   const op = pick(S.ops), R = S.range;
@@ -1931,6 +1988,7 @@ function newTask(){
   let t, guard = 0;
   do { t = makeTask(); } while (t.text === lastText && guard++ < 20);
   task = t; lastText = t.text; input = ''; inputD = ''; field = 'n'; tries = 0; locked = false;
+  if (ADV()) buildPad(); // Bruchstrich- oder Kommataste je nach Aufgabe
   $('#card').className = 'card';
   say('Wie viel ist das?');
   renderTask();
@@ -1942,7 +2000,7 @@ function renderTask(){
   for (let i=0; i<5; i++) dots += `<div class="dot ${i < S.sinceGift ? 'full' : ''}">${i < S.sinceGift ? '⭐' : ''}</div>`;
   $('#dots').innerHTML = dots;
   const left = Math.max(0, 5 - S.sinceGift);
-  $('#giftText').textContent = (FRAC() || DEC()) ? `Noch ${left} bis zur Überraschung 🎁` : 'Überraschungen 🎁 gibt es bei ½ Brüchen und 0,5 Komma';
+  $('#giftText').textContent = WIDE() ? `Noch ${left} bis zur Überraschung 🎁` : 'Überraschungen 🎁 gibt es bei ½ Brüchen und 0,5 Komma';
 }
 function say(t){ $('#speech').textContent = t; }
 function press(k){
@@ -1991,13 +2049,16 @@ function submit(){
     if (first){ S.streak++; S.best = Math.max(S.best, S.streak); }
     // XP je Rechenart; Serienbonus bleibt, im zweiten Versuch gibt es die Hälfte
     const base = XP_OP[task.op] + (task.frac ? 15 : task.dec ? 10 : 0); // Brüche und Kommazahlen bringen mehr
-    const gain = first ? base + Math.min(S.streak - 1, 10) : base / 2;
+    const gain = first ? base + Math.min(S.streak - 1, 10) : Math.round(base / 2); // ganze XP (Brüche: 45 / 2 wäre 22,5)
     const tk = pick(Object.keys(TREATS)); S.treats[tk]++;
     if (task.frac || task.dec) S.sinceGift++; // Überraschungen gibt es nur bei Brüchen und Kommazahlen
+    const advUp = ADV() && first && task.kind && S.bruch[task.kind] < BRUCH_MAX; // Abenteuer: nur beim ersten Versuch richtig
+    if (advUp){ S.bruch[task.kind]++; checkBruch(); }
     card.className = 'card good';
     say(S.streak >= 3 && first ? `${S.streak}er-Serie! 🔥` : pick(PRAISE));
     SFX.ok(); confetti(cx, cy - 20);
-    floatText(`+${gain} XP  +1 ${TREATS[tk]}`, cx, cy - 40);
+    floatText(`+${gain} XP  +1 ${TREATS[tk]}${advUp ? '  🔮+1' : ''}`, cx, cy - 40);
+    if (advUp) buildChips();
     retrigger(mascot.querySelector('.inner'), 'jump'); happy(mascot);
     setTimeout(() => { retrigger($('#avCoach .inner'), 'jump'); happy($('#avCoach')); }, 120); // Avatar freut sich mit
     addXP(gain); renderTask(); save();
@@ -2020,30 +2081,40 @@ function submit(){
   }
 }
 function buildPad(){
-  const wide = FRAC() || DEC();
+  const wide = WIDE(), slash = FRAC() || (ADV() && !task?.dec); // im Abenteuer passt die Taste zur Aufgabe
   const keys = wide ? ['1','2','3','del','4','5','6','sep','7','8','9','0','ok'] : ['1','2','3','4','5','6','7','8','9','del','0','ok'];
-  const label = k => k === 'del' ? '⌫' : k === 'ok' ? '✓' : k === 'sep' ? (FRAC() ? '⁄' : ',') : k;
-  const aria = k => k === 'del' ? 'Löschen' : k === 'ok' ? 'Prüfen' : k === 'sep' ? (FRAC() ? 'Zähler oder Nenner' : 'Komma') : k;
+  const label = k => k === 'del' ? '⌫' : k === 'ok' ? '✓' : k === 'sep' ? (slash ? '⁄' : ',') : k;
+  const aria = k => k === 'del' ? 'Löschen' : k === 'ok' ? 'Prüfen' : k === 'sep' ? (slash ? 'Zähler oder Nenner' : 'Komma') : k;
   $('#pad').className = 'pad' + (wide ? ' wide' : '');
   $('#pad').innerHTML = keys.map(k => `<button class="key ${k === 'sep' ? 'fsep' : ['del','ok'].includes(k) ? k : ''}" data-k="${k}" aria-label="${aria(k)}">${label(k)}</button>`).join('');
 }
 $('#pad').addEventListener('click', e => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
 // Bei Brüchen: auf Zähler oder Nenner tippen wählt das Feld
 $('#task').addEventListener('click', e => { const f = e.target.closest('[data-f]'); if (f && task?.frac && !locked){ field = f.dataset.f; SFX.tap(); renderTask(); } });
+// Fortschritt im Bruch-Abenteuer: je Sorte x/20, darunter Gesamt-% und die nächste Belohnung
+function advRow(){
+  const sum = bruchSum(), next = Object.values(UNLOCKS).filter(u => u.bruch && u.bruch > sum).sort((a, b) => a.bruch - b.bruch)[0];
+  const min = Math.min(...BRUCH_KINDS.map(k => S.bruch[k]));
+  return `<div class="advrow">${BRUCH_KINDS.map(k => `<span class="advk ${S.bruch[k] >= BRUCH_MAX ? 'done' : S.bruch[k] === min && sum ? 'low' : ''}">${BRUCH_LABEL[k]} ${S.bruch[k] >= BRUCH_MAX ? '✅' : `${S.bruch[k]}/${BRUCH_MAX}`}</span>`).join('')}</div>`
+    + `<div class="advsum">🔮 ${sum} %${next ? ` · bei ${next.bruch} %: ${next.e} ${next.title.replace(/!$/, '')}` : ' · Alles geschafft – du bist ein Bruch-Profi! 🏆'}</div>`;
+}
 function buildChips(){
   $('#chips').innerHTML =
     [10, 20, 100].map(r => `<button class="chip ${S.range === r ? 'on' : ''}" data-r="${r}">bis ${r}</button>`).join('') +
     `<button class="chip ${FRAC() ? 'on' : ''}" data-r="frac">½ Brüche</button><button class="chip ${DEC() ? 'on' : ''}" data-r="dec">0,5 Komma</button>` +
+    `<button class="chip ${ADV() ? 'on' : ''}" data-r="abenteuer">🔮 Abenteuer</button>` +
     '<span class="sep"></span>' +
-    (FRAC() || DEC() ? `<a class="chip on" href="rechenweg.html" style="background:var(--green);box-shadow:0 3px 0 #3a9e57;text-decoration:none;color:#fff">📝 Rechenweg</a>` : '') + // Schritt für Schritt üben
-    (DEC() ? `<button class="chip op on" data-o="*" title="Kommazahlen: Mal-Aufgaben">×</button>` // Kommazahlen gibt es als Mal-Aufgaben
+    (ADV() ? advRow() : '') +
+    (WIDE() ? `<a class="chip on" href="rechenweg.html" style="background:var(--green);box-shadow:0 3px 0 #3a9e57;text-decoration:none;color:#fff">📝 Rechenweg</a>` : '') + // Schritt für Schritt üben
+    (ADV() ? '' : DEC() ? `<button class="chip op on" data-o="*" title="Kommazahlen: Mal-Aufgaben">×</button>` // Kommazahlen gibt es als Mal-Aufgaben
       : Object.keys(OPS).map(o => `<button class="chip op ${S.ops.includes(o) ? 'on' : ''}" data-o="${o}">${OPS[o]}</button>`).join(''));
 }
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   SFX.tap();
-  if (b.dataset.r) S.range = isNaN(+b.dataset.r) ? b.dataset.r : +b.dataset.r;
+  if (b.dataset.r){ S.range = isNaN(+b.dataset.r) ? b.dataset.r : +b.dataset.r; if (ADV() && !bruchSum()) toast('🔮 Bruch-Abenteuer! Rechne die erste Aufgabe richtig – dann öffnet sich eine neue Welt …'); }
   else if (DEC()){ toast('Bei Kommazahlen gibt es Mal-Aufgaben ✖️'); return; }
+  else if (ADV()) return;
   else {
     const o = b.dataset.o;
     if (S.ops.includes(o)){ if (S.ops.length > 1) S.ops = S.ops.filter(x => x !== o); else { retrigger(b, 'shake'); return; } }
@@ -2204,7 +2275,7 @@ function exitBuild(){
 function renderBuildbar(){
   $('#fcat').innerHTML = FURN_LIST.map(f => {
     const open = furnOpen(f);
-    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${open && f.html && f.advent ? `<span class="fsvg">${f.html}</span>` : f.e}</span><small>${open ? f.name : f.code ? '🔑 Code' : f.advent ? '🗓️ ' + f.advent + '.' : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
+    return `<button class="fitem ${open ? '' : 'locked'}" data-f="${f.id}"><span class="e">${open && f.html && f.advent ? `<span class="fsvg">${f.html}</span>` : f.e}</span><small>${open ? f.name : f.code ? lockShort(f.code) : f.advent ? '🗓️ ' + f.advent + '.' : f.lvl ? '🔒 Lv ' + f.lvl : '🎁'}</small></button>`;
   }).join('');
 }
 // Tiere, die auf einem Möbelstück sitzen, das weggeräumt wird, stehen auf; Nummern dahinter rutschen nach
@@ -2220,7 +2291,7 @@ function furnRemoved(i){
 $('#fcat').addEventListener('click', e => {
   const b = e.target.closest('.fitem'); if (!b) return;
   const f = FURN[b.dataset.f];
-  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.code ? `${f.e} ${f.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : f.advent ? `${f.e} ${f.name} steckt hinter Türchen ${f.advent} im Adventskalender 🗓️` : f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
+  if (!furnOpen(f)){ SFX.no(); retrigger(b, 'shake'); toast(f.code ? lockLong(f.code, `${f.e} ${f.name}`) : f.advent ? `${f.e} ${f.name} steckt hinter Türchen ${f.advent} im Adventskalender 🗓️` : f.lvl ? `${f.e} ${f.name} gibt es ab Level ${f.lvl}! 🧮` : `${f.e} ${f.name} steckt in einem Überraschungsgeschenk! 🎁`); return; }
   const list = furnOf(curRoom());
   list.push({ id:f.id, x:rnd(30, 70), y:f.wall ? rnd(24, 36) : rnd(66, 80) });
   selI = list.length - 1; SFX.dress(); furnChanged(); renderWorld();
@@ -2700,14 +2771,14 @@ function sledRide(riders, dest){
 function renderHabs(){
   $('#habs').innerHTML = HABS.map(h => {
     const open = habOpen(h), n = h.shared ? '👭 ' + (NET.meRef ? 1 + Object.keys(NET.others).length : '–') : S.pets.filter(p => where(p) === h.id).length;
-    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : h.code ? ' · 🔑 Code' : h.advent ? ' · 🎄 Advent' : ` · Lv ${h.lvl}`}</button>`;
+    return `<button class="hchip ${h.id === S.hab ? 'on' : ''} ${open ? '' : 'locked'}" data-h="${h.id}">${open ? h.e : '🔒'} ${h.name}${open ? ` · ${n}` : h.code ? ' · ' + lockShort(h.code) : h.advent ? ' · 🎄 Advent' : ` · Lv ${h.lvl}`}</button>`;
   }).join('');
   $('#habs .hchip.on')?.scrollIntoView({ inline:'center', block:'nearest' });
 }
 $('#habs').addEventListener('click', e => {
   const b = e.target.closest('.hchip'); if (!b) return;
   const h = HAB[b.dataset.h];
-  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(h.code ? `${h.e} ${h.name} bekommst du mit einem Code aus dem Europa-Entdecker 🧭` : h.advent ? `${h.e} ${h.name} steckt hinter Türchen ${h.advent} im Adventskalender 🗓️` : `${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
+  if (!habOpen(h)){ SFX.no(); retrigger(b, 'shake'); toast(h.code ? lockLong(h.code, `${h.e} ${h.name}`) : h.advent ? `${h.e} ${h.name} steckt hinter Türchen ${h.advent} im Adventskalender 🗓️` : `${h.e} ${h.name} öffnet sich ab Level ${h.lvl}. Weiter rechnen! 🧮`); return; }
   SFX.tap(); S.hab = h.id; save(); renderWorld();
 });
 function placePet(el, p){
@@ -2791,7 +2862,7 @@ function attachPet(el, p){
     const r = scene.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
     const offX = r.left + p.x/100*r.width - sx, offY = r.top + p.y/100*r.height - sy;
     const [ymin, ymax] = limitsY();
-    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly'].includes(mode);
+    const mode = moveOf(p.type), airy = ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly','fraction'].includes(mode);
     let moved = false, stepper = null;
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8){
@@ -3085,7 +3156,7 @@ function renderRemote(){
   const wrap = $('#pets'), seen = new Set();
   const setHeld = (el, h, type) => {
     el.classList.toggle('held', !!h); el.dataset.move = moveOf(type);
-    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly'].includes(moveOf(type)));
+    el.classList.toggle('flying', !!h && ['fly','float','glide','blaze','party','gold','explore','night','xmasfly','snowfly','fraction'].includes(moveOf(type)));
   };
   const here = together().room;
   const setPose = (el, pz) => { // sitzt/liegt/badet die Freundin oder ihr Tier gerade?
@@ -3666,7 +3737,7 @@ function renderAvatarEditor(){
     h += `<div class="avgrid">`;
     if (slot === 'hat' || slot === 'extra') h += card(slot, '', avatarSVG({...S.av, [slot]:null}, crop), 'Nichts', !S.av[slot]);
     h += CLOTHES.filter(c => c.slot === slot).map(c => card(slot, c.id, avatarSVG({...S.av, [slot]:c.id}, crop), c.name, S.av[slot] === c.id,
-      clothOpen(c) ? '' : c.code ? '🔑 Code' : c.advent ? `🗓️ Türchen ${c.advent}` : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
+      clothOpen(c) ? '' : c.code ? lockShort(c.code) : c.advent ? `🗓️ Türchen ${c.advent}` : c.lvl ? `🔒 Level ${c.lvl}` : '🎁 Überraschung')).join('');
     h += `</div>`;
   }
   $('#avGrid').innerHTML = h;
@@ -3678,7 +3749,7 @@ $('#avGrid').addEventListener('click', e => {
   const k = b.dataset.k, v = b.dataset.v;
   if (b.classList.contains('locked')){
     const c = CL[v]; SFX.no(); retrigger(b, 'shake');
-    toast(c.lvl ? `${c.name} gibt es ab Level ${c.lvl}! 🧮` : `${c.name} steckt in einem Überraschungsgeschenk! 🎁`);
+    toast(c.code ? lockLong(c.code, c.name) : c.lvl ? `${c.name} gibt es ab Level ${c.lvl}! 🧮` : `${c.name} steckt in einem Überraschungsgeschenk! 🎁`);
     return;
   }
   S.av[k] = (k === 'skin' || k === 'eyes') ? +v : (v || null);
@@ -3696,27 +3767,31 @@ function openRedeem(){ $('#redeemInput').value = ''; $('#redeemModal').classList
 $('#redeemCancel').addEventListener('click', () => $('#redeemModal').classList.remove('open'));
 $('#redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#redeemGo').click(); });
 $('#redeemGo').addEventListener('click', () => {
-  const key = Object.keys(UNLOCKS).find(k => codeKey(UNLOCKS[k].code) === codeKey($('#redeemInput').value));
+  const key = Object.keys(UNLOCKS).find(k => UNLOCKS[k].code && codeKey(UNLOCKS[k].code) === codeKey($('#redeemInput').value));
   if (!key){ SFX.no(); retrigger($('#redeemInput'), 'shake'); toast('Diesen Code kenne ich nicht 🤔 Schau nochmal genau hin!'); return; }
   const u = UNLOCKS[key], hasPet = u.pet && S.pets.some(p => p.type === u.pet);
   if (S.unlocks.includes(key) && (!u.pet || hasPet)){ toast('Den hast du schon eingelöst! 😊'); return; }
+  $('#redeemModal').classList.remove('open');
+  grantUnlock(key);
+  if (key === 'welt') giftPet = { type:'ella' }; // „Hinreisen“ führt in die Europa-Reise
+});
+// Freischaltung eintragen und wie ein Geschenk auspacken (Codes und Bruch-Abenteuer)
+function grantUnlock(key){
+  const u = UNLOCKS[key], hasPet = u.pet && S.pets.some(p => p.type === u.pet);
   if (!S.unlocks.includes(key)) S.unlocks.push(key);
   giftPet = null;
   if (u.pet && !hasPet){ const p = newPet(u.pet); S.pets.push(p); S.newPet = p.id; giftPet = p; }
   save(); renderHUD();
-  $('#redeemModal').classList.remove('open');
-  // wie ein Geschenk auspacken
   $('#giftStage').innerHTML = giftPet ? `<div class="reveal-pet">${petNode(giftPet, 0)}</div>`
     : u.furn ? `<div class="reveal-pet" style="font-size:110px;width:auto;line-height:1;font-family:var(--emoji)">${FURN[u.furn].html || FURN[u.furn].e}</div>`
     : u.cloth ? `<div class="reveal-pet">${avatarSVG({ ...S.av, [CL[u.cloth].slot]:u.cloth })}</div>`
     : `<div class="reveal-pet" style="font-size:96px;width:auto;line-height:1;font-family:var(--emoji)">${u.e}</div>`;
   $('#giftTitle').textContent = u.title; $('#giftMsg').textContent = u.msg;
   $('#giftBtns').innerHTML = `<button class="btn alt" data-a="quiz">Weiter rechnen</button>` + (u.furn ? `<button class="btn" data-a="build">Einrichten 🔨</button>`
-    : u.cloth ? `<button class="btn" data-a="avatar:${CL[u.cloth].slot}">Anziehen 🪞</button>` : `<button class="btn" data-a="world">Hinreisen 🧳</button>`);
-  if (key === 'welt') giftPet = { type:'ella' }; // „Hinreisen“ führt in die Europa-Reise
+    : u.cloth ? `<button class="btn" data-a="avatar:${CL[u.cloth].slot}">Anziehen 🪞</button>` : `<button class="btn" data-a="world">Hinreisen ${u.bruch ? '🔮' : '🧳'}</button>`);
   $('#giftModal').classList.add('open');
   SFX.gift(); confetti(innerWidth / 2, innerHeight / 3, 60);
-});
+}
 
 /* ================= Album ================= */
 function openAlbum(){
@@ -3725,7 +3800,7 @@ function openAlbum(){
   $('#stats').innerHTML = `<div>✅ ${S.total} gerechnet</div><div>🔥 Beste Serie: ${S.best}</div><div>⭐ ${S.xp} XP</div><div>👗 ${ACC.filter(accOpen).length} / ${ACC.length}</div>`;
   $('#album').innerHTML = HABS.filter(h => !h.indoor && !h.shared).map(h => {
     const types = ORDER.filter(t => A[t].hab === h.id), have = types.filter(t => owned[t]).length;
-    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>${h.code ? 'mit Code aus dem Europa-Entdecker 🧭' : h.advent ? 'im Adventskalender 🗓️' : 'ab Level ' + h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
+    if (!habOpen(h)) return `<h3>🔒 ${h.name} <small>${h.code ? (isBruch(h.code) ? 'im 🔮 Bruch-Abenteuer' : 'mit Code aus dem Europa-Entdecker 🧭') : h.advent ? 'im Adventskalender 🗓️' : 'ab Level ' + h.lvl}</small></h3><div class="habLocked">${types.length} Tiere warten hier auf dich.</div>`;
     return `<h3>${h.e} ${h.name} <small>${have} / ${types.length}</small></h3><div class="album">` + types.map(type => {
       const t = A[type], p = owned[type];
       return p
@@ -3772,7 +3847,7 @@ document.addEventListener('keydown', e => {
   if (/^[0-9]$/.test(e.key)) k = e.key;
   else if (e.key === 'Backspace') k = 'del';
   else if (e.key === 'Enter') k = 'ok';
-  else if (['/', ',', '.', 'Tab'].includes(e.key) && (FRAC() || DEC())) k = 'sep';
+  else if (['/', ',', '.', 'Tab'].includes(e.key) && WIDE()) k = 'sep';
   if (!k) return;
   e.preventDefault();
   const btn = document.querySelector(`.key[data-k="${k}"]`);
@@ -3785,7 +3860,18 @@ load(); save(); applyCalm();
 document.body.classList.toggle('newtop', NEWTOP);
 if (TEST){ document.title = '🧪 MathPets (Test)'; $('header').insertAdjacentHTML('beforeend', '<div class="pill" style="background:var(--yellow)">🧪 Test</div>'); }
 buildChips(); buildPad(); renderMascot(); renderAvatar(); renderHUD(); newTask();
+checkBruch();
 if (S.sinceGift >= 5) queueModal(openGift);
+// Die Rechenweg-Werkstatt schreibt XP, Serie und Leckerlis direkt in den Spielstand: beim Zurückkommen (auch aus dem
+// Zurück-Speicher des Browsers) und bei Änderungen aus einem anderen Tab neu laden, damit nichts überschrieben wird
+function reloadState(){
+  const lv = level(); load(); renderHUD(); renderTreats(); renderAvatar(); if (task) renderTask();
+  if (level() > lv) toast(`⭐ Level ${level()}! Super gerechnet in der Rechenweg-Werkstatt!`);
+  if (S.sinceGift >= 5 && !document.querySelector('.modal.open')) queueModal(openGift);
+  buildChips(); checkBruch();
+}
+addEventListener('pageshow', e => { if (e.persisted) reloadState(); });
+addEventListener('storage', e => { if (e.key === KEY) reloadState(); });
 </script>
 </body>
 </html>

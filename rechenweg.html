@@ -26,6 +26,11 @@ header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#ff
 .logo{font-weight:700;font-size:20px;white-space:nowrap}
 .logo span{font-family:var(--emoji)}
 .grow{flex:1;min-width:0}
+.reward{margin-top:8px;font-weight:600;font-size:17px;font-family:var(--font)}
+.reward b{color:var(--purple)}
+.reward.up{font-size:20px;color:#c9932b}
+.reward.gift{color:#d9558f}
+.reward.adv{color:#5b45c9}
 .pill{background:#fff4d6;border-radius:14px;padding:6px 10px;font-weight:600;font-size:16px;white-space:nowrap}
 .iconbtn{width:40px;height:40px;border-radius:14px;background:var(--soft);font-size:19px;flex:none;font-family:var(--emoji);display:grid;place-items:center;text-decoration:none}
 .coach{display:flex;align-items:flex-end;gap:10px;margin:4px 0 10px}
@@ -47,6 +52,7 @@ header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#ff
 .chip.on{background:var(--purple);color:#fff;box-shadow:0 3px 0 #7442c2}
 .chip.on small{color:#efe3ff}
 .btn{padding:12px 18px;border-radius:16px;font-size:18px;font-weight:700;background:var(--purple);color:#fff;box-shadow:0 4px 0 #7442c2;white-space:nowrap}
+a.btn{text-decoration:none;display:inline-block}
 .btn.alt{background:#fff;color:var(--ink);box-shadow:0 4px 0 #ddd2f3}
 .btn.green{background:var(--green);box-shadow:0 4px 0 #36985a}
 .btn.small{padding:8px 12px;font-size:16px}
@@ -98,7 +104,7 @@ header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#ff
     <div class="logo"><span>📝</span> Rechenweg-Werkstatt</div>
     <div class="grow"></div>
     <div class="pill" id="hud">⭐ 0</div>
-    <a class="iconbtn" href="index.html" aria-label="Zu MathPets">🐾</a>
+    <a class="iconbtn" id="petsLink" href="index.html" aria-label="Zu MathPets">🐾</a>
   </header>
 
   <div class="coach"><div class="mascot" id="mascot"></div><div class="speech" id="say">Hallo! Ich bin Funki. Wir rechnen Schritt für Schritt – wie im Heft! ✏️</div></div>
@@ -423,6 +429,39 @@ const KEY = 'rechenweg-v1';
 let G; try { G = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { G = {}; }
 G = Object.assign({ kind:'f*', stars:0, solved:0 }, G);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
+
+/* ===== Belohnung im MathPets-Spielstand: XP, Serie 🔥, Leckerlis und Überraschungs-Sterne =====
+   Gleiche XP-Kurve wie in MathPets. Level-Aufstieg bringt wie dort 3 Leckerlis. */
+const PTEST = new URLSearchParams(location.search).has('test');
+const PKEY = PTEST ? 'rechenzoo-test' : 'rechenzoo-v2';
+const P_TREATS = { apfel:'🍎', karotte:'🥕', fisch:'🐟', muffin:'🧁', petersilie:'🌿' };
+const needXP = l => { const n = l - 1; return Math.round((60 + 20*n + 4*n*n) / 5) * 5; };
+const levelOf = xp => { let l = 1; while (xp >= needXP(l)){ xp -= needXP(l); l++; } return l; };
+const readPets = () => { try { const P = JSON.parse(localStorage.getItem(PKEY)); return P && typeof P === 'object' ? P : null; } catch { return null; } };
+// Bruch-Abenteuer in MathPets: eine Zufallsaufgabe mit ⭐⭐⭐ zählt doppelt für ihre Sorte (höchstens 20 je Sorte; eigene Aufgaben zählen nicht)
+const BRUCH_OF = { '*':'*', ':':'/', '+':'+', '-':'-' }, BRUCH_NAME = { '+':'½ +', '-':'½ −', '*':'½ ×', '/':'½ ÷', d:'0,5 ×' };
+function rewardPets(stars, w){
+  const P = readPets(); if (!P) return null; // MathPets wurde auf diesem Gerät noch nie gestartet
+  const clean = stars === 3; // alles allein (ohne Tipp, höchstens ein Fehler) = Serie geht weiter
+  const xp0 = Number.isFinite(P.xp) ? P.xp : Number.isFinite(P.xpSafe) ? P.xpSafe : 0;
+  P.streak = clean ? (P.streak || 0) + 1 : 0; P.best = Math.max(P.best || 0, P.streak);
+  const gain = 20 * stars + (clean ? Math.min(P.streak - 1, 10) : 0); // 20/40/60 XP + Serienbonus wie in MathPets
+  P.xp = xp0 + gain; P.xpSafe = P.xp; P.total = (P.total || 0) + 1;
+  P.treats = P.treats || {};
+  const got = [], give = () => { const k = pick(Object.keys(P_TREATS)); P.treats[k] = (P.treats[k] || 0) + 1; got.push(P_TREATS[k]); };
+  for (let i = 0; i < stars; i++) give(); // ein Leckerli je Stern
+  const l0 = levelOf(xp0), l1 = levelOf(P.xp);
+  for (let l = l0; l < l1; l++) for (let i = 0; i < 3; i++) give();
+  P.sinceGift = (P.sinceGift || 0) + 1; // Brüche und Kommazahlen zählen für die Überraschung
+  let adv = null;
+  if (stars === 3 && !w.own){
+    const kind = w.kind === 'dec' ? 'd' : BRUCH_OF[w.op0], b = P.bruch = P.bruch || {}, before = +b[kind] || 0;
+    const sum = () => Object.values(b).reduce((x, y) => x + (+y || 0), 0), s0 = sum();
+    if (kind && before < 20){ b[kind] = Math.min(20, before + 2); adv = { kind, add:b[kind] - before, now:b[kind], prize:[1, 50, 75, 100].some(t => s0 < t && sum() >= t) }; } // neue Belohnung wartet in MathPets
+  }
+  try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch { return null; }
+  return { gain, streak:P.streak, got, level:l1 > l0 ? l1 : 0, gift:P.sinceGift >= 5, adv };
+}
 let AC;
 function tone(f, d = .12, type = 'sine', when = 0, vol = .1, f2){
   try {
@@ -601,7 +640,8 @@ $('#steps').addEventListener('click', e => {
 });
 function finish(){
   const w = W, stars = w.help === 0 && w.wrong <= 1 ? 3 : w.help <= 1 && w.wrong <= 3 ? 2 : 1;
-  G.solved++; G.stars += stars; save(); hud();
+  G.solved++; G.stars += stars; save();
+  const rw = rewardPets(stars, w); hud();
   let weg;
   if (w.kind === 'frac'){
     const res = w.n === 0 ? '0' : w.q === 1 ? `<span>${w.n}</span>` : fr(w.n, w.q);
@@ -611,7 +651,12 @@ function finish(){
   } else weg = `${w.x} · ${w.y} = ${w.mx} · ${w.my} : ${10 ** (w.dx + w.dy)} = ${w.res}`;
   $('#fertig').innerHTML = `<div class="big">🎉</div><div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
     <h2 style="margin:6px 0">Geschafft!</h2><div class="weg">${weg}</div>
-    <div class="btns" style="margin-top:12px"><button class="btn" id="againBtn">🎲 Nächste Aufgabe</button></div>`;
+    ${rw ? `<div class="reward"><b>+${rw.gain} XP</b>${rw.streak >= 2 ? ` · 🔥 ${rw.streak}er-Serie` : ''} · ${rw.got.join('')}</div>` : ''}
+    ${rw?.level ? `<div class="reward up">⭐ Level ${rw.level}! ⭐</div>` : ''}
+    ${rw?.adv ? `<div class="reward adv">🔮 +${rw.adv.add} im Bruch-Abenteuer (${BRUCH_NAME[rw.adv.kind]} ${rw.adv.now}/20)</div>` : ''}
+    ${rw?.adv?.prize ? `<div class="reward up">🔮 Neue Abenteuer-Belohnung! Schau in MathPets nach!</div>` : ''}
+    ${rw?.gift ? `<div class="reward gift">🎁 In MathPets wartet eine Überraschung auf dich!</div>` : ''}
+    <div class="btns" style="margin-top:12px"><button class="btn" id="againBtn">🎲 Nächste Aufgabe</button>${rw?.gift || rw?.adv?.prize ? `<a class="btn alt" href="index.html${PTEST ? '?test' : ''}">${rw?.adv?.prize ? '🔮' : '🎁'} Zu MathPets</a>` : ''}</div>`;
   $('#fertig').hidden = false;
   $('#againBtn').onclick = () => start(randomTask(G.kind));
   SFX.win(); say(stars === 3 ? 'Wow, alles allein gerechnet! 🏆' : 'Super gemacht! Mit Übung wird es immer leichter. 💜', true);
@@ -641,19 +686,20 @@ $('#ownGo').onclick = () => {
     const op = $('#oop').value;
     if (op === ':' && !c){ toast('Durch 0 kann man nicht teilen 🙈'); return; }
     if (op === '-' && a * d < c * b){ toast('Das Ergebnis wäre kleiner als 0 – tausch die Brüche 🔄'); return; }
-    $('#ownModal').classList.remove('open'); start({ kind:'frac', op, a, b, c, d });
+    $('#ownModal').classList.remove('open'); start({ kind:'frac', op, a, b, c, d, own:true });
   } else {
     const ok = s => /^\d+(,\d+)?$/.test(s);
     const x = $('#ox').value.trim().replace('.', ','), y = $('#oy').value.trim().replace('.', ',');
     if (!ok(x) || !ok(y)){ toast('Schreib zwei Zahlen, z. B. 0,25 und 0,4 ✏️'); return; }
-    $('#ownModal').classList.remove('open'); start({ kind:'dec', x, y });
+    $('#ownModal').classList.remove('open'); start({ kind:'dec', x, y, own:true });
   }
 };
-const hud = () => { $('#hud').textContent = `⭐ ${G.stars}`; };
+const hud = () => { const P = readPets(), xp = P && (Number.isFinite(P.xp) ? P.xp : P.xpSafe); $('#hud').textContent = Number.isFinite(xp) ? `⭐ ${G.stars} · Lv ${levelOf(xp)}${P.streak >= 2 ? ` · 🔥${P.streak}` : ''}` : `⭐ ${G.stars}`; };
 
 $('#mascot').innerHTML = petSVG('drache');
 $('#mascot').onclick = () => say(pick(['Rechenweg aufschreiben hilft! 📝','Du schaffst das! 💪','Erst denken, dann rechnen. 🤔']), true);
 renderKinds(); hud();
+if (PTEST) $('#petsLink').href = 'index.html?test';
 </script>
 </body>
 </html>
