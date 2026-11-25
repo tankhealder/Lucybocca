@@ -730,8 +730,8 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
 
 <script>
 /* ================= Daten ================= */
-const TREATS = { apfel:'🍎', karotte:'🥕', fisch:'🐟', muffin:'🧁' };
-const PARSLEY = '🌿'; // Petersilie gibt es nur im Leckerli-Paket – und dann kommt Opa …
+const TREATS = { apfel:'🍎', karotte:'🥕', fisch:'🐟', muffin:'🧁', petersilie:'🌿' }; // Petersilie: wer sie frisst, bekommt Ärger mit Opa …
+const PARSLEY = TREATS.petersilie;
 const treatE = k => k === 'petersilie' ? PARSLEY : TREATS[k];
 
 const HABS = [
@@ -1201,7 +1201,7 @@ const adventHas = d => ADVENT_PREVIEW || ((typeof S !== 'undefined' && S && S.ad
 // Speicher-Schlüssel tragen noch den alten Namen „Rechen-Zoo“ – nicht ändern, sonst ist der Spielstand weg
 const KEY = TEST ? 'rechenzoo-test' : 'rechenzoo-v2', OLD_KEY = 'rechenzoo-v1';
 const DEFAULT = { xp:0, total:0, streak:0, best:0, sinceGift:0,
-  treats:{apfel:2, karotte:1, fisch:1, muffin:1}, pets:[], range:10, ops:['+','-'],
+  treats:{apfel:2, karotte:1, fisch:1, muffin:1, petersilie:0}, pets:[], range:10, ops:['+','-'],
   sound:true, newPet:null, hintSeen:false, hab:'wiese', sel:null, room:'flur', lamps:{},
   av:{ g:'m', skin:1, hair:'lang', hc:'braun', eyes:0, top:'shirt_rot', bottom:'jeans', shoes:'sneaker', hat:null, extra:null }, avOwned:[], avNew:true, unlocks:[], // unlocks: mit Freischaltcodes aus dem Europa-Entdecker geholt
   me:{ id:'me', type:'me', hab:'haus', room:'wohn', x:50, y:72 } }; // me = der Avatar als Spielfigur, zu Hause im Haus
@@ -2106,7 +2106,7 @@ function revealGift(){
   } else {
     giftPet = null;
     const got = []; for (let i=0; i<5; i++){ const k = pick(Object.keys(TREATS)); S.treats[k]++; got.push(TREATS[k]); }
-    S.treats.petersilie = (S.treats.petersilie || 0) + 2; got.push(PARSLEY, PARSLEY); // Petersilie steckt nur im Leckerli-Paket
+    S.treats.petersilie += 2; got.push(PARSLEY, PARSLEY); // im Leckerli-Paket gibt es extra Petersilie
     $('#giftStage').innerHTML = `<div class="reveal-pet" style="font-size:56px;width:auto">${got.join('')}</div>`;
     const nextHab = HABS.find(h => !h.code && !h.advent && level() < h.lvl); // Code-Welten kommen nicht über Level
     $('#giftTitle').textContent = 'Leckerli-Paket!';
@@ -2552,7 +2552,7 @@ function openDoor(d){
     btns += `<button class="btn" data-a="sled">Losfahren 🛷</button>`;
   }
   const tr = ADV_TREATS[d];
-  if (tr){ Object.keys(TREATS).forEach(t => S.treats[t] += tr); msg += ` Und dazu ${tr}× jedes Leckerli! 🍎🥕🐟🧁`; }
+  if (tr){ Object.keys(TREATS).forEach(t => S.treats[t] += tr); msg += ` Und dazu ${tr}× jedes Leckerli! 🍎🥕🐟🧁🌿`; }
   save(); renderHUD();
   $('#giftTitle').textContent = `Türchen ${d}: ${title}`; $('#giftMsg').textContent = msg; $('#giftBtns').innerHTML = btns;
   $('#giftModal').classList.add('open');
@@ -3374,7 +3374,7 @@ function toolList(){
 }
 function renderTreats(){
   const tools = toolList();
-  const list = Object.entries(TREATS); if (S.treats.petersilie > 0) list.push(['petersilie', PARSLEY]); // Petersilie nur, wenn welche da ist
+  const list = Object.entries(TREATS);
   $('#tray').innerHTML = list.map(([k, e]) =>
     `<button class="treat ${S.treats[k] ? '' : 'empty'}" data-t="${k}" aria-label="${k}">${e}<span class="n">${S.treats[k]}</span></button>`
   ).join('') + `<button class="treat tool ride" id="rideBtn" aria-label="Avatar herholen oder reiten">${avatarSVG(S.av, true)}</button>`
