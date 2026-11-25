@@ -1258,6 +1258,18 @@ function load(){
     S.xp = xpFor(o.l) + Math.floor(o.cur / o.need * needXP(o.l));
   }
   S.xpv = 2;
+  // Schutz: XP muss eine Zahl sein. Ging sie kaputt (NaN wird beim Speichern zu null), aus der Sicherung xpSafe holen
+  if (!Number.isFinite(S.xp)) S.xp = Number.isFinite(S.xpSafe) ? S.xpSafe : 0;
+  if (Number.isFinite(S.xpSafe) && S.xpSafe > S.xp) S.xp = S.xpSafe; // XP kann nie sinken – also ist die Sicherung richtig
+  S.xpSafe = S.xp;
+  // Rechenarten und Zahlenraum aufräumen: nur gültige Zeichen, keine doppelten (sonst „undefined“ statt Rechenzeichen)
+  S.ops = [...new Set((Array.isArray(S.ops) ? S.ops : []).filter(o => ['+','-','*','/'].includes(o)))];
+  if (!S.ops.length) S.ops = ['+','-'];
+  if (![10, 20, 100, 'frac', 'dec'].includes(S.range)) S.range = 10;
+  // Level wiederherstellen (für Eltern): index.html?level=12 hebt die XP auf mindestens Level 12, danach verschwindet der Zusatz aus der Adresse
+  const lv = parseInt(new URLSearchParams(location.search).get('level'), 10);
+  if (lv > 1 && lv <= 60 && S.xp < xpFor(lv)){ S.xp = S.xpSafe = xpFor(lv); }
+  if (lv) try { const u = new URL(location.href); u.searchParams.delete('level'); history.replaceState(null, '', u); } catch {}
   // Tiere aus alten Versionen übernehmen, unbekannte gegen Leckerlis tauschen
   S.pets = (S.pets || []).filter(p => { if (A[p.type]) return true; S.treats.muffin += 3; return false; });
   S.pets.forEach(p => { p.acc = p.acc || {}; });
@@ -1825,8 +1837,9 @@ function renderHUD(){
   $('#badge').classList.toggle('show', !!S.newPet);
 }
 function addXP(n){
+  if (!Number.isFinite(n) || !Number.isFinite(S.xp)) return; // nie kaputte XP speichern
   const before = level();
-  S.xp += n;
+  S.xp += n; S.xpSafe = S.xp;
   const after = level();
   for (let l = before + 1; l <= after; l++){
     const bonus = [];
